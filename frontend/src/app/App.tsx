@@ -1,0 +1,98 @@
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { HomePage } from './pages/HomePage';
+import { ConstructionPage } from './pages/ConstructionPage';
+import { EducationPage } from './pages/EducationPage';
+import { LoginPage } from './pages/LoginPage';
+import { RegisterPage } from './pages/RegisterPage';
+import { DashboardPage } from './pages/DashboardPage';
+import { ContactsPage } from './pages/ContactsPage';
+import { StudentDashboardPage } from './pages/StudentDashboardPage';
+import { StudentCoursesPage } from './pages/StudentCoursesPage';
+import { StudentHistoryPage } from './pages/StudentHistoryPage';
+import { StudentTestsPage } from './pages/StudentTestsPage';
+import { StudentSupportPage } from './pages/StudentSupportPage';
+import { PDEKDashboardPage } from './pages/PDEKDashboardPage';
+import { TestPage } from './pages/TestPage';
+import { CoursePage } from './pages/CoursePage';
+import { DocumentsPage } from './pages/DocumentsPage';
+import { AdminDashboardPage } from './pages/AdminDashboardPage';
+import { ProtectedRoute } from './components/ProtectedRoute';
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/" element={<HomePage />} />
+        <Route path="/construction" element={<ConstructionPage />} />
+        <Route path="/education" element={<EducationPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/contacts" element={<ContactsPage />} />
+        
+        {/* Protected Routes */}
+        <Route path="/dashboard" element={
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
+        } />
+        
+        {/* Student Routes */}
+        <Route path="/student/dashboard" element={
+          <ProtectedRoute requiredRole="student">
+            <StudentDashboardPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/student/courses" element={
+          <ProtectedRoute requiredRole="student">
+            <StudentCoursesPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/student/history" element={
+          <ProtectedRoute requiredRole="student">
+            <StudentHistoryPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/student/tests" element={
+          <ProtectedRoute requiredRole="student">
+            <StudentTestsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/student/support" element={
+          <ProtectedRoute requiredRole="student">
+            <StudentSupportPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/student/course/:courseId" element={
+          <ProtectedRoute requiredRole="student">
+            <CoursePage />
+          </ProtectedRoute>
+        } />
+        <Route path="/student/test/:testId" element={
+          <ProtectedRoute requiredRole="student">
+            <TestPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/student/documents" element={
+          <ProtectedRoute requiredRole="student">
+            <DocumentsPage />
+          </ProtectedRoute>
+        } />
+        
+        {/* PDEK Routes */}
+        <Route path="/pdek/dashboard" element={
+          <ProtectedRoute requiredRole={['pdek_member', 'pdek_chairman']}>
+            <PDEKDashboardPage />
+          </ProtectedRoute>
+        } />
+        
+        {/* Admin Routes */}
+        <Route path="/admin/dashboard" element={
+          <ProtectedRoute requiredRole="admin">
+            <AdminDashboardPage />
+          </ProtectedRoute>
+        } />
+      </Routes>
+    </BrowserRouter>
+  );
+}

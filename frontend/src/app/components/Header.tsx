@@ -1,0 +1,234 @@
+import { Menu, X, Mail, MapPin, Phone, User, Building2, GraduationCap, LogOut } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useUser } from '../contexts/UserContext';
+
+export function Header() {
+  const navigate = useNavigate();
+  const { user: currentUser, logout } = useUser();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [language, setLanguage] = useState<'Русский' | 'Қазақша' | 'English'>('Русский');
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+    navigate('/');
+    }
+  };
+
+  const getDashboardLink = () => {
+    if (!currentUser) return '/login';
+    
+    switch (currentUser.role) {
+      case 'student':
+        return '/student/dashboard';
+      case 'pdek_member':
+      case 'pdek_chairman':
+        return '/pdek/dashboard';
+      case 'admin':
+        return '/admin/dashboard';
+      default:
+        return '/dashboard';
+    }
+  };
+
+  return (
+    <header className="bg-white sticky top-0 z-50 shadow-md">
+      {/* Top Bar with Contact Info */}
+      <div className="bg-gradient-to-r from-blue-900 to-blue-800 text-white">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-wrap items-center justify-between py-2 text-sm gap-4">
+            <div className="flex flex-wrap items-center gap-4 md:gap-6">
+              <a href="mailto:info@unicover.kz" className="flex items-center gap-2 hover:text-blue-300 transition-colors">
+                <Mail className="w-4 h-4" />
+                <span>info@unicover.kz</span>
+              </a>
+              <div className="flex items-center gap-2">
+                <MapPin className="w-4 h-4 flex-shrink-0" />
+                <span className="text-xs">г.Атырау, ул. Студенческий 25, БЦ Bayterek Plaza, 5 этаж</span>
+              </div>
+              <a href="tel:+77122208092" className="flex items-center gap-2 hover:text-blue-300 transition-colors">
+                <Phone className="w-4 h-4" />
+                <span>+7 (7122) 20-80-92</span>
+              </a>
+              <a href="tel:+77084208092" className="flex items-center gap-2 hover:text-blue-300 transition-colors">
+                <Phone className="w-4 h-4" />
+                <span>+7 708 420-80-92</span>
+              </a>
+            </div>
+            
+            {/* Language Selector */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setLanguage('Русский')}
+                className={`text-xs px-3 py-1 rounded ${language === 'Русский' ? 'bg-blue-600 text-white' : 'hover:text-blue-300'}`}
+              >
+                Русский
+              </button>
+              <span className="text-gray-400">|</span>
+              <button
+                onClick={() => setLanguage('Қазақша')}
+                className={`text-xs px-3 py-1 rounded ${language === 'Қазақша' ? 'bg-blue-600 text-white' : 'hover:text-blue-300'}`}
+              >
+                Қазақша
+              </button>
+              <span className="text-gray-400">|</span>
+              <button
+                onClick={() => setLanguage('English')}
+                className={`text-xs px-3 py-1 rounded ${language === 'English' ? 'bg-blue-600 text-white' : 'hover:text-blue-300'}`}
+              >
+                English
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Navigation */}
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-20">
+          {/* Logo */}
+          <div className="flex items-center">
+            <Link to="/" className="flex items-center gap-3">
+              <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-white font-bold text-lg">UC</span>
+              </div>
+              <div>
+                <div className="font-bold text-gray-900 text-xl">UNICOVER</div>
+                <div className="text-xs text-gray-600">ТОО "UNICOVER"</div>
+              </div>
+            </Link>
+          </div>
+
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex items-center gap-6">
+            <Link to="/" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
+              Главная
+            </Link>
+            <a href="/#about" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
+              О компании
+            </a>
+            
+            {/* Construction Dropdown */}
+            <div className="relative group">
+              <button className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition-colors font-medium">
+                <Building2 className="w-4 h-4" />
+                Строительство
+              </button>
+              <div className="absolute top-full left-0 mt-2 w-64 bg-white shadow-xl rounded-lg py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                <a href="/#construction" className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                  О направлении
+                </a>
+                <Link to="/construction" className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                  Проекты и работы
+                </Link>
+                <a href="/#partners" className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                  Партнеры
+                </a>
+              </div>
+            </div>
+
+            {/* Education Dropdown */}
+            <div className="relative group">
+              <button className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition-colors font-medium">
+                <GraduationCap className="w-4 h-4" />
+                Учебный центр
+              </button>
+              <div className="absolute top-full left-0 mt-2 w-64 bg-white shadow-xl rounded-lg py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                <a href="/#education" className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                  О центре
+                </a>
+                <Link to="/education" className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                  Программы обучения
+                </Link>
+              </div>
+            </div>
+
+            <Link to="/contacts" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
+              Контакты
+            </Link>
+            
+            {currentUser ? (
+              <div className="flex items-center gap-3">
+                <Link
+                  to={getDashboardLink()}
+                  className="flex items-center gap-2 bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-md"
+                >
+                  <User className="w-4 h-4" />
+                  {currentUser?.full_name?.split(' ')[0] || currentUser?.fullName?.split(' ')[0] || 'Кабинет'}
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+                  title="Выйти"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <Link
+                to="/login"
+                className="flex items-center gap-2 bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-md"
+              >
+                <User className="w-4 h-4" />
+                Личный кабинет
+              </Link>
+            )}
+          </nav>
+
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="lg:hidden p-2 text-gray-700 hover:text-blue-600"
+          >
+            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
+
+        {/* Mobile Menu */}
+        {isMenuOpen && (
+          <nav className="lg:hidden py-4 border-t border-gray-200">
+            <div className="flex flex-col gap-4">
+              <Link to="/" className="text-gray-700 hover:text-blue-600 py-2">
+                Главная
+              </Link>
+              <a href="/#about" className="text-gray-700 hover:text-blue-600 py-2">
+                О компании
+              </a>
+              <div className="border-t border-gray-200 pt-2">
+                <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Строительство</p>
+                <a href="/#construction" className="text-gray-700 hover:text-blue-600 py-2 pl-4 block">
+                  О направлении
+                </a>
+                <Link to="/construction" className="text-gray-700 hover:text-blue-600 py-2 pl-4 block">
+                  Проекты и работы
+                </Link>
+                <a href="/#partners" className="text-gray-700 hover:text-blue-600 py-2 pl-4 block">
+                  Партнеры
+                </a>
+              </div>
+              <div className="border-t border-gray-200 pt-2">
+                <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Учебный центр</p>
+                <a href="/#education" className="text-gray-700 hover:text-blue-600 py-2 pl-4 block">
+                  О центре
+                </a>
+                <Link to="/education" className="text-gray-700 hover:text-blue-600 py-2 pl-4 block">
+                  Программы обучения
+                </Link>
+              </div>
+              <Link to="/contacts" className="text-gray-700 hover:text-blue-600 py-2">
+                Контакты
+              </Link>
+              <Link to="/login" className="text-blue-600 font-medium py-2 border-t border-gray-200">
+                Личный кабинет
+              </Link>
+            </div>
+          </nav>
+        )}
+      </div>
+    </header>
+  );
+}

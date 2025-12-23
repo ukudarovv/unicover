@@ -1,0 +1,302 @@
+import { apiClient } from './api';
+import { Course, CourseEnrollment } from '../types/lms';
+import { PaginatedResponse, PaginationParams } from '../types/pagination';
+
+const coursesService = {
+  async getCourses(params?: { 
+    status?: string; 
+    category?: string; 
+    search?: string;
+    page?: number;
+    page_size?: number;
+  }): Promise<PaginatedResponse<Course>> {
+    const data = await apiClient.get<any>('/courses/', params);
+    
+    // Backend возвращает пагинированный ответ Django REST Framework
+    if (data && typeof data === 'object' && Array.isArray(data.results)) {
+      return {
+        results: data.results,
+        count: data.count || data.results.length,
+        next: data.next || null,
+        previous: data.previous || null,
+      };
+    }
+    
+    // Fallback для непагинированных ответов (обратная совместимость)
+    if (Array.isArray(data)) {
+      return {
+        results: data,
+        count: data.length,
+        next: null,
+        previous: null,
+      };
+    }
+    
+    // Если данные в другом формате
+    if (data && typeof data === 'object') {
+      const results = data.data || data.courses || [];
+      return {
+        results: Array.isArray(results) ? results : [],
+        count: data.count || results.length,
+        next: data.next || null,
+        previous: data.previous || null,
+      };
+    }
+    
+    return {
+      results: [],
+      count: 0,
+      next: null,
+      previous: null,
+    };
+  },
+
+  async getCourse(id: string): Promise<Course> {
+    const data = await apiClient.get<any>(`/courses/${id}/`);
+    console.log('Course API response:', data);
+    
+    // Обрабатываем модули и уроки, если они есть
+    if (data && typeof data === 'object') {
+      // Убеждаемся, что modules - это массив
+      if (data.modules && !Array.isArray(data.modules)) {
+        console.warn('Modules is not an array, converting:', data.modules);
+        data.modules = [];
+      }
+      
+      // Обрабатываем каждый модуль
+      if (Array.isArray(data.modules)) {
+        data.modules = data.modules.map((module: any) => {
+          // Убеждаемся, что lessons - это массив
+          if (module.lessons && !Array.isArray(module.lessons)) {
+            console.warn('Module lessons is not an array, converting:', module.lessons);
+            module.lessons = [];
+          }
+          
+          // Преобразуем поля уроков из backend формата в frontend формат
+          if (Array.isArray(module.lessons)) {
+            module.lessons = module.lessons.map((lesson: any) => {
+              return {
+                ...lesson,
+                videoUrl: lesson.video_url || lesson.videoUrl,
+                thumbnailUrl: lesson.thumbnail_url || lesson.thumbnailUrl,
+                pdfUrl: lesson.pdf_url || lesson.pdfUrl,
+                testId: lesson.test_id || lesson.testId,
+                passingScore: lesson.passing_score || lesson.passingScore,
+                maxAttempts: lesson.max_attempts || lesson.maxAttempts,
+                allowDownload: lesson.allow_download !== undefined ? lesson.allow_download : lesson.allowDownload,
+                trackProgress: lesson.track_progress !== undefined ? lesson.track_progress : lesson.trackProgress,
+              };
+            });
+          }
+          
+          return module;
+        });
+      }
+    }
+    
+    return data as Course;
+  },
+
+  async createCourse(course: Partial<Course>): Promise<Course> {
+    // Convert frontend format to backend format
+    // Обрабатываем category: если это объект, берем id, иначе используем categoryId или category
+    let categoryId: string | undefined = undefined;
+    if (course.categoryId) {
+      categoryId = course.categoryId;
+    } else if (typeof course.category === 'object' && course.category !== null) {
+      categoryId = course.category.id || (course.category as any).id;
+    } else if (typeof course.category === 'string') {
+      // Старый формат - оставляем для обратной совместимости, но лучше использовать categoryId
+      categoryId = course.category;
+    }
+    
+    const backendCourse: any = {
+      title: course.title,
+      description: course.description || '',
+      category_id: categoryId || null,
+      duration: course.duration || 0,
+      status: course.status || 'draft',
+      passing_score: course.passingScore || course.passing_score,
+      max_attempts: course.maxAttempts || course.max_attempts,
+      has_timer: course.hasTimer || course.has_timer,
+      timer_minutes: course.timerMinutes || course.timer_minutes,
+      pdek_commission: course.pdekCommission || course.pdek_commission,
+    };
+    
+    // Process modules and lessons for nested creation
+    console.log('createCourse - course.modules:', course.modules);
+    if (course.modules && Array.isArray(course.modules) && course.modules.length > 0) {
+      console.log('createCourse - processing', course.modules.length, 'modules');
+      backendCourse.modules = course.modules.map((module: any, moduleIndex: number) => {
+        const backendModule: any = {
+          title: module.title || '',
+          description: module.description || '',
+          order: module.order || moduleIndex + 1,
+        };
+        
+        // Process lessons for each module
+        if (module.lessons && Array.isArray(module.lessons) && module.lessons.length > 0) {
+          backendModule.lessons = module.lessons.map((lesson: any, lessonIndex: number) => {
+            const backendLesson: any = {
+              title: lesson.title || '',
+              description: lesson.description || '',
+              type: lesson.type || 'text',
+              order: lesson.order || lessonIndex + 1,
+              duration: lesson.duration || 0,
+              required: lesson.required !== undefined ? lesson.required : true,
+              content: lesson.content || '',
+            };
+            
+            // Add type-specific fields
+            if (lesson.type === 'video') {
+              backendLesson.video_url = lesson.videoUrl || lesson.video_url || '';
+              backendLesson.thumbnail_url = lesson.thumbnailUrl || lesson.thumbnail_url || '';
+              backendLesson.allow_download = lesson.allowDownload || lesson.allow_download || false;
+              backendLesson.track_progress = lesson.trackProgress || lesson.track_progress || false;
+            } else if (lesson.type === 'pdf') {
+              backendLesson.pdf_url = lesson.pdfUrl || lesson.pdf_url || '';
+              backendLesson.allow_download = lesson.allowDownload || lesson.allow_download || false;
+            } else if (lesson.type === 'quiz') {
+              backendLesson.test_id = lesson.testId || lesson.test_id || null;
+              backendLesson.passing_score = lesson.passingScore || lesson.passing_score || 80;
+              backendLesson.max_attempts = lesson.maxAttempts || lesson.max_attempts || 3;
+            }
+            
+            return backendLesson;
+          });
+        } else {
+          backendModule.lessons = [];
+        }
+        
+        return backendModule;
+      });
+      console.log('createCourse - processed modules:', backendCourse.modules);
+    } else {
+      console.log('createCourse - no modules or empty array');
+      backendCourse.modules = [];
+    }
+    
+    console.log('createCourse - sending to backend:', backendCourse);
+    return apiClient.post<Course>('/courses/', backendCourse);
+  },
+
+  async updateCourse(id: string, course: Partial<Course>): Promise<Course> {
+    // Convert frontend format to backend format
+    // Обрабатываем category: если это объект, берем id, иначе используем categoryId или category
+    let categoryId: string | undefined = undefined;
+    if (course.categoryId) {
+      categoryId = course.categoryId;
+    } else if (typeof course.category === 'object' && course.category !== null) {
+      categoryId = course.category.id || (course.category as any).id;
+    } else if (typeof course.category === 'string') {
+      // Старый формат - оставляем для обратной совместимости, но лучше использовать categoryId
+      categoryId = course.category;
+    }
+    
+    const backendCourse: any = {
+      title: course.title,
+      description: course.description,
+      category_id: categoryId || null,
+      duration: course.duration,
+      status: course.status,
+      passing_score: course.passingScore || course.passing_score,
+      max_attempts: course.maxAttempts || course.max_attempts,
+      has_timer: course.hasTimer || course.has_timer,
+      timer_minutes: course.timerMinutes || course.timer_minutes,
+      pdek_commission: course.pdekCommission || course.pdek_commission,
+    };
+    
+    // Process modules and lessons for nested update
+    console.log('updateCourse - course.modules:', course.modules);
+    if (course.modules && Array.isArray(course.modules)) {
+      console.log('updateCourse - processing', course.modules.length, 'modules');
+      backendCourse.modules = course.modules.map((module: any, moduleIndex: number) => {
+        const backendModule: any = {
+          id: module.id && !String(module.id).startsWith('module-') ? module.id : undefined, // Only include real IDs
+          title: module.title || '',
+          description: module.description || '',
+          order: module.order || moduleIndex + 1,
+        };
+        
+        // Process lessons for each module
+        if (module.lessons && Array.isArray(module.lessons)) {
+          backendModule.lessons = module.lessons.map((lesson: any, lessonIndex: number) => {
+            const backendLesson: any = {
+              id: lesson.id && !String(lesson.id).startsWith('lesson-') ? lesson.id : undefined, // Only include real IDs
+              title: lesson.title || '',
+              description: lesson.description || '',
+              type: lesson.type || 'text',
+              order: lesson.order || lessonIndex + 1,
+              duration: lesson.duration || 0,
+              required: lesson.required !== undefined ? lesson.required : true,
+              content: lesson.content || '',
+            };
+            
+            // Add type-specific fields
+            if (lesson.type === 'video') {
+              backendLesson.video_url = lesson.videoUrl || lesson.video_url || '';
+              backendLesson.thumbnail_url = lesson.thumbnailUrl || lesson.thumbnail_url || '';
+              backendLesson.allow_download = lesson.allowDownload || lesson.allow_download || false;
+              backendLesson.track_progress = lesson.trackProgress || lesson.track_progress || false;
+            } else if (lesson.type === 'pdf') {
+              backendLesson.pdf_url = lesson.pdfUrl || lesson.pdf_url || '';
+              backendLesson.allow_download = lesson.allowDownload || lesson.allow_download || false;
+            } else if (lesson.type === 'quiz') {
+              backendLesson.test_id = lesson.testId || lesson.test_id || null;
+              backendLesson.passing_score = lesson.passingScore || lesson.passing_score || 80;
+              backendLesson.max_attempts = lesson.maxAttempts || lesson.max_attempts || 3;
+            }
+            
+            return backendLesson;
+          });
+        } else {
+          backendModule.lessons = [];
+        }
+        
+        return backendModule;
+      });
+      console.log('updateCourse - processed modules:', backendCourse.modules);
+    } else {
+      console.log('updateCourse - no modules or not an array');
+    }
+    
+    console.log('updateCourse - sending to backend:', backendCourse);
+    return apiClient.put<Course>(`/courses/${id}/`, backendCourse);
+  },
+
+  async deleteCourse(id: string): Promise<void> {
+    await apiClient.delete(`/courses/${id}/`);
+  },
+
+  async getCourseStudents(courseId: string): Promise<CourseEnrollment[]> {
+    return apiClient.get<CourseEnrollment[]>(`/courses/${courseId}/students/`);
+  },
+
+  async enrollStudents(courseId: string, userIds: string[]): Promise<void> {
+    await apiClient.post(`/courses/${courseId}/enroll/`, { user_ids: userIds });
+  },
+
+  async completeLesson(lessonId: string): Promise<void> {
+    await apiClient.post(`/lessons/${lessonId}/complete/`);
+  },
+
+  async getMyEnrollments(): Promise<CourseEnrollment[]> {
+    // Try to get user's enrollments
+    // If backend has my_enrollments endpoint, use it
+    // Otherwise, return empty array and frontend hook will handle fetching differently
+    try {
+      return await apiClient.get<CourseEnrollment[]>('/courses/my_enrollments/');
+    } catch (error: any) {
+      // If endpoint doesn't exist (404), return empty array
+      // Frontend hook will handle fetching differently using fallback method
+      if (error.status === 404) {
+        return [];
+      }
+      // For other errors, re-throw
+      throw error;
+    }
+  },
+};
+
+export { coursesService };
+

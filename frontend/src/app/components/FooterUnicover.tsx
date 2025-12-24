@@ -1,13 +1,14 @@
 import { Facebook, Instagram, Youtube, MapPin, Phone, Mail, Building2, GraduationCap } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export function FooterUnicover() {
   const currentYear = new Date().getFullYear();
 
   const constructionLinks = [
-    { name: 'О направлении', href: '#construction-about' },
-    { name: 'Лицензии', href: '#licenses' },
-    { name: 'Выполненные работы', href: '#projects' },
-    { name: 'Партнеры', href: '#partners' },
+    { name: 'О компании', href: '/construction/about', isLink: true },
+    { name: 'Лицензии', href: '/construction/licenses', isLink: true },
+    { name: 'Выполненные работы', href: '/construction', isLink: true },
+    { name: 'Партнеры', href: '#partners', isLink: false },
   ];
 
   const educationLinks = [
@@ -73,9 +74,15 @@ export function FooterUnicover() {
             <ul className="space-y-3">
               {constructionLinks.map((link, index) => (
                 <li key={index}>
-                  <a href={link.href} className="text-sm hover:text-blue-400 transition-colors">
-                    {link.name}
-                  </a>
+                  {link.isLink ? (
+                    <Link to={link.href} className="text-sm hover:text-blue-400 transition-colors">
+                      {link.name}
+                    </Link>
+                  ) : (
+                    <a href={link.href} className="text-sm hover:text-blue-400 transition-colors">
+                      {link.name}
+                    </a>
+                  )}
                 </li>
               ))}
             </ul>

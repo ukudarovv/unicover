@@ -1,0 +1,41 @@
+{
+  "common": {
+    "home": "Home",
+    "about": "About",
+    "contacts": "Contacts",
+    "login": "Login",
+    "logout": "Logout",
+    "register": "Register",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  },
+  "construction": {
+    "title": "Construction",
+    "about": "About Company",
+    "licenses": "Licenses",
+    "projects": "Projects and Works",
+    "partners": "Partners"
+  },
+  "education": {
+    "title": "Education Center",
+    "about": "About Center",
+    "programs": "Training Programs",
+    "online": "Online Learning",
+    "cabinet": "Personal Cabinet"
+  },
+  "contacts": {
+    "title": "Contact Us",
+    "address": "Address",
+    "phone": "Phones",
+    "email": "Email",
+    "workingHours": "Working Hours"
+  }
+}
+

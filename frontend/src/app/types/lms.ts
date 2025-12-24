@@ -115,6 +115,7 @@ export interface Course {
   pdekCommission?: string; // Frontend format (for compatibility)
   status: CourseStatus;
   progress?: number; // процент (для enrollment)
+  enrollment_status?: CourseStatus; // Статус enrollment (для with_progress endpoint)
   created_at?: string;
   updated_at?: string;
 }
@@ -130,23 +131,33 @@ export interface Module {
 
 export interface Lesson {
   id: string;
-  moduleId: string;
+  moduleId?: string; // Опционально, так как может приходить из API без этого поля
   title: string;
   description?: string;
   type: 'text' | 'video' | 'pdf' | 'quiz';
   content?: string;
   videoUrl?: string;
+  video_url?: string; // Backend format
   thumbnailUrl?: string;
+  thumbnail_url?: string; // Backend format
   pdfUrl?: string;
+  pdf_url?: string; // Backend format
   testId?: string;
+  test_id?: string; // Backend format
   duration?: number; // минуты
   order: number;
-  completed: boolean;
+  completed?: boolean; // Опционально, так как может не приходить из обычного API
   required?: boolean;
   allowDownload?: boolean;
+  allow_download?: boolean; // Backend format
   trackProgress?: boolean;
+  track_progress?: boolean; // Backend format
   passingScore?: number;
+  passing_score?: number; // Backend format
   maxAttempts?: number;
+  max_attempts?: number; // Backend format
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Test {
@@ -183,15 +194,21 @@ export interface Question {
 
 export interface TestAttempt {
   id: string;
-  testId: string;
-  userId: string;
-  startedAt: Date;
-  completedAt?: Date;
+  test?: Test | string; // Backend может вернуть объект или ID
+  testId?: string; // Frontend format
+  user?: any; // Backend может вернуть объект пользователя
+  userId?: string; // Frontend format
+  started_at?: string; // Backend format (ISO string)
+  startedAt?: Date | string; // Frontend format
+  completed_at?: string; // Backend format (ISO string)
+  completedAt?: Date | string; // Frontend format
   score?: number;
   passed?: boolean;
-  answers: Answer[];
-  ipAddress?: string;
-  userAgent?: string;
+  answers?: Record<string, any> | Answer[]; // Backend возвращает Record, frontend может использовать Answer[]
+  ip_address?: string; // Backend format
+  ipAddress?: string; // Frontend format
+  user_agent?: string; // Backend format
+  userAgent?: string; // Frontend format
 }
 
 export interface Answer {

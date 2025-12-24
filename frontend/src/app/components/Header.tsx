@@ -2,12 +2,21 @@ import { Menu, X, Mail, MapPin, Phone, User, Building2, GraduationCap, LogOut } 
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
+import { useTranslation } from 'react-i18next';
 
 export function Header() {
   const navigate = useNavigate();
   const { user: currentUser, logout } = useUser();
+  const { i18n, t } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [language, setLanguage] = useState<'Русский' | 'Қазақша' | 'English'>('Русский');
+  const [language, setLanguage] = useState<string>(i18n.language || 'ru');
+
+  useEffect(() => {
+    // Sync language state with i18n
+    const currentLang = i18n.language || localStorage.getItem('language') || 'ru';
+    setLanguage(currentLang);
+    i18n.changeLanguage(currentLang);
+  }, [i18n]);
 
   const handleLogout = async () => {
     try {
@@ -63,22 +72,34 @@ export function Header() {
             {/* Language Selector */}
             <div className="flex items-center gap-2">
               <button
-                onClick={() => setLanguage('Русский')}
-                className={`text-xs px-3 py-1 rounded ${language === 'Русский' ? 'bg-blue-600 text-white' : 'hover:text-blue-300'}`}
+                onClick={() => {
+                  i18n.changeLanguage('ru');
+                  setLanguage('ru');
+                  localStorage.setItem('language', 'ru');
+                }}
+                className={`text-xs px-3 py-1 rounded ${language === 'ru' ? 'bg-blue-600 text-white' : 'hover:text-blue-300'}`}
               >
                 Русский
               </button>
               <span className="text-gray-400">|</span>
               <button
-                onClick={() => setLanguage('Қазақша')}
-                className={`text-xs px-3 py-1 rounded ${language === 'Қазақша' ? 'bg-blue-600 text-white' : 'hover:text-blue-300'}`}
+                onClick={() => {
+                  i18n.changeLanguage('kz');
+                  setLanguage('kz');
+                  localStorage.setItem('language', 'kz');
+                }}
+                className={`text-xs px-3 py-1 rounded ${language === 'kz' ? 'bg-blue-600 text-white' : 'hover:text-blue-300'}`}
               >
                 Қазақша
               </button>
               <span className="text-gray-400">|</span>
               <button
-                onClick={() => setLanguage('English')}
-                className={`text-xs px-3 py-1 rounded ${language === 'English' ? 'bg-blue-600 text-white' : 'hover:text-blue-300'}`}
+                onClick={() => {
+                  i18n.changeLanguage('en');
+                  setLanguage('en');
+                  localStorage.setItem('language', 'en');
+                }}
+                className={`text-xs px-3 py-1 rounded ${language === 'en' ? 'bg-blue-600 text-white' : 'hover:text-blue-300'}`}
               >
                 English
               </button>
@@ -106,27 +127,33 @@ export function Header() {
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-6">
             <Link to="/" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
-              Главная
+              {t('common.home')}
             </Link>
             <a href="/#about" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
-              О компании
+              {t('common.about')}
             </a>
             
             {/* Construction Dropdown */}
             <div className="relative group">
               <button className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition-colors font-medium">
                 <Building2 className="w-4 h-4" />
-                Строительство
+                {t('common.construction')}
               </button>
               <div className="absolute top-full left-0 mt-2 w-64 bg-white shadow-xl rounded-lg py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                <a href="/#construction" className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                  О направлении
-                </a>
+                <Link to="/construction/about" className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                  {t('construction.about')}
+                </Link>
+                <Link to="/construction/licenses" className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                  {t('construction.licenses')}
+                </Link>
                 <Link to="/construction" className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                  Проекты и работы
+                  {t('construction.projects')}
+                </Link>
+                <Link to="/construction/vacancies" className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                  Вакансии
                 </Link>
                 <a href="/#partners" className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                  Партнеры
+                  {t('construction.partners')}
                 </a>
               </div>
             </div>
@@ -135,20 +162,20 @@ export function Header() {
             <div className="relative group">
               <button className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition-colors font-medium">
                 <GraduationCap className="w-4 h-4" />
-                Учебный центр
+                {t('common.education')}
               </button>
               <div className="absolute top-full left-0 mt-2 w-64 bg-white shadow-xl rounded-lg py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
                 <a href="/#education" className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                  О центре
+                  {t('education.about')}
                 </a>
                 <Link to="/education" className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                  Программы обучения
+                  {t('education.programs')}
                 </Link>
               </div>
             </div>
 
             <Link to="/contacts" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
-              Контакты
+              {t('common.contacts')}
             </Link>
             
             {currentUser ? (
@@ -200,9 +227,12 @@ export function Header() {
               </a>
               <div className="border-t border-gray-200 pt-2">
                 <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Строительство</p>
-                <a href="/#construction" className="text-gray-700 hover:text-blue-600 py-2 pl-4 block">
-                  О направлении
-                </a>
+                <Link to="/construction/about" className="text-gray-700 hover:text-blue-600 py-2 pl-4 block">
+                  О компании
+                </Link>
+                <Link to="/construction/licenses" className="text-gray-700 hover:text-blue-600 py-2 pl-4 block">
+                  Лицензии
+                </Link>
                 <Link to="/construction" className="text-gray-700 hover:text-blue-600 py-2 pl-4 block">
                   Проекты и работы
                 </Link>

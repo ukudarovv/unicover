@@ -1,7 +1,13 @@
-import { useState } from 'react';
-import { CheckCircle, Circle, PlayCircle, FileText, Video, Download, ChevronRight, ChevronDown, Lock, ArrowLeft } from 'lucide-react';
-import { Course, Module, Lesson } from '../../types/lms';
+import { useState, useEffect } from 'react';
+import React from 'react';
+import { CheckCircle, Circle, PlayCircle, FileText, Video, Download, ChevronRight, ChevronDown, Lock, ArrowLeft, X, RotateCcw, AlertCircle } from 'lucide-react';
+import { Course, Module, Lesson, Test, Answer, TestAttempt } from '../../types/lms';
 import { Link } from 'react-router-dom';
+import { testsService } from '../../services/tests';
+import { examsService } from '../../services/exams';
+import { TestInterface } from './TestInterface';
+import { TestResultModal } from './TestResultModal';
+import { toast } from 'sonner';
 
 interface CoursePlayerProps {
   course: Course;
@@ -21,6 +27,15 @@ export function CoursePlayer({ course, onLessonComplete, onCourseComplete }: Cou
   const [expandedModules, setExpandedModules] = useState<string[]>(
     courseModules.map(m => m.id)
   );
+  const [showTestModal, setShowTestModal] = useState(false);
+  const [test, setTest] = useState<Test | null>(null);
+  const [testAttemptId, setTestAttemptId] = useState<number | null>(null);
+  const [loadingTest, setLoadingTest] = useState(false);
+  const [testAttempts, setTestAttempts] = useState<TestAttempt[]>([]);
+  const [loadingAttempts, setLoadingAttempts] = useState(false);
+  const [showResultModal, setShowResultModal] = useState(false);
+  const [testResult, setTestResult] = useState<TestAttempt | null>(null);
+  const [testTimeSpent, setTestTimeSpent] = useState(0);
 
   const toggleModule = (moduleId: string) => {
     setExpandedModules(prev =>
@@ -43,6 +58,130 @@ export function CoursePlayer({ course, onLessonComplete, onCourseComplete }: Cou
         onCourseComplete();
       }
     }
+  };
+
+  // Загружаем попытки при выборе урока с тестом
+  useEffect(() => {
+    const loadAttempts = async () => {
+      if (!selectedLesson) return;
+      
+      const testId = selectedLesson.testId || selectedLesson.test_id;
+      if (!testId) {
+        setTestAttempts([]);
+        return;
+      }
+
+      try {
+        setLoadingAttempts(true);
+        const attempts = await examsService.getTestAttempts(String(testId));
+        setTestAttempts(attempts);
+      } catch (error: any) {
+        console.error('Failed to load attempts:', error);
+        setTestAttempts([]);
+      } finally {
+        setLoadingAttempts(false);
+      }
+    };
+
+    loadAttempts();
+  }, [selectedLesson]);
+
+  const handleStartQuiz = async () => {
+    if (!selectedLesson) return;
+    
+    const testId = selectedLesson.testId || selectedLesson.test_id;
+    if (!testId) {
+      toast.error('Тест не привязан к этому уроку');
+      return;
+    }
+
+    try {
+      setLoadingTest(true);
+      // Загружаем тест
+      const loadedTest = await testsService.getTest(String(testId));
+      
+      if (!loadedTest.questions || loadedTest.questions.length === 0) {
+        toast.error('В тесте нет вопросов');
+        setLoadingTest(false);
+        return;
+      }
+
+      // Проверяем количество попыток
+      const maxAttempts = loadedTest.maxAttempts || loadedTest.max_attempts || 3;
+      const attemptsCount = testAttempts.length;
+      
+      if (attemptsCount >= maxAttempts) {
+        toast.error(`Достигнуто максимальное количество попыток (${maxAttempts})`);
+        setLoadingTest(false);
+        return;
+      }
+
+      // Начинаем попытку
+      const attempt = await examsService.startTestAttempt(String(testId));
+      const attemptIdNum = Number(attempt.id);
+      
+      setTest(loadedTest);
+      setTestAttemptId(attemptIdNum);
+      setShowTestModal(true);
+      
+      // Сохраняем attemptId в localStorage для автосохранения
+      localStorage.setItem(`test_${testId}_progress`, JSON.stringify({
+        attemptId: attemptIdNum,
+      }));
+    } catch (error: any) {
+      toast.error(error.message || 'Ошибка при загрузке теста');
+      console.error('Failed to start quiz:', error);
+    } finally {
+      setLoadingTest(false);
+    }
+  };
+
+  const handleTestComplete = async (answers: Answer[], timeSpent: number) => {
+    if (!test || !testAttemptId) return;
+
+    try {
+      // Отправляем ответы на сервер
+      const answersData: Record<string, any> = {};
+      answers.forEach(answer => {
+        answersData[answer.questionId] = answer.answer;
+      });
+
+      await examsService.saveTestAttempt(String(testAttemptId), answersData);
+      const result = await examsService.submitTestAttempt(String(testAttemptId));
+
+      // Удаляем сохраненный прогресс
+      localStorage.removeItem(`test_${test.id}_progress`);
+
+      // Сохраняем результат и время
+      setTestResult(result);
+      setTestTimeSpent(timeSpent);
+
+      // Обновляем список попыток
+      const updatedAttempts = await examsService.getTestAttempts(test.id);
+      setTestAttempts(updatedAttempts);
+
+      // Закрываем модальное окно теста
+      setShowTestModal(false);
+      setTest(null);
+      setTestAttemptId(null);
+
+      // Показываем модальное окно результатов
+      setShowResultModal(true);
+
+      // Автоматически отмечаем урок как завершенный, если тест пройден
+      if (result.passed) {
+        handleLessonComplete();
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Ошибка при завершении теста');
+      console.error('Failed to complete test:', error);
+    }
+  };
+
+  const handleTestCancel = () => {
+    setShowTestModal(false);
+    setTest(null);
+    setTestAttemptId(null);
   };
 
   const getNextLesson = (): Lesson | null => {
@@ -73,7 +212,7 @@ export function CoursePlayer({ course, onLessonComplete, onCourseComplete }: Cou
   const completedLessonsCount = courseModules.reduce(
     (count, module) => {
       const moduleLessons = module.lessons && Array.isArray(module.lessons) ? module.lessons : [];
-      return count + moduleLessons.filter(l => l.completed).length;
+      return count + moduleLessons.filter(l => l.completed === true).length;
     },
     0
   );
@@ -84,6 +223,10 @@ export function CoursePlayer({ course, onLessonComplete, onCourseComplete }: Cou
     },
     0
   );
+  
+  // Используем прогресс из enrollment, если он есть, иначе вычисляем
+  const courseProgress = course.progress !== undefined ? course.progress : 
+    (totalLessonsCount > 0 ? Math.round((completedLessonsCount / totalLessonsCount) * 100) : 0);
 
   return (
     <div className="min-h-screen bg-gray-50 pt-20">
@@ -117,8 +260,11 @@ export function CoursePlayer({ course, onLessonComplete, onCourseComplete }: Cou
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div 
                 className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${course.progress}%` }}
+                style={{ width: `${courseProgress}%` }}
               />
+            </div>
+            <div className="text-xs text-gray-500 mt-1 text-right">
+              {courseProgress}% завершено
             </div>
           </div>
         </div>
@@ -132,6 +278,9 @@ export function CoursePlayer({ course, onLessonComplete, onCourseComplete }: Cou
               <div className="space-y-2">
                 {courseModules.map(module => {
                   const moduleLessons = module.lessons && Array.isArray(module.lessons) ? module.lessons : [];
+                  // Модуль считается завершенным, если все его уроки завершены
+                  const isModuleCompleted = moduleLessons.length > 0 && 
+                    moduleLessons.every(lesson => lesson.completed === true);
                   return (
                     <div key={module.id}>
                       <button
@@ -139,7 +288,7 @@ export function CoursePlayer({ course, onLessonComplete, onCourseComplete }: Cou
                         className="w-full flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors"
                       >
                         <div className="flex items-center gap-2 flex-1">
-                          {module.completed ? (
+                          {isModuleCompleted ? (
                             <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
                           ) : (
                             <Circle className="w-5 h-5 text-gray-400 flex-shrink-0" />
@@ -174,7 +323,7 @@ export function CoursePlayer({ course, onLessonComplete, onCourseComplete }: Cou
                               >
                                 {isLocked ? (
                                   <Lock className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                                ) : lesson.completed ? (
+                                ) : lesson.completed === true ? (
                                   <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
                                 ) : (
                                   <Circle className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
@@ -221,12 +370,8 @@ export function CoursePlayer({ course, onLessonComplete, onCourseComplete }: Cou
                 {/* Lesson Content */}
                 <div className="p-8">
                   {selectedLesson.type === 'video' && (
-                    <div className="aspect-video bg-gray-900 rounded-lg mb-6 flex items-center justify-center">
-                      <div className="text-center text-white">
-                        <PlayCircle className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                        <p className="text-sm">Видео плеер (демо)</p>
-                        <p className="text-xs opacity-70 mt-2">{selectedLesson.videoUrl}</p>
-                      </div>
+                    <div className="mb-6">
+                      {getVideoPlayer(selectedLesson)}
                     </div>
                   )}
 
@@ -269,16 +414,105 @@ export function CoursePlayer({ course, onLessonComplete, onCourseComplete }: Cou
                       <p className="text-gray-600 mb-4">
                         Ответьте на вопросы для проверки усвоения материала модуля.
                       </p>
-                      <button className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                        Начать тест
+                      
+                      {/* Информация о попытках */}
+                      {selectedLesson.testId || selectedLesson.test_id ? (
+                        <>
+                          {loadingAttempts ? (
+                            <div className="text-sm text-gray-500 mb-4">Загрузка информации о попытках...</div>
+                          ) : (
+                            <div className="mb-4 p-3 bg-white rounded-lg border border-blue-100">
+                              <div className="flex items-center gap-2 text-sm text-gray-700">
+                                <RotateCcw className="w-4 h-4 text-gray-400" />
+                                <span>
+                                  Попыток использовано: <strong>{testAttempts.length}</strong> из{' '}
+                                  <strong>
+                                    {(() => {
+                                      // Пытаемся получить max_attempts из теста, если он уже загружен
+                                      if (test && (test.maxAttempts || test.max_attempts)) {
+                                        return test.maxAttempts || test.max_attempts;
+                                      }
+                                      // Иначе используем значение по умолчанию
+                                      return 3;
+                                    })()}
+                                  </strong>
+                                </span>
+                              </div>
+                              {testAttempts.length > 0 && (
+                                <div className="mt-2 text-xs text-gray-500">
+                                  Последняя попытка:{' '}
+                                  {(() => {
+                                    const lastAttempt = testAttempts[0];
+                                    const completedDate = lastAttempt.completed_at || lastAttempt.completedAt;
+                                    const startedDate = lastAttempt.started_at || lastAttempt.startedAt;
+                                    
+                                    if (completedDate) {
+                                      try {
+                                        const date = typeof completedDate === 'string' ? new Date(completedDate) : completedDate;
+                                        return date.toLocaleDateString('ru-RU');
+                                      } catch {
+                                        return '—';
+                                      }
+                                    } else if (startedDate) {
+                                      try {
+                                        const date = typeof startedDate === 'string' ? new Date(startedDate) : startedDate;
+                                        return date.toLocaleDateString('ru-RU');
+                                      } catch {
+                                        return '—';
+                                      }
+                                    }
+                                    return '—';
+                                  })()}
+                                  {testAttempts[0].score !== undefined && testAttempts[0].score !== null && (
+                                    <span className="ml-2">
+                                      (Результат: {Number(testAttempts[0].score).toFixed(1)}%)
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          
+                          {testAttempts.length >= (test?.maxAttempts || test?.max_attempts || 3) && (
+                            <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                              <div className="flex items-start gap-2">
+                                <AlertCircle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
+                                <div className="text-sm text-orange-800">
+                                  <p className="font-medium mb-1">Все попытки использованы</p>
+                                  <p className="text-xs">
+                                    Обратитесь к администратору для получения дополнительных попыток.
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      ) : null}
+                      
+                      <button 
+                        onClick={handleStartQuiz}
+                        disabled={
+                          loadingTest || 
+                          loadingAttempts ||
+                          (!selectedLesson.testId && !selectedLesson.test_id) ||
+                          (testAttempts.length >= (test?.maxAttempts || test?.max_attempts || 3))
+                        }
+                        className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {loadingTest ? 'Загрузка теста...' : 'Начать тест'}
                       </button>
+                      {!selectedLesson.testId && !selectedLesson.test_id && (
+                        <p className="text-sm text-red-600 mt-2">
+                          Тест не привязан к этому уроку
+                        </p>
+                      )}
                     </div>
                   )}
 
                   {/* Action Buttons */}
                   <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-200">
                     <div>
-                      {selectedLesson.completed && (
+                      {selectedLesson.completed === true && (
                         <div className="flex items-center gap-2 text-green-600">
                           <CheckCircle className="w-5 h-5" />
                           <span className="font-medium">Урок завершен</span>
@@ -287,7 +521,7 @@ export function CoursePlayer({ course, onLessonComplete, onCourseComplete }: Cou
                     </div>
                     
                     <div className="flex gap-3">
-                      {!selectedLesson.completed && (
+                      {selectedLesson.completed !== true && (
                         <button
                           onClick={handleLessonComplete}
                           className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition-colors"
@@ -319,6 +553,62 @@ export function CoursePlayer({ course, onLessonComplete, onCourseComplete }: Cou
           </div>
         </div>
       </div>
+
+      {/* Test Modal */}
+      {showTestModal && test && testAttemptId && (
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-30 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
+          <div className="bg-white rounded-lg shadow-2xl ring-4 ring-white ring-opacity-50 max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white">
+              <h2 className="text-xl font-bold text-gray-900">Проверочный тест</h2>
+              <button
+                onClick={handleTestCancel}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              <TestInterface
+                testId={test.id}
+                attemptId={testAttemptId}
+                title={test.title}
+                timeLimit={test.timeLimit || test.time_limit || 30}
+                questions={test.questions || []}
+                onComplete={handleTestComplete}
+                onCancel={handleTestCancel}
+                inModal={true}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Test Result Modal */}
+      {showResultModal && test && testResult && (
+        <TestResultModal
+          test={test}
+          result={testResult}
+          attemptsUsed={testAttempts.length}
+          attemptsTotal={test.maxAttempts || test.max_attempts || 3}
+          timeSpent={testTimeSpent}
+          onClose={() => {
+            setShowResultModal(false);
+            setTestResult(null);
+            setTestTimeSpent(0);
+          }}
+          onRetry={() => {
+            setShowResultModal(false);
+            setTestResult(null);
+            setTestTimeSpent(0);
+            handleStartQuiz();
+          }}
+          onBackToCourse={() => {
+            setShowResultModal(false);
+            setTestResult(null);
+            setTestTimeSpent(0);
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -365,4 +655,62 @@ function getCategoryName(category: any): string {
   }
   
   return '—';
+}
+
+function getYouTubeVideoId(url: string): string | null {
+  if (!url) return null;
+  
+  // Различные форматы YouTube URL
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+    /youtube\.com\/watch\?.*v=([^&\n?#]+)/,
+  ];
+  
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match && match[1]) {
+      return match[1];
+    }
+  }
+  
+  return null;
+}
+
+function getVideoPlayer(lesson: Lesson): React.ReactElement {
+  const videoUrl = lesson.videoUrl || lesson.video_url || '';
+  const youtubeVideoId = getYouTubeVideoId(videoUrl);
+  
+  if (youtubeVideoId) {
+    // YouTube embed URL
+    const embedUrl = `https://www.youtube.com/embed/${youtubeVideoId}?rel=0&modestbranding=1`;
+    
+    return (
+      <div className="aspect-video bg-gray-900 rounded-lg overflow-hidden shadow-lg">
+        <iframe
+          src={embedUrl}
+          title={lesson.title}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          className="w-full h-full"
+          style={{ minHeight: '400px' }}
+        />
+      </div>
+    );
+  }
+  
+  // Если это не YouTube URL или URL не распознан, показываем демо
+  return (
+    <div className="aspect-video bg-gray-900 rounded-lg mb-6 flex items-center justify-center">
+      <div className="text-center text-white">
+        <PlayCircle className="w-16 h-16 mx-auto mb-4 opacity-50" />
+        <p className="text-sm">Видео плеер (демо)</p>
+        {videoUrl && (
+          <p className="text-xs opacity-70 mt-2 break-all px-4">{videoUrl}</p>
+        )}
+        {!videoUrl && (
+          <p className="text-xs opacity-70 mt-2">URL видео не указан</p>
+        )}
+      </div>
+    </div>
+  );
 }

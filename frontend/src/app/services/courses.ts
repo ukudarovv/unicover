@@ -97,6 +97,53 @@ const coursesService = {
     return data as Course;
   },
 
+  async getCourseWithProgress(id: string): Promise<Course> {
+    const data = await apiClient.get<any>(`/courses/${id}/with_progress/`);
+    console.log('Course with progress API response:', data);
+    
+    // Обрабатываем модули и уроки, если они есть
+    if (data && typeof data === 'object') {
+      // Убеждаемся, что modules - это массив
+      if (data.modules && !Array.isArray(data.modules)) {
+        console.warn('Modules is not an array, converting:', data.modules);
+        data.modules = [];
+      }
+      
+      // Обрабатываем каждый модуль
+      if (Array.isArray(data.modules)) {
+        data.modules = data.modules.map((module: any) => {
+          // Убеждаемся, что lessons - это массив
+          if (module.lessons && !Array.isArray(module.lessons)) {
+            console.warn('Module lessons is not an array, converting:', module.lessons);
+            module.lessons = [];
+          }
+          
+          // Преобразуем поля уроков из backend формата в frontend формат
+          if (Array.isArray(module.lessons)) {
+            module.lessons = module.lessons.map((lesson: any) => {
+              return {
+                ...lesson,
+                videoUrl: lesson.video_url || lesson.videoUrl,
+                thumbnailUrl: lesson.thumbnail_url || lesson.thumbnailUrl,
+                pdfUrl: lesson.pdf_url || lesson.pdfUrl,
+                testId: lesson.test_id || lesson.testId,
+                passingScore: lesson.passing_score || lesson.passingScore,
+                maxAttempts: lesson.max_attempts || lesson.maxAttempts,
+                allowDownload: lesson.allow_download !== undefined ? lesson.allow_download : lesson.allowDownload,
+                trackProgress: lesson.track_progress !== undefined ? lesson.track_progress : lesson.trackProgress,
+                completed: lesson.completed !== undefined ? lesson.completed : false, // Сохраняем статус completed из backend
+              };
+            });
+          }
+          
+          return module;
+        });
+      }
+    }
+    
+    return data as Course;
+  },
+
   async createCourse(course: Partial<Course>): Promise<Course> {
     // Convert frontend format to backend format
     // Обрабатываем category: если это объект, берем id, иначе используем categoryId или category
@@ -276,8 +323,9 @@ const coursesService = {
     await apiClient.post(`/courses/${courseId}/enroll/`, { user_ids: userIds });
   },
 
-  async completeLesson(lessonId: string): Promise<void> {
-    await apiClient.post(`/lessons/${lessonId}/complete/`);
+  async completeLesson(lessonId: string): Promise<{ progress: number }> {
+    const response = await apiClient.post<{ message: string; progress: number }>(`/lessons/${lessonId}/complete/`);
+    return { progress: response.progress || 0 };
   },
 
   async getMyEnrollments(): Promise<CourseEnrollment[]> {

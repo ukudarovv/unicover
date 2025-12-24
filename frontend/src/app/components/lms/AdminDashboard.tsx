@@ -1,12 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Users, BookOpen, FileQuestion, Award, Settings, TrendingUp, Plus, Search, Filter, Download, Edit, Trash2, Eye, X, CheckCircle, XCircle, UserPlus, Tag } from 'lucide-react';
+import { Users, BookOpen, FileQuestion, Award, Settings, TrendingUp, Plus, Search, Filter, Download, Edit, Trash2, Eye, X, CheckCircle, XCircle, UserPlus, Tag, FileText, Mail } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { CourseEditor } from '../admin/CourseEditor';
 import { TestEditor } from '../admin/TestEditor';
 import { UserEditor } from '../admin/UserEditor';
 import { UserManagement } from '../admin/UserManagement';
+import { LicenseManagement } from '../admin/LicenseManagement';
+import { LicenseEditor } from '../admin/LicenseEditor';
+import { ContactManagement } from '../admin/ContactManagement';
 import { AddStudentsToCourseModal } from '../admin/AddStudentsToCourseModal';
 import { Course, Test, User } from '../../types/lms';
+import { License, licensesService } from '../../services/licenses';
 import { useAnalytics, useEnrollmentTrend, useTestResultsDistribution, useCoursesPopularity, useTopStudents } from '../../hooks/useAnalytics';
 import { useCourses } from '../../hooks/useCourses';
 import { useTests } from '../../hooks/useTests';
@@ -34,15 +38,17 @@ function getStatusText(status: string): string {
 }
 
 export function AdminDashboard() {
-  const [activeSection, setActiveSection] = useState<'overview' | 'courses' | 'users' | 'tests' | 'reports' | 'categories'>('overview');
+  const [activeSection, setActiveSection] = useState<'overview' | 'courses' | 'users' | 'tests' | 'reports' | 'categories' | 'licenses' | 'contacts'>('overview');
   const [showCourseEditor, setShowCourseEditor] = useState(false);
   const [showTestEditor, setShowTestEditor] = useState(false);
   const [showUserEditor, setShowUserEditor] = useState(false);
+  const [showLicenseEditor, setShowLicenseEditor] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [selectedCourseForStudents, setSelectedCourseForStudents] = useState<any>(null);
   const [coursesRefetch, setCoursesRefetch] = useState<(() => void) | null>(null);
   const [testsRefetch, setTestsRefetch] = useState<(() => void) | null>(null);
   const [usersRefreshTrigger, setUsersRefreshTrigger] = useState(0);
+  const [licensesRefreshTrigger, setLicensesRefreshTrigger] = useState(0);
 
   const handleCreateCourse = () => {
     setEditingItem(null);
@@ -133,6 +139,34 @@ export function AdminDashboard() {
   const handleEditUser = (user: any) => {
     setEditingItem(user);
     setShowUserEditor(true);
+  };
+
+  const handleCreateLicense = () => {
+    setEditingItem(null);
+    setShowLicenseEditor(true);
+  };
+
+  const handleEditLicense = (license: License) => {
+    setEditingItem(license);
+    setShowLicenseEditor(true);
+  };
+
+  const handleSaveLicense = async (license: Partial<License>, file?: File) => {
+    try {
+      if (editingItem) {
+        await licensesService.updateLicense(editingItem.id, license, file);
+        toast.success('Лицензия успешно обновлена');
+      } else {
+        await licensesService.createLicense(license, file);
+        toast.success('Лицензия успешно создана');
+      }
+      setShowLicenseEditor(false);
+      setEditingItem(null);
+      setLicensesRefreshTrigger(prev => prev + 1);
+    } catch (error: any) {
+      toast.error(`Ошибка сохранения лицензии: ${error.message || 'Неизвестная ошибка'}`);
+      console.error('Failed to save license:', error);
+    }
   };
 
   const handleSaveUser = async (user: Partial<User & { password?: string }>) => {
@@ -255,6 +289,28 @@ export function AdminDashboard() {
                   <Tag className="w-5 h-5" />
                   <span className="font-medium">Категории</span>
                 </button>
+                <button
+                  onClick={() => setActiveSection('licenses')}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    activeSection === 'licenses'
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <FileText className="w-5 h-5" />
+                  <span className="font-medium">Лицензии</span>
+                </button>
+                <button
+                  onClick={() => setActiveSection('contacts')}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    activeSection === 'contacts'
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <Mail className="w-5 h-5" />
+                  <span className="font-medium">Обратная связь</span>
+                </button>
               </nav>
             </div>
           </div>
@@ -291,6 +347,16 @@ export function AdminDashboard() {
             )}
             {activeSection === 'reports' && <ReportsSection />}
             {activeSection === 'categories' && <CategoriesSection />}
+            {activeSection === 'licenses' && (
+              <LicenseManagement
+                onCreate={handleCreateLicense}
+                onEdit={handleEditLicense}
+                refreshTrigger={licensesRefreshTrigger}
+              />
+            )}
+            {activeSection === 'contacts' && (
+              <ContactManagement />
+            )}
           </div>
         </div>
       </div>
@@ -317,6 +383,17 @@ export function AdminDashboard() {
           user={editingItem}
           onSave={handleSaveUser}
           onCancel={() => setShowUserEditor(false)}
+        />
+      )}
+
+      {showLicenseEditor && (
+        <LicenseEditor
+          license={editingItem}
+          onSave={handleSaveLicense}
+          onCancel={() => {
+            setShowLicenseEditor(false);
+            setEditingItem(null);
+          }}
         />
       )}
     </div>

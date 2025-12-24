@@ -49,15 +49,20 @@ class ApiClient {
 
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit & { responseType?: 'json' | 'blob' } = {}
   ): Promise<T> {
     const url = this.buildURL(endpoint);
     const token = this.getToken();
+    const { responseType, ...fetchOptions } = options;
 
     const headers: HeadersInit = {
-      'Content-Type': 'application/json',
       ...options.headers,
     };
+
+    // Don't set Content-Type for FormData (browser will set it automatically with boundary)
+    if (!(options.body instanceof FormData)) {
+      headers['Content-Type'] = 'application/json';
+    }
 
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
@@ -65,9 +70,22 @@ class ApiClient {
 
     try {
       const response = await fetch(url, {
-        ...options,
+        ...fetchOptions,
         headers,
       });
+
+      // Handle blob responses
+      if (responseType === 'blob') {
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new ApiError(
+            errorData.detail || errorData.message || `HTTP ${response.status}`,
+            response.status,
+            errorData
+          );
+        }
+        return response.blob() as Promise<T>;
+      }
 
       // Handle empty responses
       const contentType = response.headers.get('content-type');
@@ -133,7 +151,7 @@ class ApiClient {
     }
   }
 
-  async get<T>(endpoint: string, params?: Record<string, any>): Promise<T> {
+  async get<T>(endpoint: string, params?: Record<string, any>, options?: { responseType?: 'json' | 'blob' }): Promise<T> {
     let url = endpoint;
     if (params) {
       const searchParams = new URLSearchParams();
@@ -147,20 +165,26 @@ class ApiClient {
         url += `?${queryString}`;
       }
     }
-    return this.request<T>(url, { method: 'GET' });
+    return this.request<T>(url, { method: 'GET', responseType: options?.responseType });
   }
 
-  async post<T>(endpoint: string, data?: any): Promise<T> {
+  async post<T>(endpoint: string, data?: any, options?: { headers?: HeadersInit }): Promise<T> {
+    // If data is FormData, send it directly, otherwise stringify JSON
+    const body = data instanceof FormData ? data : (data ? JSON.stringify(data) : undefined);
     return this.request<T>(endpoint, {
       method: 'POST',
-      body: data ? JSON.stringify(data) : undefined,
+      body,
+      headers: options?.headers,
     });
   }
 
-  async put<T>(endpoint: string, data?: any): Promise<T> {
+  async put<T>(endpoint: string, data?: any, options?: { headers?: HeadersInit }): Promise<T> {
+    // If data is FormData, send it directly, otherwise stringify JSON
+    const body = data instanceof FormData ? data : (data ? JSON.stringify(data) : undefined);
     return this.request<T>(endpoint, {
       method: 'PUT',
-      body: data ? JSON.stringify(data) : undefined,
+      body,
+      headers: options?.headers,
     });
   }
 

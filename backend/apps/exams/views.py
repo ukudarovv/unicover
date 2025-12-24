@@ -158,6 +158,32 @@ class TestAttemptViewSet(viewsets.ModelViewSet):
         serializer = TestAttemptSerializer(attempts, many=True)
         return Response(serializer.data)
     
+    @action(detail=False, methods=['get'])
+    def test_attempts(self, request):
+        """Get user's attempts for a specific test"""
+        test_id = request.query_params.get('test_id')
+        if not test_id:
+            return Response(
+                {'error': 'test_id required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            test = Test.objects.get(id=test_id)
+        except Test.DoesNotExist:
+            return Response(
+                {'error': 'Test not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        attempts = TestAttempt.objects.filter(
+            user=request.user,
+            test=test
+        ).select_related('test').order_by('-started_at')
+        
+        serializer = TestAttemptSerializer(attempts, many=True)
+        return Response(serializer.data)
+    
     def _get_client_ip(self, request):
         """Get client IP address"""
         x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')

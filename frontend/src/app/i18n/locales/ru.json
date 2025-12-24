@@ -1,0 +1,43 @@
+{
+  "common": {
+    "home": "Главная",
+    "about": "О компании",
+    "contacts": "Контакты",
+    "login": "Войти",
+    "logout": "Выйти",
+    "register": "Регистрация",
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "delete": "Удалить",
+    "edit": "Редактировать",
+    "create": "Создать",
+    "search": "Поиск",
+    "loading": "Загрузка...",
+    "error": "Ошибка",
+    "success": "Успешно",
+    "construction": "Строительство",
+    "education": "Учебный центр"
+  },
+  "construction": {
+    "title": "Строительное направление",
+    "about": "О компании",
+    "licenses": "Лицензии",
+    "projects": "Проекты и работы",
+    "partners": "Партнеры"
+  },
+  "education": {
+    "title": "Учебный центр",
+    "about": "О центре",
+    "programs": "Программы обучения",
+    "online": "Онлайн обучение",
+    "cabinet": "Личный кабинет"
+  },
+  "contacts": {
+    "title": "Свяжитесь с нами",
+    "address": "Адрес",
+    "phone": "Телефоны",
+    "email": "Email",
+    "workingHours": "Режим работы"
+  }
+}
+

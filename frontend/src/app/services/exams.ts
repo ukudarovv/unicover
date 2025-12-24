@@ -47,6 +47,31 @@ const examsService = {
     return [];
   },
 
+  async getTestAttempts(testId: string): Promise<TestAttempt[]> {
+    const data = await apiClient.get<any>(`/exams/test_attempts/?test_id=${testId}`);
+    
+    // Backend возвращает массив попыток
+    if (Array.isArray(data)) {
+      return data;
+    }
+    
+    // Проверяем пагинированный ответ Django REST Framework
+    if (data && typeof data === 'object') {
+      if (Array.isArray(data.results)) {
+        return data.results;
+      }
+      if (Array.isArray(data.data)) {
+        return data.data;
+      }
+      if (Array.isArray(data.attempts)) {
+        return data.attempts;
+      }
+    }
+    
+    console.warn('Unexpected response format for test attempts, returning empty array:', data);
+    return [];
+  },
+
   async saveAnswer(attemptId: number, answerData: { question: string; selected_options?: string[]; answer_text?: string }): Promise<void> {
     return apiClient.post(`/exams/${attemptId}/save/`, { answers: { [answerData.question]: answerData.selected_options || answerData.answer_text } });
   },

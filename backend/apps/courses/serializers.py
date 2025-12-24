@@ -18,6 +18,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class LessonSerializer(serializers.ModelSerializer):
     """Lesson serializer"""
+    completed = serializers.BooleanField(read_only=True, required=False)
     
     class Meta:
         model = Lesson
@@ -26,9 +27,9 @@ class LessonSerializer(serializers.ModelSerializer):
             'video_url', 'thumbnail_url', 'pdf_url', 'test_id',
             'duration', 'order', 'required', 'allow_download',
             'track_progress', 'passing_score', 'max_attempts',
-            'created_at', 'updated_at'
+            'completed', 'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'completed']
 
 
 class ModuleSerializer(serializers.ModelSerializer):

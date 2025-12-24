@@ -36,6 +36,10 @@ class UserCreateSerializer(serializers.ModelSerializer):
         
         password = validated_data.pop('password', None)
         
+        # Если роль не указана, устанавливаем 'student' по умолчанию
+        if 'role' not in validated_data or not validated_data.get('role'):
+            validated_data['role'] = 'student'
+        
         # Если пароль не указан, генерируем автоматически
         if not password or not password.strip():
             # Генерируем безопасный пароль: 12 символов, буквы (верхний и нижний регистр), цифры, спецсимволы

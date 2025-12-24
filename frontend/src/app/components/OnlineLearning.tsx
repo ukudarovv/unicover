@@ -1,4 +1,4 @@
-import { Monitor, BookOpen, FileCheck, Clock, Video, Award, User } from 'lucide-react';
+import { Monitor, BookOpen, FileCheck, Clock, Video, Award } from 'lucide-react';
 
 export function OnlineLearning() {
   const features = [
@@ -66,30 +66,6 @@ export function OnlineLearning() {
               </div>
             );
           })}
-        </div>
-
-        {/* Login CTA */}
-        <div className="bg-white text-gray-900 p-8 md:p-12 rounded-2xl max-w-2xl mx-auto text-center">
-          <User className="w-16 h-16 text-blue-600 mx-auto mb-6" />
-          <h3 className="text-2xl font-bold mb-4">Доступ к личному кабинету</h3>
-          <p className="text-gray-600 mb-8">
-            Войдите в систему для доступа к курсам, прохождения тестов и получения сертификатов
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
-              href="#login"
-              className="inline-flex items-center justify-center gap-2 bg-blue-600 text-white px-8 py-4 rounded-lg font-medium hover:bg-blue-700 transition-colors"
-            >
-              <User className="w-5 h-5" />
-              Войти в личный кабинет
-            </a>
-            <a
-              href="#contacts"
-              className="inline-flex items-center justify-center gap-2 border-2 border-blue-600 text-blue-600 px-8 py-4 rounded-lg font-medium hover:bg-blue-50 transition-colors"
-            >
-              Зарегистрироваться
-            </a>
-          </div>
         </div>
       </div>
     </section>

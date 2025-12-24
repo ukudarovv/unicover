@@ -1,6 +1,9 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { HomePage } from './pages/HomePage';
 import { ConstructionPage } from './pages/ConstructionPage';
+import { ConstructionAboutPage } from './pages/ConstructionAboutPage';
+import { ConstructionLicensesPage } from './pages/ConstructionLicensesPage';
+import { VacanciesPage } from './pages/VacanciesPage';
 import { EducationPage } from './pages/EducationPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
@@ -25,6 +28,9 @@ export default function App() {
         {/* Public Routes */}
         <Route path="/" element={<HomePage />} />
         <Route path="/construction" element={<ConstructionPage />} />
+        <Route path="/construction/about" element={<ConstructionAboutPage />} />
+        <Route path="/construction/licenses" element={<ConstructionLicensesPage />} />
+        <Route path="/construction/vacancies" element={<VacanciesPage />} />
         <Route path="/education" element={<EducationPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />

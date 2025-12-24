@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { User, Lock, Phone, Eye, EyeOff, UserCircle } from 'lucide-react';
 import { useUser } from '../contexts/UserContext';
 import { ApiError } from '../services/api';
 
 export function LoginForm() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useUser();
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -48,6 +49,15 @@ export function LoginForm() {
 
     try {
       await login(phone, password);
+      
+      // Проверяем, есть ли параметр returnTo для перенаправления после входа
+      const returnTo = (location.state as any)?.returnTo;
+      
+      if (returnTo) {
+        // Перенаправляем на запрошенную страницу
+        navigate(returnTo);
+        return;
+      }
       
       // Получаем пользователя из localStorage для определения роли
       const userStr = localStorage.getItem('unicover_user');

@@ -77,10 +77,13 @@ export function CourseEditor({ course, onSave, onCancel }: CourseEditorProps) {
     const fetchTests = async () => {
       try {
         setLoadingTests(true);
-        const tests = await testsService.getTests();
+        const response = await testsService.getTests();
+        // testsService.getTests() возвращает PaginatedResponse<Test>
+        const tests = Array.isArray(response) ? response : (response?.results || []);
         setAvailableTests(tests);
       } catch (error) {
         console.error('Failed to fetch tests:', error);
+        setAvailableTests([]);
       } finally {
         setLoadingTests(false);
       }
@@ -443,6 +446,8 @@ export function CourseEditor({ course, onSave, onCancel }: CourseEditorProps) {
           lesson={editingLesson.lesson}
           onSave={(lesson) => handleSaveLesson(editingLesson.moduleId, lesson)}
           onCancel={() => setEditingLesson(null)}
+          availableTests={availableTests}
+          loadingTests={loadingTests}
         />
       )}
     </div>
@@ -454,9 +459,11 @@ interface LessonEditorModalProps {
   lesson: Lesson | null;
   onSave: (lesson: Lesson) => void;
   onCancel: () => void;
+  availableTests?: any[];
+  loadingTests?: boolean;
 }
 
-function LessonEditorModal({ lesson, onSave, onCancel }: LessonEditorModalProps) {
+function LessonEditorModal({ lesson, onSave, onCancel, availableTests = [], loadingTests = false }: LessonEditorModalProps) {
   const [formData, setFormData] = useState<Lesson>(lesson || {
     id: `lesson-${Date.now()}`,
     moduleId: '',
@@ -708,7 +715,7 @@ function LessonEditorModal({ lesson, onSave, onCancel }: LessonEditorModalProps)
                       disabled={loadingTests}
                     >
                       <option value="">-- Выберите тест --</option>
-                      {availableTests.map((test) => (
+                      {Array.isArray(availableTests) && availableTests.map((test) => (
                         <option key={test.id} value={test.id}>
                           {test.title}
                         </option>

@@ -1,6 +1,6 @@
 import { BookOpen, Clock, Award, FileText, TrendingUp, CheckCircle2, AlertCircle, Play } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useCourses } from '../../hooks/useCourses';
+import { useMyEnrollments } from '../../hooks/useMyEnrollments';
 import { useTests } from '../../hooks/useTests';
 import { useNotifications } from '../../hooks/useNotifications';
 import { certificatesService } from '../../services/certificates';
@@ -8,7 +8,7 @@ import { useState, useEffect } from 'react';
 import { Certificate } from '../../types/lms';
 
 export function StudentDashboard() {
-  const { courses, loading: coursesLoading } = useCourses();
+  const { courses, loading: coursesLoading } = useMyEnrollments();
   const { tests, loading: testsLoading } = useTests({ is_active: true });
   const { notifications, loading: notificationsLoading } = useNotifications({ read: false });
   const [certificates, setCertificates] = useState<Certificate[]>([]);
@@ -28,8 +28,8 @@ export function StudentDashboard() {
     fetchCertificates();
   }, []);
 
-  const activeCourses = courses.filter(c => c.status === 'in_progress' || c.status === 'exam_available');
-  const completedCourses = courses.filter(c => c.status === 'completed');
+  const activeCourses = Array.isArray(courses) ? courses.filter(c => c.status === 'in_progress' || c.status === 'exam_available' || c.status === 'assigned') : [];
+  const completedCourses = Array.isArray(courses) ? courses.filter(c => c.status === 'completed' || c.status === 'exam_passed') : [];
   const availableTests = tests.filter(t => t.status === 'available');
   // Защита от случаев, когда notifications не является массивом
   const unreadNotifications = Array.isArray(notifications) ? notifications.filter(n => !n.read) : [];
@@ -129,7 +129,7 @@ export function StudentDashboard() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {activeCourses.map(course => (
+            {activeCourses.length > 0 ? activeCourses.map(course => (
               <div key={course.id} className="bg-white rounded-lg shadow-md overflow-hidden">
                 <div className="p-6">
                   <div className="flex items-start justify-between mb-4">
@@ -146,12 +146,12 @@ export function StudentDashboard() {
                   <div className="mb-4">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm text-gray-600">Прогресс</span>
-                      <span className="text-sm font-semibold text-gray-900">{course.progress}%</span>
+                      <span className="text-sm font-semibold text-gray-900">{course.progress || 0}%</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div 
                         className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${course.progress}%` }}
+                        style={{ width: `${course.progress || 0}%` }}
                       />
                     </div>
                   </div>
@@ -178,7 +178,12 @@ export function StudentDashboard() {
                   </div>
                 </div>
               </div>
-            ))}
+            )) : (
+              <div className="col-span-2 text-center py-8 bg-white rounded-lg shadow-md">
+                <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                <p className="text-gray-600">У вас пока нет активных курсов</p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -264,13 +269,23 @@ export function StudentDashboard() {
   );
 }
 
-function getCategoryName(category: string): string {
-  const names: Record<string, string> = {
-    'industrial_safety': 'Промышленная безопасность',
-    'fire_safety': 'Пожарная безопасность',
-    'electrical_safety': 'Электробезопасность',
-    'labor_protection': 'Охрана труда',
-    'professions': 'Рабочие профессии',
-  };
-  return names[category] || category;
+function getCategoryName(category: any): string {
+  // Если category - объект, извлекаем название
+  if (category && typeof category === 'object') {
+    return category.name || category.name_kz || category.name_en || '—';
+  }
+  
+  // Если category - строка, используем маппинг
+  if (typeof category === 'string') {
+    const names: Record<string, string> = {
+      'industrial_safety': 'Промышленная безопасность',
+      'fire_safety': 'Пожарная безопасность',
+      'electrical_safety': 'Электробезопасность',
+      'labor_protection': 'Охрана труда',
+      'professions': 'Рабочие профессии',
+    };
+    return names[category] || category;
+  }
+  
+  return '—';
 }

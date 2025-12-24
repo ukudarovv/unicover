@@ -49,8 +49,17 @@ const authService = {
     } as LoginResponse;
   },
 
-  async register(data: RegisterData): Promise<User> {
-    const response = await apiClient.post<User>('/auth/register/', data);
+  async register(data: RegisterData): Promise<LoginResponse> {
+    const response = await apiClient.post<LoginResponse>('/auth/register/', data);
+    
+    // Save tokens
+    if (response.access) {
+      apiClient.setToken(response.access);
+    }
+    if (response.refresh) {
+      localStorage.setItem('refresh_token', response.refresh);
+    }
+    
     return response;
   },
 

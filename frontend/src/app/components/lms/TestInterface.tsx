@@ -11,6 +11,7 @@ interface TestInterfaceProps {
   questions: Question[];
   onComplete: (answers: Answer[], timeSpent: number) => void;
   onCancel: () => void;
+  inModal?: boolean; // Флаг для использования в модальном окне
 }
 
 export function TestInterface({ 
@@ -20,7 +21,8 @@ export function TestInterface({
   timeLimit, 
   questions, 
   onComplete, 
-  onCancel 
+  onCancel,
+  inModal = false
 }: TestInterfaceProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Answer[]>(
@@ -167,8 +169,8 @@ export function TestInterface({
   const answeredCount = answers.filter((_, i) => isAnswered(i)).length;
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-20">
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+    <div className={inModal ? "bg-gray-50" : "min-h-screen bg-gray-50 pt-20"}>
+      <div className={inModal ? "px-4 py-4 max-w-6xl" : "container mx-auto px-4 py-8 max-w-6xl"}>
         {/* Header */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
           <div className="flex items-center justify-between mb-4">

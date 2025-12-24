@@ -36,12 +36,12 @@ export function RegisterForm() {
       const response = await authService.register(formData);
       
       // Автоматически логиним пользователя после регистрации
-      if (response.user) {
-        // Пользователь уже сохранен в localStorage через authService
-        const user = response.user;
+      if (response && response.user) {
+        // Обновляем контекст пользователя
+        login(response.user);
         
         // Перенаправляем в зависимости от роли
-        switch (user.role) {
+        switch (response.user.role) {
           case 'student':
             navigate('/student/dashboard');
             break;

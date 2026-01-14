@@ -33,6 +33,8 @@ urlpatterns = [
     path('api/licenses/', include('apps.licenses.urls')),
     path('api/vacancies/', include('apps.vacancies.urls')),
     path('api/contacts/', include('apps.contacts.urls')),
+    path('api/projects/', include('apps.projects.urls')),
+    path('api/', include('apps.partners.urls')),
     path('api/lessons/', include('apps.courses.lesson_urls')),  # For lesson endpoints
 ]
 

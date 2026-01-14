@@ -1,37 +1,40 @@
 import { Building2, Compass, PenTool, Hammer, CheckCircle2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export function ConstructionSection() {
+  const { t } = useTranslation();
+  
   const services = [
     {
       icon: Compass,
-      title: 'Инженерные изыскания',
+      title: t('homepage.construction.services.surveys.title'),
       items: [
-        'Инженерно-геологические исследования',
-        'Инженерно-гидрогеологические работы',
-        'Инженерно-геодезические изыскания',
-        'Высокоточное оборудование',
+        t('homepage.construction.services.surveys.items.geological'),
+        t('homepage.construction.services.surveys.items.hydrogeological'),
+        t('homepage.construction.services.surveys.items.geodetic'),
+        t('homepage.construction.services.surveys.items.equipment'),
       ],
     },
     {
       icon: PenTool,
-      title: 'Проектирование',
+      title: t('homepage.construction.services.design.title'),
       items: [
-        'Технологическое проектирование производственных объектов',
-        'Архитектурное проектирование (I-III уровни ответственности)',
-        'Градостроительное проектирование и планирование',
-        'Проектирование инженерных систем и сетей',
-        'Реконструкция и капитальный ремонт',
+        t('homepage.construction.services.design.items.technological'),
+        t('homepage.construction.services.design.items.architectural'),
+        t('homepage.construction.services.design.items.urban'),
+        t('homepage.construction.services.design.items.engineering'),
+        t('homepage.construction.services.design.items.reconstruction'),
       ],
     },
     {
       icon: Hammer,
-      title: 'Строительно-монтажные работы',
+      title: t('homepage.construction.services.construction.title'),
       items: [
-        'СМР III категории',
-        'Строительство объектов различного назначения',
-        'Монтаж оборудования',
-        'Реконструкция и модернизация',
-        'Соблюдение СНиП и стандартов РК',
+        t('homepage.construction.services.construction.items.category'),
+        t('homepage.construction.services.construction.items.buildings'),
+        t('homepage.construction.services.construction.items.installation'),
+        t('homepage.construction.services.construction.items.modernization'),
+        t('homepage.construction.services.construction.items.standards'),
       ],
     },
   ];
@@ -42,13 +45,13 @@ export function ConstructionSection() {
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-600 px-4 py-2 rounded-full mb-4">
             <Building2 className="w-5 h-5" />
-            <span className="font-medium">Строительное направление</span>
+            <span className="font-medium">{t('homepage.construction.badge')}</span>
           </div>
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Проектирование и строительство
+            {t('homepage.construction.title')}
           </h2>
           <p className="text-gray-600 max-w-3xl mx-auto">
-            Полный цикл работ от инженерных изысканий до ввода объекта в эксплуатацию
+            {t('homepage.construction.description')}
           </p>
         </div>
 
@@ -79,45 +82,44 @@ export function ConstructionSection() {
 
         {/* Licenses Section */}
         <div id="licenses" className="bg-gradient-to-br from-blue-900 to-blue-800 text-white p-8 md:p-12 rounded-2xl">
-          <h3 className="text-2xl md:text-3xl font-bold mb-6 text-center">Лицензии и аттестаты</h3>
+          <h3 className="text-2xl md:text-3xl font-bold mb-6 text-center">{t('homepage.construction.licenses.title')}</h3>
           <p className="text-blue-100 mb-8 text-center max-w-3xl mx-auto">
-            ТОО «Unicover» обладает полным пакетом государственных лицензий и отраслевых аттестатов, 
-            подтверждающих право выполнения работ в следующих областях:
+            {t('homepage.construction.licenses.description')}
           </p>
           
           <div className="grid md:grid-cols-2 gap-6">
             <div className="bg-white/10 backdrop-blur-sm p-6 rounded-xl">
-              <h4 className="font-bold text-lg mb-4">Изыскания и проектирование</h4>
+              <h4 className="font-bold text-lg mb-4">{t('homepage.construction.licenses.surveys.title')}</h4>
               <ul className="space-y-2 text-sm text-blue-100">
                 <li className="flex items-start gap-2">
                   <span className="w-1.5 h-1.5 bg-blue-300 rounded-full mt-1.5"></span>
-                  <span>Лицензия на инженерные изыскания</span>
+                  <span>{t('homepage.construction.licenses.surveys.items.surveys')}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="w-1.5 h-1.5 bg-blue-300 rounded-full mt-1.5"></span>
-                  <span>Лицензия на проектирование</span>
+                  <span>{t('homepage.construction.licenses.surveys.items.design')}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="w-1.5 h-1.5 bg-blue-300 rounded-full mt-1.5"></span>
-                  <span>Архитектурное проектирование I-III уровней</span>
+                  <span>{t('homepage.construction.licenses.surveys.items.architectural')}</span>
                 </li>
               </ul>
             </div>
             
             <div className="bg-white/10 backdrop-blur-sm p-6 rounded-xl">
-              <h4 className="font-bold text-lg mb-4">Строительство</h4>
+              <h4 className="font-bold text-lg mb-4">{t('homepage.construction.licenses.construction.title')}</h4>
               <ul className="space-y-2 text-sm text-blue-100">
                 <li className="flex items-start gap-2">
                   <span className="w-1.5 h-1.5 bg-blue-300 rounded-full mt-1.5"></span>
-                  <span>Лицензия на СМР III категории</span>
+                  <span>{t('homepage.construction.licenses.construction.items.category')}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="w-1.5 h-1.5 bg-blue-300 rounded-full mt-1.5"></span>
-                  <span>Реконструкция и модернизация объектов</span>
+                  <span>{t('homepage.construction.licenses.construction.items.reconstruction')}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="w-1.5 h-1.5 bg-blue-300 rounded-full mt-1.5"></span>
-                  <span>Капитальный ремонт зданий</span>
+                  <span>{t('homepage.construction.licenses.construction.items.repair')}</span>
                 </li>
               </ul>
             </div>

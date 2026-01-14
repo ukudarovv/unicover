@@ -14,28 +14,1389 @@
     "search": "Search",
     "loading": "Loading...",
     "error": "Error",
-    "success": "Success"
+    "success": "Success",
+    "construction": "Construction",
+    "education": "Education Center",
+    "yes": "Yes",
+    "no": "No",
+    "all": "All",
+    "active": "Active",
+    "inactive": "Inactive",
+    "filters": "Filters",
+    "status": "Status",
+    "actions": "Actions",
+    "view": "View",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "confirm": "Confirm",
+    "saving": "Saving...",
+    "upload": "Upload",
+    "download": "Download",
+    "select": "Select",
+    "required": "Required",
+    "optional": "Optional"
+  },
+  "navigation": {
+    "menu": "Menu",
+    "personalCabinet": "Personal Cabinet",
+    "dashboard": "Dashboard",
+    "courses": "Courses",
+    "tests": "Tests",
+    "documents": "Documents",
+    "history": "History",
+    "support": "Support",
+    "partners": "Partners",
+    "projects": "Projects",
+    "vacancies": "Vacancies",
+    "certificateVerification": "Certificate Verification"
+  },
+  "partners": {
+    "title": "Our Partners",
+    "heading": "Partners and Clients",
+    "description": "We are proud of the trust of leading companies in Kazakhstan",
+    "management": "Partner Management",
+    "managementDescription": "Create and edit partners",
+    "addPartner": "Add Partner",
+    "editPartner": "Edit Partner",
+    "createPartner": "Create Partner",
+    "companyName": "Company Name",
+    "companyNamePlaceholder": "Enter company name",
+    "logo": "Logo",
+    "uploadLogo": "Upload Logo",
+    "changeLogo": "Change Logo",
+    "fileSelected": "File Selected",
+    "logoRecommendation": "Recommended size: 200x200px. Formats: JPG, PNG, WEBP",
+    "website": "Website",
+    "websitePlaceholder": "https://example.com",
+    "order": "Display Order",
+    "orderHint": "Lower number = higher in list",
+    "isActive": "Active (displayed on site)",
+    "searchPlaceholder": "Search by name or website...",
+    "noPartners": "No Partners",
+    "noPartnersFiltered": "No partners found matching filters",
+    "noPartnersCreate": "Create the first partner by clicking \"Add Partner\" button",
+    "deleteConfirm": "Are you sure you want to delete this partner?",
+    "deleteSuccess": "Partner successfully deleted",
+    "deleteError": "Error deleting partner",
+    "loadError": "Error loading partners",
+    "saveError": "Error saving partner",
+    "saveSuccess": "Partner successfully saved",
+    "createSuccess": "Partner successfully created",
+    "updateSuccess": "Partner successfully updated",
+    "nameRequired": "Enter company name",
+    "logoRequired": "Upload company logo",
+    "table": {
+      "logo": "Logo",
+      "name": "Name",
+      "website": "Website",
+      "order": "Order",
+      "status": "Status",
+      "noLogo": "No Logo"
+    }
+  },
+  "projects": {
+    "badge": "Portfolio",
+    "title": "Completed Works",
+    "description": "Examples of successfully implemented projects in design and construction",
+    "searchPlaceholder": "Search by name or description...",
+    "allCategories": "All Categories",
+    "loading": "Loading projects...",
+    "loadError": "Failed to load projects",
+    "notFound": "Projects not found"
   },
   "construction": {
     "title": "Construction",
     "about": "About Company",
     "licenses": "Licenses",
     "projects": "Projects and Works",
+    "completedWorks": "Completed Works",
     "partners": "Partners"
+  },
+  "constructionAbout": {
+    "hero": {
+      "badge": "Construction Direction",
+      "title": "About Company",
+      "description": "UNICOVER LLP is a multi-profile engineering and design-construction company providing a full range of services in industrial safety, surveys, design and construction."
+    },
+    "breadcrumbs": {
+      "home": "Home",
+      "construction": "Construction",
+      "about": "About Company"
+    },
+    "about": {
+      "title": "Our Activities",
+      "paragraph1": "UNICOVER LLP specializes in performing the full cycle of works from engineering surveys to commissioning. We work in various industries and civil construction.",
+      "paragraph2": "The company has all necessary licenses and certificates confirming the right to perform work in the field of surveys, design and construction. Our specialists have extensive experience working with facilities of various complexity.",
+      "paragraph3": "We guarantee high quality of work performed, compliance with all regulatory requirements and standards of the Republic of Kazakhstan, as well as an individual approach to each project."
+    },
+    "services": {
+      "title": "Activities",
+      "subtitle": "Full range of services in design and construction",
+      "surveying": {
+        "title": "Engineering Surveys",
+        "items": {
+          "geological": "Engineering and geological studies",
+          "hydrogeological": "Engineering and hydrogeological works",
+          "geodetic": "Engineering and geodetic surveys",
+          "equipment": "High-precision equipment"
+        }
+      },
+      "design": {
+        "title": "Design",
+        "items": {
+          "technological": "Technological design of production facilities",
+          "architectural": "Architectural design (I-III responsibility levels)",
+          "urban": "Urban planning design and planning",
+          "engineering": "Design of engineering systems and networks",
+          "reconstruction": "Reconstruction and major repairs"
+        }
+      },
+      "construction": {
+        "title": "Construction and Installation Works",
+        "items": {
+          "category": "C&IW Category III",
+          "buildings": "Construction of facilities for various purposes",
+          "installation": "Equipment installation",
+          "modernization": "Reconstruction and modernization",
+          "standards": "Compliance with SNiP and RK standards"
+        }
+      }
+    },
+    "advantages": {
+      "title": "Our Advantages",
+      "experience": {
+        "title": "Experience and Professionalism",
+        "description": "Years of experience in design and construction"
+      },
+      "licenses": {
+        "title": "Licenses and Certificates",
+        "description": "Full package of state licenses and industry certificates"
+      },
+      "team": {
+        "title": "Qualified Team",
+        "description": "Highly qualified specialists with extensive experience"
+      }
+    },
+    "cta": {
+      "title": "Ready to Start Your Project?",
+      "description": "Contact us to discuss your project. Our specialists are ready to answer all your questions and offer an optimal solution.",
+      "contact": "Contact Us",
+      "projects": "Our Projects"
+    }
+  },
+  "licenses": {
+    "title": "Licenses",
+    "badge": "Licenses and Certificates",
+    "description": "UNICOVER LLP has a complete set of state licenses and industry certificates confirming the right to perform work in various fields.",
+    "loading": "Loading licenses...",
+    "notFound": "No licenses found",
+    "categories": {
+      "all": "All",
+      "surveying": "Surveys and Design",
+      "construction": "Construction"
+    },
+    "card": {
+      "number": "Number:",
+      "issued": "Issued:",
+      "validUntil": "Valid until:",
+      "download": "Download Document",
+      "fileUnavailable": "File unavailable"
+    },
+    "info": {
+      "title": "About Licenses",
+      "description1": "All licenses are issued by authorized bodies of the Republic of Kazakhstan and confirm the right of UNICOVER LLP to perform the relevant types of work. Licenses are regularly updated and undergo the necessary re-registration procedures.",
+      "description2": "For additional information about licenses or to request copies of documents, please contact us through",
+      "contactLink": "the feedback form"
+    },
+    "errors": {
+      "loadError": "Error loading licenses",
+      "downloadError": "Error downloading file",
+      "fileUnavailable": "File unavailable for download"
+    },
+    "success": {
+      "downloadSuccess": "File successfully downloaded"
+    },
+    "breadcrumbs": {
+      "licenses": "Licenses"
+    }
   },
   "education": {
     "title": "Education Center",
     "about": "About Center",
     "programs": "Training Programs",
     "online": "Online Learning",
-    "cabinet": "Personal Cabinet"
+    "cabinet": "Personal Cabinet",
+    "certificateVerification": "Certificate Verification",
+    "pageTitle": "UNICOVER Education Center",
+    "pageDescription": "Professional training with issuance of certificates and certificates in industrial safety, occupational safety and other areas.",
+    "courses": {
+      "loading": "Loading courses...",
+      "badge": "Educational Programs",
+      "title": "Training Programs",
+      "subtitle": "Wide range of courses for training and professional development of specialists",
+      "languageFilter": "Course Language:",
+      "auto": "Automatic",
+      "russian": "Русский",
+      "kazakh": "Қазақша",
+      "english": "English",
+      "categoryFilter": "Filter by Categories:",
+      "allCourses": "All Courses",
+      "unknownCategory": "Unknown Category",
+      "courseModules": "Course Modules:",
+      "defaultDescription": "Course Description",
+      "goToCourse": "Go to Course",
+      "enroll": "Enroll in Course",
+      "noCoursesInCategory": "Courses in this category will appear soon",
+      "loginRequired": "You must log in to enroll in a course",
+      "studentsOnly": "This feature is only available for students"
+    },
+    "online": {
+      "title": "Online Learning",
+      "subtitle": "Modern distance learning platform with access to courses, testing and certificate issuance",
+      "features": {
+        "remoteAccess": {
+          "title": "Remote Access",
+          "description": "Learn from anywhere in the world at your convenience"
+        },
+        "videoLectures": {
+          "title": "Video Lectures",
+          "description": "Quality educational materials from experts"
+        },
+        "onlineTesting": {
+          "title": "Online Testing",
+          "description": "Knowledge assessment through testing system"
+        },
+        "certificates": {
+          "title": "Certificates",
+          "description": "Automatic issuance of documents after completion"
+        },
+        "flexibleSchedule": {
+          "title": "Flexible Schedule",
+          "description": "Learn at your own pace without being tied to a schedule"
+        },
+        "learningHistory": {
+          "title": "Learning History",
+          "description": "Access to completed courses and materials"
+        }
+      }
+    }
   },
   "contacts": {
+    "badge": "Contacts",
     "title": "Contact Us",
+    "description": "We are ready to answer your questions and discuss cooperation opportunities",
+    "mapAddress": "Atyrau, Student Street 25, BC Bayterek Plaza",
+    "info": {
+      "bin": "BIN",
+      "binValue": "100240007639",
+      "address": "Address",
+      "addressValue": "Atyrau, Student Street 25\nBC Bayterek Plaza, 5th floor",
+      "phone": "Phones",
+      "phoneValue": "+7 (7122) 20-80-92\n+7 708 420-80-92",
+      "email": "Email",
+      "emailValue": "info@unicover.kz",
+      "workingHours": "Working Hours",
+      "workingHoursValue": "Mon-Fri: 9:00 - 18:00\nSat-Sun: Closed"
+    },
+    "companyDetails": {
+      "title": "Company Details",
+      "fullName": "Full Name",
+      "fullNameValue": "UNICOVER LLP",
+      "bin": "BIN",
+      "binValue": "100240007639",
+      "legalAddress": "Legal Address",
+      "legalAddressValue": "Atyrau, Student Street 25, BC Bayterek Plaza, 5th floor",
+      "email": "Email",
+      "emailValue": "info@unicover.kz"
+    },
+    "form": {
+      "title": "Send Request",
+      "name": "Your Name",
+      "namePlaceholder": "Enter your name",
+      "company": "Company",
+      "companyPlaceholder": "Your company name",
+      "email": "Email",
+      "emailPlaceholder": "your@email.com",
+      "phone": "Phone",
+      "phonePlaceholder": "+7 (___) ___-____",
+      "direction": "Interest Area",
+      "directionPlaceholder": "Select direction",
+      "directions": {
+        "construction": "Construction and Design",
+        "engineering": "Engineering Surveys",
+        "education": "Training",
+        "safety": "Industrial Safety",
+        "other": "Other"
+      },
+      "message": "Message",
+      "messagePlaceholder": "Describe your request in detail...",
+      "submit": "Send Request",
+      "submitting": "Sending...",
+      "requiredFields": "Required fields",
+      "thankYou": "Thank you for your message!",
+      "weWillContactYou": "We will contact you soon.",
+      "successMessage": "Your message has been sent successfully! We will contact you soon.",
+      "errorMessage": "Error sending message. Please try again."
+    },
     "address": "Address",
+    "addressValue": "Atyrau, Student Street 25, BC Bayterek Plaza, 5th floor",
     "phone": "Phones",
     "email": "Email",
     "workingHours": "Working Hours"
+  },
+  "footer": {
+    "companyDescription": "Multi-profile engineering and design-construction company. Full range of services in industrial safety, surveys, design and construction.",
+    "copyright": "© {{year}} UNICOVER LLP. BIN 100240007639. All rights reserved.",
+    "construction": "Construction",
+    "education": "Education Center",
+    "contacts": "Contacts"
+  },
+  "header": {
+    "russian": "Русский",
+    "kazakh": "Қазақша",
+    "english": "English",
+    "personalCabinet": "Personal Cabinet"
+  },
+  "admin": {
+    "partners": {
+      "title": "Partners"
+    },
+    "projects": {
+      "title": "Projects"
+    },
+    "users": {
+      "title": "Users",
+      "addUser": "Add User",
+      "editUser": "Edit User",
+      "personalData": "Personal Data",
+      "fullNamePlaceholder": "Ivanov Ivan Ivanovich",
+      "passwordPlaceholder": "Enter password or leave empty for automatic generation",
+      "generatePassword": "Generate random password",
+      "generate": "Generate",
+      "passwordGenerated": "Password generated. Save it to pass to the user.",
+      "passwordHint": "If password is not specified, it will be generated automatically. Minimum 8 characters for manual entry.",
+      "iinPlaceholder": "000000000000",
+      "city": "City",
+      "cityPlaceholder": "City",
+      "workplace": "Workplace",
+      "systemSettings": "System Settings",
+      "role": "Role",
+      "interfaceLanguage": "Interface Language",
+      "accountVerified": "Account Verified",
+      "teacher": "Teacher",
+      "loading": "Loading users...",
+      "loadError": "Error loading users",
+      "totalUsers": "Total Users",
+      "activeStudents": "Active Students",
+      "pdekMembers": "PDEK Members",
+      "pendingVerification": "Pending Verification",
+      "management": "User Management",
+      "export": "Export",
+      "import": "Import",
+      "exportSuccess": "Users successfully exported",
+      "exportError": "Error exporting users",
+      "importSuccess": "Imported users: {{count}}",
+      "importErrors": "Import errors: {{count}}",
+      "importError": "Error importing users",
+      "searchPlaceholder": "Search by name, email, phone, IIN...",
+      "role": "Role",
+      "allRoles": "All Roles",
+      "students": "Students",
+      "pdekMembersFilter": "PDEK Members",
+      "pdekChairmen": "PDEK Chairmen",
+      "teachers": "Teachers",
+      "admins": "Administrators",
+      "allStatuses": "All Statuses",
+      "verified": "Verified",
+      "unverified": "Unverified",
+      "resetFilters": "Reset Filters",
+      "selected": "Selected: {{count}} users",
+      "assignToCourse": "Assign to Course",
+      "messageFeatureNotImplemented": "Message sending feature not yet implemented",
+      "sendMessage": "Send Message",
+      "deleteConfirm": "Are you sure you want to delete {{count}} users?\n\nThis action cannot be undone.",
+      "deleteSuccess": "{{count}} users successfully deleted",
+      "deleteError": "Error deleting users",
+      "user": "User",
+      "contacts": "Contacts",
+      "organization": "Organization",
+      "courses": "Courses",
+      "progress": "Progress",
+      "unknown": "Unknown",
+      "noUsersFound": "No users found",
+      "tryChangingSearch": "Try changing search parameters",
+      "deleteUserConfirm": "Are you sure you want to delete user \"{{name}}\"?\n\nThis action cannot be undone.",
+      "deleteUserError": "Failed to delete user",
+      "userDeletedSuccess": "User successfully deleted",
+      "noUsersSelected": "No users selected for course assignment",
+      "noCoursesSelected": "No courses selected for assignment",
+      "coursesAssigned": "Assigned courses: {{courses}} for {{users}} users{{errors}}",
+      "assignCoursesError": "Failed to assign courses. Check logs for details.",
+      "failed": "Failed",
+      "annulled": "Annulled",
+      "info": "Info",
+      "activity": "Activity",
+      "noEmail": "No email",
+      "learningStats": "Learning Statistics",
+      "loadingStats": "Loading statistics...",
+      "coursesAssignedStat": "Courses Assigned",
+      "completed": "Completed",
+      "averageScore": "Average Score",
+      "certificates": "Certificates",
+      "assignedCourses": "Assigned Courses",
+      "loadingCourses": "Loading courses...",
+      "noAssignedCourses": "No assigned courses",
+      "unknownCourse": "Unknown Course",
+      "courseLower": "course",
+      "userLower": "user",
+      "revokeCourseConfirm": "Are you sure you want to revoke course \"{{course}}\" from user \"{{user}}\"?\n\nAll course completion data will be completely deleted, including:\n- Lesson progress\n- Test attempts\n- Extra attempt requests\n- Verification data\n\nThis action cannot be undone.",
+      "revokeCourse": "Revoke Course",
+      "revokeCourseError": "Failed to revoke course",
+      "courseRevoked": "Course successfully revoked",
+      "completedLower": "completed",
+      "enrolled": "Enrolled",
+      "activityHistory": "Activity History",
+      "loadingActivity": "Loading activity...",
+      "noActivityData": "No activity data",
+      "receivedCertificate": "Received Certificate",
+      "completedCourse": "Completed Course",
+      "assignCourses": "Assign Courses",
+      "coursesAssignedToUser": "Assigned courses: {{courses}} for user {{user}}{{errors}}"
+    },
+    "courses": {
+      "title": "Courses",
+      "editCourse": "Edit Course",
+      "createCourse": "Create Course",
+      "basicInfo": "Basic Information",
+      "courseTitle": "Course Title",
+      "courseTitlePlaceholder": "Enter course title",
+      "courseDescriptionPlaceholder": "Brief course description",
+      "category": "Category",
+      "selectCategory": "Select Category",
+      "loadingCategories": "Loading categories...",
+      "duration": "Duration (hours)",
+      "courseStatus": "Course Status",
+      "inDevelopment": "In Development",
+      "draft": "Draft",
+      "published": "Published",
+      "finalTest": "Final Test",
+      "noFinalTest": "No Final Test",
+      "loadingTests": "Loading tests...",
+      "modulesAndLessons": "Modules and Lessons",
+      "addModule": "Add Module",
+      "newModule": "New Module",
+      "moduleTitlePlaceholder": "Module Title",
+      "moduleDescriptionPlaceholder": "Module Description",
+      "expand": "Expand",
+      "lessons": "Lessons",
+      "addLesson": "Add Lesson",
+      "noTitle": "No Title",
+      "minutes": "min",
+      "required": "Required",
+      "noLessons": "No lessons. Click \"Add Lesson\" to start.",
+      "noModules": "No modules. Click \"Add Module\" to start.",
+      "saveCourse": "Save Course",
+      "createLesson": "Create Lesson",
+      "editLesson": "Edit Lesson",
+      "lessonTitle": "Lesson Title",
+      "lessonTitlePlaceholder": "Enter lesson title",
+      "enterLessonTitle": "Enter lesson title",
+      "lessonDescription": "Lesson Description",
+      "lessonDescriptionPlaceholder": "Brief description of what is studied in the lesson",
+      "lessonType": "Lesson Type",
+      "durationMinutes": "Duration (minutes)",
+      "requiredLesson": "Required lesson for course completion",
+      "lessonContent": "Lesson Content",
+      "textContent": "Text Content",
+      "textContentPlaceholder": "Enter lesson text. You can use formatting...",
+      "markdownTip": "Tip: For large texts, you can use a Markdown editor",
+      "videoUrl": "Video URL",
+      "videoUrlPlaceholder": "https://www.youtube.com/watch?v=... or https://vimeo.com/...",
+      "videoSupported": "Supported: YouTube, Vimeo, own server",
+      "videoThumbnail": "Video Thumbnail (URL)",
+      "allowDownload": "Allow Download",
+      "trackProgress": "Track Viewing",
+      "pdfUrl": "PDF Document URL",
+      "uploadPdf": "Upload PDF File",
+      "selectFile": "Select File",
+      "orEnterUrl": "or enter URL above",
+      "allowDownloadPdf": "Allow PDF Download",
+      "selectTest": "Select Test",
+      "selectTestOption": "Select Test",
+      "testsCreatedInAdmin": "Tests are created in the \"Tests\" section of the admin panel",
+      "maxAttempts": "Max Attempts",
+      "saveLesson": "Save Lesson",
+      "lessonTypes": {
+        "text": "Text",
+        "video": "Video",
+        "pdf": "PDF",
+        "quiz": "Test"
+      }
+    },
+    "tests": {
+      "title": "Tests"
+    },
+    "licenses": {
+      "title": "Licenses"
+    },
+    "vacancies": {
+      "title": "Vacancies"
+    },
+    "contacts": {
+      "title": "Feedback"
+    },
+    "overview": {
+      "title": "Overview"
+    },
+    "categories": {
+      "title": "Project Categories"
+    },
+    "extraAttempts": {
+      "title": "Extra Attempts"
+    },
+    "dashboard": {
+      "title": "Admin Dashboard",
+      "subtitle": "Manage UNICOVER Learning Platform",
+      "navigation": {
+        "overview": "Overview",
+        "courses": "Courses",
+        "users": "Users",
+        "tests": "Tests",
+        "reports": "Reports",
+        "certificates": "Certificates",
+        "categories": "Categories",
+        "licenses": "Licenses",
+        "vacancies": "Vacancies",
+        "vacancyApplications": "Vacancy Applications",
+        "vacancyStatistics": "Vacancy Statistics"
+      },
+      "overview": {
+        "loadingStats": "Loading statistics...",
+        "loadStatsError": "Error loading statistics",
+        "totalStudents": "Total Students",
+        "activeStudents": "Active",
+        "activeCourses": "Active Courses",
+        "completedCourses": "Completed",
+        "testsToday": "Tests Today",
+        "successRate": "Success Rate",
+        "totalCertificates": "Certificates Issued",
+        "thisMonth": "This Month",
+        "recentActivity": "Recent Activity",
+        "activityWillBeDisplayed": "Activity will be displayed here",
+        "dataLoadingFromSystem": "Data is loading from the system",
+        "createCourse": "Create Course",
+        "createCourseDesc": "Add a new training course",
+        "addStudent": "Add Student",
+        "addStudentDesc": "Register a new listener",
+        "createTest": "Create Test",
+        "createTestDesc": "Add an exam test"
+      },
+      "courses": {
+        "management": "Course Management",
+        "loading": "Loading courses...",
+        "loadError": "Error loading courses",
+        "tryAgain": "Try Again",
+        "searchPlaceholder": "Search courses...",
+        "filters": "Filters",
+        "allCategories": "All Categories",
+        "allStatuses": "All Statuses",
+        "resetFilters": "Reset Filters",
+        "courseTitle": "Course Title",
+        "category": "Category",
+        "students": "Students",
+        "status": "Status",
+        "actions": "Actions",
+        "edit": "Edit",
+        "studentsLabel": "Students",
+        "delete": "Delete",
+        "noCourses": "No courses. Create the first course by clicking the \"Create Course\" button",
+        "coursesNotFound": "Courses not found",
+        "deleteConfirm": "Are you sure you want to delete the course \"{{title}}\"?\n\nThis action cannot be undone.",
+        "deleteSuccess": "Course successfully deleted",
+        "deleteError": "Error",
+        "deleteFailed": "Failed to delete course",
+        "courseStudents": {
+          "title": "Course Students",
+          "totalStudents": "Total Students",
+          "completed": "Completed Course",
+          "inProgress": "In Progress",
+          "averageScore": "Average Score",
+          "loading": "Loading students...",
+          "loadError": "Error",
+          "close": "Close",
+          "searchPlaceholder": "Search by name, email, company...",
+          "student": "Student",
+          "contacts": "Contacts",
+          "company": "Company",
+          "progress": "Progress",
+          "score": "Score",
+          "status": "Status",
+          "actions": "Actions",
+          "enrolled": "Enrolled",
+          "revoke": "Revoke",
+          "revokeTitle": "Revoke Course",
+          "revokeConfirm": "Are you sure you want to revoke the course \"{{courseTitle}}\" from student \"{{studentName}}\"?\n\nAll course completion data will be completely deleted, including:\n- Lesson progress\n- Test attempts\n- Extra attempt requests\n- Verification data\n\nThis action cannot be undone.",
+          "revokeSuccess": "Course successfully revoked",
+          "revokeError": "Error",
+          "revokeFailed": "Failed to revoke course",
+          "revoked": "Course revoked",
+          "studentsNotFound": "Students not found",
+          "tryChangingSearch": "Try changing search parameters",
+          "addStudents": "Add Students",
+          "exportList": "Export List",
+          "addSuccess": "Students successfully added",
+          "addError": "Error",
+          "addFailed": "Failed to add students",
+          "unknown": "Unknown"
+        }
+      },
+      "tests": {
+        "constructor": "Test Constructor",
+        "management": "Manage exam tests and question bank",
+        "loading": "Loading tests...",
+        "searchPlaceholder": "Search tests...",
+        "title": "Title",
+        "questions": "Questions",
+        "actions": "Actions",
+        "edit": "Edit",
+        "delete": "Delete",
+        "noTests": "No tests. Create the first test by clicking the \"Create Test\" button",
+        "testsNotFound": "Tests not found",
+        "deleteConfirm": "Are you sure you want to delete the test \"{{title}}\"?\n\nThis action cannot be undone.",
+        "deleteSuccess": "Test successfully deleted",
+        "deleteError": "Error",
+        "deleteFailed": "Failed to delete test"
+      },
+      "reports": {
+        "loading": "Loading reports...",
+        "overallPerformance": "Overall Performance",
+        "percentPassed": "Percent of Passed Tests",
+        "averageScore": "Average Score",
+        "byAllAttempts": "By All Attempts",
+        "completedCourses": "Completed Courses",
+        "totalCompleted": "Total Completed",
+        "activeStudents": "Active Students",
+        "ofTotal": "of {{total}} total",
+        "enrollmentTrend": "Enrollment Trend",
+        "testResultsDistribution": "Test Results Distribution",
+        "noData": "No data to display",
+        "students": "Students",
+        "coursesPopularity": "Course Popularity",
+        "export": "Export",
+        "studentsCount": "Students",
+        "topStudents": "Top Students",
+        "place": "Place",
+        "fullName": "Full Name",
+        "completedCourses": "Completed Courses",
+        "averageScore": "Average Score",
+        "certificates": "Certificates",
+        "noStudentsData": "No student data",
+        "exportReports": "Export Reports",
+        "summaryReport": "Summary Report",
+        "pdfExcel": "PDF / Excel",
+        "testResults": "Test Results",
+        "excel": "Excel",
+        "issuedCertificates": "Issued Certificates"
+      },
+      "categories": {
+        "management": "Category Management",
+        "loading": "Loading categories...",
+        "loadError": "Error loading categories",
+        "tryAgain": "Try Again",
+        "searchPlaceholder": "Search categories...",
+        "name": "Name",
+        "nameKz": "Name (KZ)",
+        "nameEn": "Name (EN)",
+        "order": "Order",
+        "courses": "Courses",
+        "status": "Status",
+        "actions": "Actions",
+        "edit": "Edit",
+        "delete": "Delete",
+        "noCategories": "No categories. Create the first category by clicking the \"Create Category\" button",
+        "categoriesNotFound": "Categories not found",
+        "active": "Active",
+        "inactive": "Inactive",
+        "editor": {
+          "edit": "Edit Category",
+          "create": "Create Category",
+          "nameRu": "Name (RU) *",
+          "namePlaceholder": "Enter category name",
+          "nameKz": "Name (KZ)",
+          "nameKzPlaceholder": "Name in Kazakh",
+          "nameEn": "Name (EN)",
+          "nameEnPlaceholder": "Name in English",
+          "description": "Description",
+          "descriptionPlaceholder": "Category description",
+          "displayOrder": "Display Order",
+          "active": "Active",
+          "cancel": "Cancel",
+          "save": "Save",
+          "nameRequired": "Enter category name"
+        },
+        "deleteConfirm": "Are you sure you want to delete this category?\n\nThis action cannot be undone.",
+        "updateSuccess": "Category successfully updated",
+        "createSuccess": "Category successfully created",
+        "deleteSuccess": "Category successfully deleted",
+        "saveError": "Error saving category",
+        "deleteError": "Error deleting category"
+      },
+      "status": {
+        "inDevelopment": "In Development",
+        "draft": "Draft",
+        "published": "Published",
+        "assigned": "Assigned",
+        "inProgress": "In Progress",
+        "examAvailable": "Exam Available",
+        "examPassed": "Exam Passed",
+        "completed": "Completed",
+        "failed": "Failed",
+        "annulled": "Annulled"
+      },
+      "messages": {
+        "testUpdateSuccess": "Test successfully updated",
+        "testCreateSuccess": "Test successfully created",
+        "testLoadError": "Error loading test",
+        "testSaveError": "Error saving test",
+        "licenseUpdateSuccess": "License successfully updated",
+        "licenseCreateSuccess": "License successfully created",
+        "licenseSaveError": "Error saving license",
+        "userUpdateSuccess": "User successfully updated",
+        "userCreateSuccess": "User successfully created",
+        "userSaveError": "Error saving user",
+        "userCreated": "User \"{{name}}\" successfully created!",
+        "passwordCopy": "Password: {{password}}\n\nCopy the password to pass to the user.",
+        "vacancyUpdateSuccess": "Vacancy successfully updated",
+        "vacancyCreateSuccess": "Vacancy successfully created",
+        "vacancySaveError": "Error saving vacancy",
+        "projectLoadError": "Error loading project",
+        "projectTitleRequired": "Enter project title",
+        "projectTitleRequiredError": "Project title is required",
+        "projectUpdateSuccess": "Project successfully updated",
+        "projectCreateSuccess": "Project successfully created",
+        "projectSaveError": "Error saving project",
+        "unknownError": "Unknown error"
+      }
+    }
+  },
+  "lms": {
+    "student": {
+      "dashboard": "Student Personal Cabinet",
+      "dashboardWelcome": "Welcome! Here you can manage your learning",
+      "activeCourses": "Active Courses",
+      "completedCourses": "Completed Courses",
+      "certificates": "Certificates",
+      "goToCourses": "Go to Courses →",
+      "viewHistory": "View History →",
+      "viewDocuments": "View Documents →",
+      "unreadNotifications": "You have {{count}} unread notifications",
+      "unreadNotifications_one": "You have {{count}} unread notification",
+      "unreadNotifications_few": "You have {{count}} unread notifications",
+      "unreadNotifications_many": "You have {{count}} unread notifications",
+      "courses": "My Courses",
+      "tests": "Tests",
+      "documents": "Documents",
+      "history": "Learning History",
+      "noActiveCourses": "You don't have active courses yet",
+      "noActiveCoursesDesc": "Courses will appear here after being assigned by an administrator",
+      "noCompletedCourses": "You don't have completed courses yet",
+      "noCompletedCoursesDesc": "Completed courses will be displayed here",
+      "viewCourse": "Go to Course",
+      "continue": "Continue",
+      "allCourses": "All Courses",
+      "progress": "Progress",
+      "documentsDesc": "Certificates, protocols and certificates",
+      "historyDesc": "Completed courses and results",
+      "supportDesc": "Ask a question or get help",
+      "status": {
+        "inProgress": "In Progress",
+        "completed": "Completed",
+        "pendingPdek": "Pending Review",
+        "assigned": "Assigned",
+        "examAvailable": "Exam Available",
+        "examPassed": "Exam Passed",
+        "failed": "Exam Failed"
+      },
+      "coursesPage": {
+        "title": "My Courses",
+        "subtitle": "Manage your courses and learning",
+        "backToDashboard": "← Back to Dashboard",
+        "loading": "Loading courses...",
+        "loadError": "Load Error",
+        "backToDashboardButton": "Back to Dashboard",
+        "activeCoursesTitle": "Active Courses",
+        "completedCoursesTitle": "Completed Courses",
+        "hours": "hours",
+        "goToExam": "Go to Exam",
+        "viewStatus": "View Status",
+        "continueLearning": "Continue Learning",
+        "viewCourse": "View Course",
+        "noCourses": "No Courses",
+        "noCoursesDesc": "You don't have assigned courses yet",
+        "categories": {
+          "industrial_safety": "Industrial Safety",
+          "fire_safety": "Fire Safety",
+          "electrical_safety": "Electrical Safety",
+          "labor_protection": "Labor Protection",
+          "professions": "Working Professions"
+        }
+      },
+      "historyPage": {
+        "title": "Learning History",
+        "subtitle": "Completed courses and achievements",
+        "backToDashboard": "← Back to Dashboard",
+        "loading": "Loading history...",
+        "loadError": "Load Error",
+        "backToDashboardButton": "Back to Dashboard",
+        "courseCompleted": "Course Completed",
+        "progress100": "Progress: 100%",
+        "viewCourse": "View Course",
+        "certificates": "Certificates",
+        "noHistory": "History is Empty",
+        "noHistoryDesc": "You don't have completed courses yet",
+        "goToCourses": "Go to Courses",
+        "categories": {
+          "industrial_safety": "Industrial Safety",
+          "fire_safety": "Fire Safety",
+          "electrical_safety": "Electrical Safety",
+          "labor_protection": "Labor Protection",
+          "professions": "Working Professions"
+        }
+      },
+      "testsPage": {
+        "title": "Available Tests",
+        "subtitle": "Select a test to take",
+        "backToDashboard": "← Back to Dashboard",
+        "loading": "Loading tests...",
+        "loadError": "Load Error",
+        "backToDashboardButton": "Back to Dashboard",
+        "questions": "Questions",
+        "time": "Time",
+        "minutes": "min",
+        "passingScore": "Passing Score",
+        "attempts": "Attempts",
+        "attemptsRemaining": "of",
+        "startTesting": "Start Testing",
+        "noTests": "No Available Tests",
+        "noTestsDesc": "There are currently no tests available to take"
+      }
+    },
+    "coursePlayer": {
+      "finalTest": "Final Test",
+      "finalTestDesc": "All lessons completed. To complete the course, you must pass the final test.",
+      "continueTest": "Continue Test",
+      "takeFinalTest": "Take Final Test",
+      "loading": "Loading...",
+      "pendingReview": "Pending Review and Signature",
+      "pendingReviewDesc": "Course completed and sent for review by PDEK commission. After review and protocol signing, you will receive a certificate.",
+      "pendingReviewStatus": "Pending Protocol Signature",
+      "courseCompleted": "Course Completed",
+      "courseCompletedDesc": "Congratulations! Course successfully completed, protocol signed. Certificate is available in the \"Documents\" section.",
+      "readyToComplete": "Ready to Complete",
+      "readyToCompleteDesc": "All lessons {{finalTest}}completed. Click the button below to complete the course.",
+      "readyToCompleteDescWithTest": "and final test ",
+      "completeCourse": "Complete Course",
+      "testNotLinked": "Test is not linked to this lesson",
+      "noQuestions": "Test has no questions",
+      "maxAttemptsReached": "Maximum number of attempts reached ({{max}})",
+      "continueTestTitle": "Continue Test",
+      "continue": "Continue",
+      "startTest": "Start Test",
+      "loadingTest": "Loading test...",
+      "testCode": "Test code: {{code}}",
+      "smsSent": "SMS code sent to your phone",
+      "smsRequestError": "Error requesting SMS code",
+      "courseCompletedSuccess": "Course successfully completed and sent for PDEK review",
+      "smsVerifyError": "Error verifying SMS code",
+      "smsVerificationTitle": "SMS Verification",
+      "smsVerificationDescription": "Enter the verification code from SMS",
+      "smsVerificationCodeSent": "Code sent to {{phone}}",
+      "smsVerificationTestCode": "Test code (development mode):",
+      "smsVerificationEnterCode": "Enter this code in the field below",
+      "smsVerificationCodeValid": "Code valid for: {{time}}",
+      "smsVerificationResend": "Resend code",
+      "smsVerificationVerifying": "Verifying...",
+      "smsVerificationVerify": "Verify",
+      "smsVerificationSecurityNotice": "Verification code is valid for 2 minutes. Do not share the code with third parties.",
+      "smsVerificationCodeError": "Code must consist of 6 digits",
+      "testContinueSuccess": "Test continued",
+      "testCompleteError": "Error completing test",
+      "testLoadError": "Error loading test",
+      "attemptLoadError": "Error loading attempt",
+      "resultsLoadError": "Error loading results",
+      "finalTestCompleteError": "Error completing final test",
+      "testResultTitle": "Test Results",
+      "testResultPassed": "Test Passed Successfully!",
+      "testResultPassedDesc": "Congratulations on successfully passing the test",
+      "testResultFailed": "Test Failed",
+      "testResultFailedDesc": "Unfortunately, you did not reach the passing score",
+      "testResultScore": "Your Score",
+      "testResultPassingScore": "Passing Score",
+      "testResultTimeSpent": "Time Spent",
+      "testProgress": "Progress",
+      "testResultLessonCompleted": "The lesson will be automatically marked as completed. You can continue studying the course.",
+      "testResultRemainingAttempts": "You have {{count}} {{attempts}} remaining. We recommend reviewing the lesson material before the next attempt.",
+      "testResultNoAttempts": "All attempts used. Contact the administrator to get additional attempts.",
+      "testResultAttempt": "attempt",
+      "testResultAttempts2": "attempts",
+      "testResultAttempts5": "attempts",
+      "testResultRetake": "Retake Test",
+      "testResultBackToCourse": "Back to Course",
+      "testResultDetails": "Detailed Results ({{correct}} out of {{total}} correct)",
+      "testResultYourAnswer": "Your Answer",
+      "testResultNotAnswered": "Not Answered",
+      "testResultCorrectAnswer": "Correct Answer"
+    },
+    "documents": {
+      "title": "My Documents",
+      "subtitle": "Certificates, protocols and training certificates",
+      "certificates": "Certificates",
+      "protocols": "Protocols",
+      "searchPlaceholder": "Search by course name or document number...",
+      "noCertificates": "No Certificates",
+      "noCertificatesSearch": "Nothing Found",
+      "noCertificatesDesc": "Complete the course and pass the exam to receive a certificate",
+      "noCertificatesSearchDesc": "Try changing the search query",
+      "noProtocols": "No Protocols",
+      "noProtocolsSearch": "Nothing Found",
+      "noProtocolsDesc": "Exam protocols will appear here after taking tests",
+      "noProtocolsSearchDesc": "Try changing the search query",
+      "downloadSuccess": "Certificate downloaded",
+      "downloadError": "Error downloading certificate",
+      "protocolDownloadSuccess": "Protocol downloaded",
+      "protocolDownloadError": "Error downloading protocol",
+      "loadError": "Error loading documents",
+      "certificateNumber": "Certificate No. {{number}}",
+      "issued": "Issued: {{date}}",
+      "validUntil": "Valid Until: {{date}}",
+      "valid": "Valid",
+      "expired": "Expired",
+      "downloadPdf": "Download PDF",
+      "template": "Template:",
+      "openFile": "Open File",
+      "download": "Download",
+      "qrCode": "QR Code: {{code}}",
+      "verifyAuthenticity": "Verify Authenticity",
+      "protocolNumber": "Protocol No. {{number}}",
+      "examDate": "Exam Date:",
+      "result": "Result:",
+      "passed": "Passed",
+      "failed": "Failed",
+      "passingScore": "Passing Score:",
+      "signatures": "Signatures:",
+      "signaturesTitle": "PDEK Commission Signatures:",
+      "chairman": "Chairman",
+      "member": "Member",
+      "rejectionReason": "Rejection Reason:",
+      "viewProtocol": "View Protocol",
+      "status": {
+        "approved": "Approved",
+        "pendingChairman": "Pending Chairman",
+        "pendingPdek": "Pending PDEK Approval",
+        "rejected": "Rejected",
+        "created": "Created"
+      }
+    },
+    "pdek": {
+      "dashboard": "PDEK Dashboard",
+      "pending": "Pending Signature",
+      "signed": "Signed by Me"
+    }
+  },
+  "pages": {
+    "home": {
+      "title": "Home"
+    },
+    "projects": {
+      "title": "Projects"
+    },
+    "vacancies": {
+      "title": "Vacancies",
+      "badge": "Career",
+      "heroTitle": "Vacancies",
+      "heroDescription": "Join the UNICOVER LLP team! We offer interesting projects, professional development and decent working conditions.",
+      "breadcrumbs": {
+        "home": "Home",
+        "construction": "Construction",
+        "vacancies": "Vacancies"
+      },
+      "loading": "Loading vacancies...",
+      "noVacancies": "There are currently no open vacancies",
+      "status": {
+        "open": "Open"
+      },
+      "details": "Details",
+      "info": {
+        "title": "Didn't find a suitable vacancy?",
+        "description": "Send us your resume, and we will contact you when a suitable position becomes available.",
+        "contactButton": "Contact Us"
+      },
+      "error": {
+        "loadError": "Error loading vacancies"
+      },
+      "salary": {
+        "negotiable": "Negotiable",
+        "from": "from",
+        "to": "to"
+      }
+    },
+    "support": {
+      "title": "Support",
+      "description": "Contact us if you have any questions",
+      "backToDashboard": "Back to Dashboard",
+      "contactInfo": "Contact Information",
+      "phone": "Phone",
+      "email": "Email",
+      "workingHours": "Mon-Fri: 9:00 - 18:00",
+      "responseTime": "We will respond within 24 hours",
+      "faq": "Frequently Asked Questions",
+      "faq1": {
+        "question": "How to start learning?",
+        "answer": "Go to \"My Courses\" section and select a course to start learning. After the administrator assigns a course, it will appear in your personal cabinet."
+      },
+      "faq2": {
+        "question": "How to take a test?",
+        "answer": "Select an available test in the \"Tests\" section and click \"Start Testing\". You have a limited number of attempts to pass the test."
+      },
+      "faq3": {
+        "question": "Where to get a certificate?",
+        "answer": "After successfully completing the course and passing the exam, the certificate will be available in the \"Documents\" section of your personal cabinet."
+      },
+      "faq4": {
+        "question": "What to do if technical problems occur?",
+        "answer": "Contact our support service by phone or email listed above. We will help solve the problems that have arisen."
+      }
+    },
+    "verifyCertificate": {
+      "title": "Certificate Verification",
+      "description": "Enter the certificate number to verify its authenticity",
+      "placeholder": "Enter certificate number (e.g., CERT-2025-ABC12345)",
+      "verify": "Verify",
+      "certificateNumber": "Certificate Number",
+      "enterNumber": "Enter certificate number",
+      "enterNumberMessage": "Please enter the certificate number for verification",
+      "verificationError": "Certificate verification error",
+      "verificationErrorMessage": "An error occurred while verifying the certificate. Please try again.",
+      "valid": "Certificate Valid",
+      "validDescription": "Certificate authenticity confirmed",
+      "invalid": "Certificate not found or invalid",
+      "invalidMessage": "Certificate with the specified number was not found in the database",
+      "student": "Student",
+      "course": "Course",
+      "issueDate": "Issue Date",
+      "validUntil": "Valid Until",
+      "expired": "Certificate Expired",
+      "notFound": "Certificate Not Found",
+      "notFoundMessage": "Certificate with the specified number was not found in the database",
+      "errorCheckMessage": "Please check the certificate number you entered. If you are sure the number is correct, contact support.",
+      "howToVerify": "How to verify a certificate?",
+      "instruction1": "Enter the certificate number in the field above",
+      "instruction2": "Click the \"Verify\" button",
+      "instruction3": "View the certificate information if found"
+    }
+  },
+  "forms": {
+    "login": {
+      "title": "Login",
+      "subtitle": "UNICOVER Education Center",
+      "phone": "Phone Number",
+      "phonePlaceholder": "+7 (XXX) XXX-XX-XX",
+      "password": "Password",
+      "passwordPlaceholder": "Enter password",
+      "remember": "Remember me",
+      "forgotPassword": "Forgot password?",
+      "noAccount": "Don't have an account?",
+      "register": "Register",
+      "loginButton": "Login",
+      "loggingIn": "Logging in...",
+      "invalidCredentials": "Invalid phone number or password",
+      "loginError": "Login error. Please try again.",
+      "demoAccounts": {
+        "title": "Demo Accounts",
+        "subtitle": "Login with different roles to test functionality",
+        "demoVersion": "Demo version. Use accounts on the right →",
+        "student": "Student (Listener)",
+        "studentDesc": "Taking courses, tests, receiving certificates",
+        "pdekMember": "PDEK Member",
+        "pdekMemberDesc": "Signing exam protocols",
+        "pdekChairman": "PDEK Chairman",
+        "pdekChairmanDesc": "Final approval of protocols",
+        "admin": "Administrator",
+        "adminDesc": "Managing system, courses, users",
+        "loginAs": "Login as {{role}}"
+      },
+      "studentRole": "Student",
+      "pdekMemberRole": "PDEK Member",
+      "pdekChairmanRole": "PDEK Chairman",
+      "adminRole": "Administrator"
+    },
+    "register": {
+      "title": "Register",
+      "subtitle": "Create an account to access courses",
+      "fullName": "Full Name",
+      "fullNamePlaceholder": "Enter your full name",
+      "phone": "Phone",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "iin": "IIN",
+      "city": "City",
+      "organization": "Company",
+      "organizationPlaceholder": "Your company name (optional)",
+      "haveAccount": "Already have an account?",
+      "login": "Login",
+      "loginLink": "Login",
+      "registerButton": "Register",
+      "registering": "Registering...",
+      "registerError": "Registration error. Please try again.",
+      "terms": "I agree with",
+      "termsLink": "terms of use",
+      "and": "and",
+      "privacyLink": "privacy policy",
+      "important": "Important:",
+      "importantMessage": "After registration, you will receive an SMS with a confirmation code to the specified phone number to activate your account."
+    }
+  },
+  "messages": {
+    "success": {
+      "saved": "Successfully saved",
+      "deleted": "Successfully deleted",
+      "created": "Successfully created",
+      "updated": "Successfully updated"
+    },
+    "error": {
+      "generic": "An error occurred",
+      "network": "Network error",
+      "validation": "Validation error",
+      "notFound": "Not found",
+      "unauthorized": "Unauthorized",
+      "forbidden": "Access forbidden"
+    }
+  },
+  "homepage": {
+    "hero": {
+      "bin": "BIN 100240007639",
+      "companyName": "UNICOVER LLP",
+      "subtitle": "Engineering and design-construction company",
+      "description": "Full range of services in industrial safety, surveys, design, construction works and professional training",
+      "construction": {
+        "title": "Construction",
+        "description": "Design, surveys and construction and installation works"
+      },
+      "education": {
+        "title": "Education Center",
+        "description": "Training and retraining of specialists in industrial safety"
+      },
+      "learnMore": "Learn More",
+      "stats": {
+        "licenses": {
+          "title": "Licenses",
+          "description": "Full package of state licenses and certificates"
+        },
+        "quality": {
+          "title": "Quality",
+          "description": "Compliance with high standards and norms of RK"
+        },
+        "training": {
+          "title": "Training",
+          "description": "Modern programs for specialist training"
+        }
+      }
+    },
+    "about": {
+      "badge": "About Company",
+      "title": "UNICOVER LLP",
+      "heading": "Multi-profile engineering and design-construction company",
+      "description1": "UNICOVER LLP provides a full range of services in industrial safety, surveys, design and construction works. We work in the Kazakhstan market, maintaining high standards of quality, safety and regulatory compliance.",
+      "description2": "The company has all necessary licenses and certificates confirming competence and the right to perform works of increased technical complexity.",
+      "weCombine": "We combine:",
+      "combineItems": {
+        "professionalism": "Professionalism of the engineering team",
+        "technologies": "Modern technologies",
+        "knowledge": "Deep knowledge of the regulatory framework"
+      },
+      "ourGoal": {
+        "title": "Our Goal",
+        "description": "Create reliable solutions that work for many years"
+      },
+      "principles": {
+        "title": "Our Principles",
+        "quality": {
+          "title": "Quality",
+          "description": "High standards of work performance"
+        },
+        "safety": {
+          "title": "Safety",
+          "description": "Compliance with industrial safety standards"
+        },
+        "responsibility": {
+          "title": "Responsibility",
+          "description": "Professional approach to each project"
+        },
+        "transparency": {
+          "title": "Transparency",
+          "description": "Openness and honesty in work"
+        }
+      },
+      "imageAlt": "About UNICOVER company"
+    },
+    "construction": {
+      "badge": "Construction Direction",
+      "title": "Design and Construction",
+      "description": "Full cycle of works from engineering surveys to putting the facility into operation",
+      "services": {
+        "surveys": {
+          "title": "Engineering Surveys",
+          "items": {
+            "geological": "Engineering and geological studies",
+            "hydrogeological": "Engineering and hydrogeological works",
+            "geodetic": "Engineering and geodetic surveys",
+            "equipment": "High-precision equipment"
+          }
+        },
+        "design": {
+          "title": "Design",
+          "items": {
+            "technological": "Technological design of production facilities",
+            "architectural": "Architectural design (I-III responsibility levels)",
+            "urban": "Urban planning design and planning",
+            "engineering": "Design of engineering systems and networks",
+            "reconstruction": "Reconstruction and major repairs"
+          }
+        },
+        "construction": {
+          "title": "Construction and Installation Works",
+          "items": {
+            "category": "C&IW Category III",
+            "buildings": "Construction of facilities for various purposes",
+            "installation": "Equipment installation",
+            "modernization": "Reconstruction and modernization",
+            "standards": "Compliance with SNiP and RK standards"
+          }
+        }
+      },
+      "licenses": {
+        "title": "Licenses and Certificates",
+        "description": "UNICOVER LLP has a full package of state licenses and industry certificates confirming the right to perform works in the following areas:",
+        "surveys": {
+          "title": "Surveys and Design",
+          "items": {
+            "surveys": "License for engineering surveys",
+            "design": "License for design",
+            "architectural": "Architectural design I-III levels"
+          }
+        },
+        "construction": {
+          "title": "Construction",
+          "items": {
+            "category": "License for C&IW Category III",
+            "reconstruction": "Reconstruction and modernization of facilities",
+            "repair": "Major repairs of buildings"
+          }
+        }
+      }
+    },
+    "education": {
+      "badge": "Education Direction",
+      "title": "UNICOVER Education Center",
+      "description": "Training and retraining of specialists in industrial safety",
+      "safety": {
+        "title": "Industrial Safety",
+        "description": "The company has a certificate for the right to conduct work in the field of industrial safety, including:",
+        "items": {
+          "training": "Training and retraining of specialists and workers in industrial safety",
+          "safetyRequirements": "Training in safety requirements when operating hazardous production facilities"
+        },
+        "commitment": "We ensure a high level of competence of enterprise personnel by implementing educational programs that comply with industry norms and standards of the Republic of Kazakhstan."
+      },
+      "features": {
+        "certificate": {
+          "title": "Certificate for the right to perform work",
+          "description": "Official permission to train specialists in industrial safety"
+        },
+        "teachers": {
+          "title": "Experienced teachers",
+          "description": "Professional staff with practical experience working at hazardous facilities"
+        },
+        "programs": {
+          "title": "Modern programs",
+          "description": "Relevant educational programs that comply with RK standards"
+        },
+        "documents": {
+          "title": "Official documents",
+          "description": "Issuance of certificates and protocols of the established form"
+        }
+      },
+      "imageAlt": "Education Center"
+    },
+    "contacts": {
+      "badge": "Contacts",
+      "title": "Contact Us",
+      "description": "We are ready to answer your questions and discuss cooperation opportunities",
+      "info": {
+        "bin": {
+          "title": "BIN",
+          "content": "100240007639"
+        },
+        "address": {
+          "title": "Address",
+          "content": "Atyrau, Student Street 25\nBC Bayterek Plaza, 5th floor"
+        },
+        "phone": {
+          "title": "Phones",
+          "content": "+7 (7122) 20-80-92\n+7 708 420-80-92"
+        },
+        "email": {
+          "title": "Email",
+          "content": "info@unicover.kz"
+        },
+        "workingHours": {
+          "title": "Working Hours",
+          "content": "Mon-Fri: 9:00 - 18:00\nSat-Sun: Day off"
+        }
+      },
+      "companyDetails": {
+        "title": "Company Details",
+        "fullName": "Full Name",
+        "fullNameValue": "UNICOVER LLP",
+        "bin": "BIN",
+        "binValue": "100240007639",
+        "legalAddress": "Legal Address",
+        "legalAddressValue": "Atyrau, Student Street 25, BC Bayterek Plaza, 5th floor",
+        "email": "Email",
+        "emailValue": "info@unicover.kz"
+      },
+      "form": {
+        "title": "Send Request",
+        "name": "Your Name",
+        "namePlaceholder": "Enter your name",
+        "company": "Company",
+        "companyPlaceholder": "Your company name",
+        "email": "Email",
+        "emailPlaceholder": "your@email.com",
+        "phone": "Phone",
+        "phonePlaceholder": "+7 (___) ___-____",
+        "direction": "Area of Interest",
+        "directionPlaceholder": "Select direction",
+        "directions": {
+          "construction": "Construction and Design",
+          "engineering": "Engineering Surveys",
+          "education": "Training",
+          "safety": "Industrial Safety",
+          "other": "Other"
+        },
+        "message": "Message",
+        "messagePlaceholder": "Describe your request in more detail...",
+        "submit": "Send Request",
+        "sending": "Sending...",
+        "requiredFields": "Required fields to fill",
+        "successMessage": "Your message has been successfully sent! We will contact you soon.",
+        "errorMessage": "Error sending message. Please try again.",
+        "thankYou": "Thank you for your message!",
+        "contactSoon": "We will contact you soon."
+      }
+    }
   }
 }
-

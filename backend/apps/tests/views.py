@@ -12,6 +12,7 @@ from .serializers import (
     QuestionCreateSerializer,
 )
 from apps.accounts.permissions import IsAdminOrReadOnly
+from apps.core.utils import get_request_language
 
 
 class TestViewSet(viewsets.ModelViewSet):
@@ -20,10 +21,19 @@ class TestViewSet(viewsets.ModelViewSet):
     serializer_class = TestSerializer
     permission_classes = [IsAdminOrReadOnly]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ['course', 'is_active']
+    filterset_fields = ['is_active', 'language']
     search_fields = ['title']
     ordering_fields = ['created_at', 'title']
     ordering = ['-created_at']
+    
+    def get_queryset(self):
+        """Filter tests by language"""
+        queryset = super().get_queryset()
+        # Фильтрация по языку (если не указан явно в параметрах запроса)
+        if 'language' not in self.request.query_params:
+            lang = get_request_language(self.request)
+            queryset = queryset.filter(language=lang)
+        return queryset
     
     @action(detail=True, methods=['get', 'post'])
     def questions(self, request, pk=None):

@@ -1,7 +1,10 @@
 import { Building2, GraduationCap, Shield, ArrowRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 
 export function HeroUnicover() {
+  const { t } = useTranslation();
+  
   return (
     <section id="home" className="relative bg-gradient-to-br from-blue-900 via-blue-800 to-blue-700 text-white overflow-hidden">
       <div className="absolute inset-0 opacity-10">
@@ -17,18 +20,17 @@ export function HeroUnicover() {
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full mb-6">
               <Shield className="w-5 h-5" />
-              <span className="text-sm font-medium">БИН 100240007639</span>
+              <span className="text-sm font-medium">{t('homepage.hero.bin')}</span>
             </div>
             
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-              ТОО "UNICOVER"
+              {t('homepage.hero.companyName')}
             </h1>
             <p className="text-xl md:text-2xl mb-4 text-blue-50">
-              Инженерная и проектно-строительная компания
+              {t('homepage.hero.subtitle')}
             </p>
             <p className="text-lg mb-8 text-blue-100 max-w-3xl mx-auto">
-              Полный комплекс услуг в сфере промышленной безопасности, изысканий, проектирования, 
-              строительных работ и профессионального обучения
+              {t('homepage.hero.description')}
             </p>
           </div>
 
@@ -43,14 +45,14 @@ export function HeroUnicover() {
                   <Building2 className="w-8 h-8" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-2xl font-bold mb-2">Строительство</h3>
+                  <h3 className="text-2xl font-bold mb-2">{t('homepage.hero.construction.title')}</h3>
                   <p className="text-blue-100 text-sm mb-4">
-                    Проектирование, изыскания и строительно-монтажные работы
+                    {t('homepage.hero.construction.description')}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-2 text-sm font-medium group-hover:gap-3 transition-all">
-                Подробнее
+                {t('homepage.hero.learnMore')}
                 <ArrowRight className="w-4 h-4" />
               </div>
             </a>
@@ -64,14 +66,14 @@ export function HeroUnicover() {
                   <GraduationCap className="w-8 h-8" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-2xl font-bold mb-2">Учебный центр</h3>
+                  <h3 className="text-2xl font-bold mb-2">{t('homepage.hero.education.title')}</h3>
                   <p className="text-blue-100 text-sm mb-4">
-                    Подготовка и переподготовка специалистов в области промышленной безопасности
+                    {t('homepage.hero.education.description')}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-2 text-sm font-medium group-hover:gap-3 transition-all">
-                Подробнее
+                {t('homepage.hero.learnMore')}
                 <ArrowRight className="w-4 h-4" />
               </div>
             </a>
@@ -81,18 +83,18 @@ export function HeroUnicover() {
           <div className="grid sm:grid-cols-3 gap-6">
             <div className="bg-white/10 backdrop-blur-sm p-6 rounded-xl text-center">
               <Shield className="w-8 h-8 mx-auto mb-3" />
-              <h4 className="font-bold mb-2">Лицензии</h4>
-              <p className="text-sm text-blue-100">Полный пакет государственных лицензий и аттестатов</p>
+              <h4 className="font-bold mb-2">{t('homepage.hero.stats.licenses.title')}</h4>
+              <p className="text-sm text-blue-100">{t('homepage.hero.stats.licenses.description')}</p>
             </div>
             <div className="bg-white/10 backdrop-blur-sm p-6 rounded-xl text-center">
               <Building2 className="w-8 h-8 mx-auto mb-3" />
-              <h4 className="font-bold mb-2">Качество</h4>
-              <p className="text-sm text-blue-100">Соблюдение высоких стандартов и норм РК</p>
+              <h4 className="font-bold mb-2">{t('homepage.hero.stats.quality.title')}</h4>
+              <p className="text-sm text-blue-100">{t('homepage.hero.stats.quality.description')}</p>
             </div>
             <div className="bg-white/10 backdrop-blur-sm p-6 rounded-xl text-center">
               <GraduationCap className="w-8 h-8 mx-auto mb-3" />
-              <h4 className="font-bold mb-2">Обучение</h4>
-              <p className="text-sm text-blue-100">Современные программы подготовки специалистов</p>
+              <h4 className="font-bold mb-2">{t('homepage.hero.stats.training.title')}</h4>
+              <p className="text-sm text-blue-100">{t('homepage.hero.stats.training.description')}</p>
             </div>
           </div>
         </div>

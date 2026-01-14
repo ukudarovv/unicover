@@ -1,14 +1,15 @@
 from django.contrib import admin
-from .models import Category, Course, Module, Lesson, CourseEnrollment, LessonProgress
+from .models import Category, Course, Module, Lesson, CourseEnrollment, LessonProgress, CourseCompletionVerification
 
 
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
-    list_display = ('title', 'category', 'status', 'format', 'duration', 'passing_score', 'created_at')
+    list_display = ('title', 'category', 'status', 'format', 'duration', 'passing_score', 'final_test', 'created_at')
     list_filter = ('status', 'category', 'format', 'created_at')
     search_fields = ('title', 'title_kz', 'title_en', 'description')
     ordering = ('-created_at',)
     readonly_fields = ('created_at', 'updated_at')
+    raw_id_fields = ('final_test',)
 
 
 @admin.register(Module)
@@ -44,4 +45,12 @@ class LessonProgressAdmin(admin.ModelAdmin):
     list_filter = ('completed', 'completed_at')
     search_fields = ('enrollment__user__phone', 'enrollment__user__full_name', 'lesson__title')
     readonly_fields = ('completed_at',)
+
+
+@admin.register(CourseCompletionVerification)
+class CourseCompletionVerificationAdmin(admin.ModelAdmin):
+    list_display = ('enrollment', 'verified', 'verified_at', 'otp_expires_at', 'created_at')
+    list_filter = ('verified', 'created_at', 'verified_at')
+    search_fields = ('enrollment__user__full_name', 'enrollment__user__phone', 'enrollment__course__title')
+    readonly_fields = ('otp_code', 'otp_expires_at', 'verified_at', 'created_at', 'updated_at')
 

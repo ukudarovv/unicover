@@ -17,6 +17,17 @@ class IsAdminOrReadOnly(permissions.BasePermission):
         return request.user and request.user.is_authenticated and request.user.is_admin
 
 
+class IsAdminOrPublicReadOnly(permissions.BasePermission):
+    """Permission for admin users or public read-only access"""
+    
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            # Разрешаем публичный доступ для чтения
+            return True
+        # Для записи требуется авторизация и права администратора
+        return request.user and request.user.is_authenticated and request.user.is_admin
+
+
 class IsOwnerOrAdmin(permissions.BasePermission):
     """Permission for object owner or admin"""
     

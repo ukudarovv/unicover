@@ -53,7 +53,7 @@ export function useMyEnrollments() {
           
           // Check each course to see if user is enrolled
           // Limit to first 20 courses to avoid too many API calls
-          const coursesToCheck = allCourses.slice(0, 20);
+          const coursesToCheck = allCourses.results.slice(0, 20);
           
           for (const course of coursesToCheck) {
             try {

@@ -1,27 +1,30 @@
 import { Target, Award, Users, Shield } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 
 export function AboutUnicover() {
+  const { t } = useTranslation();
+  
   const principles = [
     {
       icon: Shield,
-      title: 'Качество',
-      description: 'Высокие стандарты выполнения работ',
+      title: t('homepage.about.principles.quality.title'),
+      description: t('homepage.about.principles.quality.description'),
     },
     {
       icon: Award,
-      title: 'Безопасность',
-      description: 'Соблюдение норм промышленной безопасности',
+      title: t('homepage.about.principles.safety.title'),
+      description: t('homepage.about.principles.safety.description'),
     },
     {
       icon: Users,
-      title: 'Ответственность',
-      description: 'Профессиональный подход к каждому проекту',
+      title: t('homepage.about.principles.responsibility.title'),
+      description: t('homepage.about.principles.responsibility.description'),
     },
     {
       icon: Target,
-      title: 'Прозрачность',
-      description: 'Открытость и честность в работе',
+      title: t('homepage.about.principles.transparency.title'),
+      description: t('homepage.about.principles.transparency.description'),
     },
   ];
 
@@ -30,10 +33,10 @@ export function AboutUnicover() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <div className="inline-block bg-blue-100 text-blue-600 px-4 py-2 rounded-full mb-4">
-            О компании
+            {t('homepage.about.badge')}
           </div>
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            ТОО «Unicover»
+            {t('homepage.about.title')}
           </h2>
         </div>
 
@@ -41,41 +44,38 @@ export function AboutUnicover() {
           {/* Content */}
           <div>
             <h3 className="text-2xl font-bold text-gray-900 mb-6">
-              Многопрофильная инженерная и проектно-строительная компания
+              {t('homepage.about.heading')}
             </h3>
             <p className="text-gray-600 mb-6 leading-relaxed">
-              ТОО «Unicover» оказывает полный комплекс услуг в сфере <strong>промышленной безопасности, 
-              изысканий, проектирования и строительных работ</strong>. Мы работаем на рынке Казахстана, 
-              соблюдая высокие стандарты качества, безопасности и нормативного соответствия.
+              {t('homepage.about.description1')}
             </p>
             <p className="text-gray-600 mb-6 leading-relaxed">
-              Компания располагает всеми необходимыми <strong>лицензиями и аттестатами</strong>, 
-              подтверждающими компетентность и право выполнения работ повышенной технической сложности.
+              {t('homepage.about.description2')}
             </p>
             
             <div className="bg-blue-50 p-6 rounded-xl border-l-4 border-blue-600 mb-6">
               <p className="text-gray-800 font-medium mb-3">
-                Мы объединяем:
+                {t('homepage.about.weCombine')}
               </p>
               <ul className="space-y-2 text-gray-700">
                 <li className="flex items-start gap-2">
                   <span className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></span>
-                  <span>Профессионализм инженерной команды</span>
+                  <span>{t('homepage.about.combineItems.professionalism')}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></span>
-                  <span>Современные технологии</span>
+                  <span>{t('homepage.about.combineItems.technologies')}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></span>
-                  <span>Глубокое знание нормативной базы</span>
+                  <span>{t('homepage.about.combineItems.knowledge')}</span>
                 </li>
               </ul>
             </div>
 
             <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-6 rounded-xl">
-              <p className="text-lg font-semibold mb-2">Наша цель</p>
-              <p className="text-blue-100">Создавать надёжные решения, которые работают долгие годы</p>
+              <p className="text-lg font-semibold mb-2">{t('homepage.about.ourGoal.title')}</p>
+              <p className="text-blue-100">{t('homepage.about.ourGoal.description')}</p>
             </div>
           </div>
 
@@ -84,7 +84,7 @@ export function AboutUnicover() {
             <div className="rounded-2xl overflow-hidden shadow-2xl">
               <ImageWithFallback
                 src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBidWlsZGluZ3xlbnwwfHx8fDE3MzQ4MDA2NDV8MA&ixlib=rb-4.1.0&q=80&w=1080"
-                alt="О компании UNICOVER"
+                alt={t('homepage.about.imageAlt')}
                 className="w-full h-[500px] object-cover"
               />
             </div>
@@ -93,7 +93,7 @@ export function AboutUnicover() {
 
         {/* Principles */}
         <div className="bg-white p-8 md:p-12 rounded-2xl shadow-lg">
-          <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">Наши принципы</h3>
+          <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">{t('homepage.about.principles.title')}</h3>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {principles.map((principle, index) => {
               const Icon = principle.icon;

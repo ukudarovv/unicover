@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { protocolsService } from '../services/protocols';
 import { Protocol } from '../types/lms';
+import { adaptProtocol } from '../utils/typeAdapters';
 
 export function useProtocols(params?: { user?: string; status?: string }) {
   const [protocols, setProtocols] = useState<Protocol[]>([]);
@@ -13,9 +14,11 @@ export function useProtocols(params?: { user?: string; status?: string }) {
         setLoading(true);
         setError(null);
         const data = await protocolsService.getProtocols(params);
-        // Защита от не-массивов
+        // Защита от не-массивов и адаптация данных
         const dataArray = Array.isArray(data) ? data : [];
-        setProtocols(dataArray);
+        const adaptedProtocols = dataArray.map(adaptProtocol);
+        console.log('Fetched protocols:', adaptedProtocols);
+        setProtocols(adaptedProtocols);
       } catch (err: any) {
         setError(err.message || 'Ошибка загрузки протоколов');
         console.error('Failed to fetch protocols:', err);
@@ -33,9 +36,10 @@ export function useProtocols(params?: { user?: string; status?: string }) {
       setLoading(true);
       setError(null);
       const data = await protocolsService.getProtocols(params);
-      // Защита от не-массивов
+      // Защита от не-массивов и адаптация данных
       const dataArray = Array.isArray(data) ? data : [];
-      setProtocols(dataArray);
+      const adaptedProtocols = dataArray.map(adaptProtocol);
+      setProtocols(adaptedProtocols);
     } catch (err: any) {
       setError(err.message || 'Ошибка загрузки протоколов');
       console.error('Failed to fetch protocols:', err);

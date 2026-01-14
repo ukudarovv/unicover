@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { User, Lock, Phone, Eye, EyeOff, UserCircle } from 'lucide-react';
 import { useUser } from '../contexts/UserContext';
 import { ApiError } from '../services/api';
 
 export function LoginForm() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useUser();
@@ -17,28 +19,28 @@ export function LoginForm() {
   // Демо-аккаунты для быстрого входа
   const demoAccounts = [
     {
-      role: 'Студент (Слушатель)',
+      role: t('forms.login.demoAccounts.student'),
       phone: '77771111111',
       password: 'student123',
-      description: 'Прохождение курсов, тестов, получение сертификатов',
+      description: t('forms.login.demoAccounts.studentDesc'),
     },
     {
-      role: 'Член ПДЭК',
+      role: t('forms.login.demoAccounts.pdekMember'),
       phone: '77775555555',
       password: 'pdek123',
-      description: 'Подписание протоколов экзаменов',
+      description: t('forms.login.demoAccounts.pdekMemberDesc'),
     },
     {
-      role: 'Председатель ПДЭК',
+      role: t('forms.login.demoAccounts.pdekChairman'),
       phone: '77776666666',
       password: 'chairman123',
-      description: 'Финальное утверждение протоколов',
+      description: t('forms.login.demoAccounts.pdekChairmanDesc'),
     },
     {
-      role: 'Администратор',
+      role: t('forms.login.demoAccounts.admin'),
       phone: '77771234567',
       password: 'admin123',
-      description: 'Управление системой, курсами, пользователями',
+      description: t('forms.login.demoAccounts.adminDesc'),
     },
   ];
 
@@ -187,11 +189,13 @@ export function LoginForm() {
           {/* Login Form */}
           <div className="bg-white rounded-2xl shadow-xl p-8">
             <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                <span className="text-white font-bold text-2xl">UC</span>
-              </div>
-              <h2 className="text-3xl font-bold text-gray-900">Вход в систему</h2>
-              <p className="text-gray-600 mt-2">Учебный центр UNICOVER</p>
+              <img 
+                src="/logo.jpg" 
+                alt="UNICOVER Logo" 
+                className="h-16 w-auto object-contain mx-auto mb-4"
+              />
+              <h2 className="text-3xl font-bold text-gray-900">{t('forms.login.title')}</h2>
+              <p className="text-gray-600 mt-2">{t('forms.login.subtitle')}</p>
             </div>
 
             {error && (
@@ -203,7 +207,7 @@ export function LoginForm() {
             <form onSubmit={handleLogin} className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Номер телефона
+                  {t('forms.login.phone')}
                 </label>
                 <div className="relative">
                   <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -211,7 +215,7 @@ export function LoginForm() {
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+7 (XXX) XXX-XX-XX"
+                    placeholder={t('forms.login.phonePlaceholder')}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                   />
@@ -220,7 +224,7 @@ export function LoginForm() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Пароль
+                  {t('forms.login.password')}
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -228,7 +232,7 @@ export function LoginForm() {
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Введите пароль"
+                    placeholder={t('forms.login.passwordPlaceholder')}
                     className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                   />
@@ -247,19 +251,19 @@ export function LoginForm() {
                 disabled={loading}
                 className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Вход...' : 'Войти'}
+                {loading ? t('forms.login.loggingIn') : t('forms.login.loginButton')}
               </button>
             </form>
 
             <div className="mt-6 text-center">
               <Link to="/register" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-                Нет аккаунта? Зарегистрироваться
+                {t('forms.login.noAccount')} {t('forms.login.register')}
               </Link>
             </div>
 
             <div className="mt-6 pt-6 border-t border-gray-200">
               <p className="text-xs text-gray-500 text-center">
-                Демонстрационная версия. Используйте аккаунты справа →
+                {t('forms.login.demoAccounts.demoVersion')}
               </p>
             </div>
           </div>
@@ -267,9 +271,9 @@ export function LoginForm() {
           {/* Demo Accounts */}
           <div className="space-y-4">
             <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl shadow-xl p-8 text-white">
-              <h3 className="text-2xl font-bold mb-2">Демо-аккаунты</h3>
+              <h3 className="text-2xl font-bold mb-2">{t('forms.login.demoAccounts.title')}</h3>
               <p className="text-blue-100 text-sm mb-6">
-                Войдите под разными ролями для тестирования функционала
+                {t('forms.login.demoAccounts.subtitle')}
               </p>
             </div>
 
@@ -304,7 +308,7 @@ export function LoginForm() {
                       disabled={loading}
                       className="mt-3 w-full text-center px-4 py-2 bg-blue-600 text-white text-sm rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {loading ? 'Вход...' : `Войти как ${account.role}`}
+                      {loading ? t('forms.login.loggingIn') : t('forms.login.demoAccounts.loginAs', { role: account.role })}
                     </button>
                   </div>
                 </div>

@@ -1,16 +1,30 @@
 import { useState, useEffect } from 'react';
-import { Users, BookOpen, FileQuestion, Award, Settings, TrendingUp, Plus, Search, Filter, Download, Edit, Trash2, Eye, X, CheckCircle, XCircle, UserPlus, Tag, FileText, Mail } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Users, BookOpen, FileQuestion, Award, Settings, TrendingUp, Plus, Search, Filter, Download, Edit, Trash2, Eye, X, CheckCircle, XCircle, UserPlus, Tag, FileText, Mail, RotateCcw, Ban, Building2, Handshake } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { CourseEditor } from '../admin/CourseEditor';
-import { TestEditor } from '../admin/TestEditor';
+import { useTranslation } from 'react-i18next';
 import { UserEditor } from '../admin/UserEditor';
 import { UserManagement } from '../admin/UserManagement';
 import { LicenseManagement } from '../admin/LicenseManagement';
 import { LicenseEditor } from '../admin/LicenseEditor';
 import { ContactManagement } from '../admin/ContactManagement';
+import { ExtraAttemptRequests } from '../admin/ExtraAttemptRequests';
 import { AddStudentsToCourseModal } from '../admin/AddStudentsToCourseModal';
+import { VacancyManagement } from '../admin/VacancyManagement';
+import { VacancyApplications } from '../admin/VacancyApplications';
+import { VacancyStatistics } from '../admin/VacancyStatistics';
+import { VacancyEditor } from '../admin/VacancyEditor';
+import { ProjectManagement } from '../admin/ProjectManagement';
+import { ProjectEditor } from '../admin/ProjectEditor';
+import { ProjectCategoryManagement } from '../admin/ProjectCategoryManagement';
+import { PartnerManagement } from '../admin/PartnerManagement';
+import { PartnerEditor } from '../admin/PartnerEditor';
+import { CertificateManagement } from '../admin/CertificateManagement';
 import { Course, Test, User } from '../../types/lms';
 import { License, licensesService } from '../../services/licenses';
+import { Vacancy, vacanciesService } from '../../services/vacancies';
+import { Project, ProjectDetail, projectsService } from '../../services/projects';
+import { Partner, partnersService } from '../../services/partners';
 import { useAnalytics, useEnrollmentTrend, useTestResultsDistribution, useCoursesPopularity, useTopStudents } from '../../hooks/useAnalytics';
 import { useCourses } from '../../hooks/useCourses';
 import { useTests } from '../../hooks/useTests';
@@ -21,29 +35,36 @@ import { categoriesService, Category } from '../../services/categories';
 import { TablePagination } from '../ui/TablePagination';
 import { toast } from 'sonner';
 
-function getStatusText(status: string): string {
-  const statusMap: Record<string, string> = {
-    'in_development': 'В разработке',
-    'draft': 'Черновик',
-    'published': 'Опубликован',
-    'assigned': 'Назначен',
-    'in_progress': 'В процессе',
-    'exam_available': 'Экзамен доступен',
-    'exam_passed': 'Экзамен пройден',
-    'completed': 'Завершен',
-    'failed': 'Не сдан',
-    'annulled': 'Аннулирован',
+function getStatusText(status: string, t: (key: string) => string): string {
+  const statusKeyMap: Record<string, string> = {
+    'in_development': 'admin.dashboard.status.inDevelopment',
+    'draft': 'admin.dashboard.status.draft',
+    'published': 'admin.dashboard.status.published',
+    'assigned': 'admin.dashboard.status.assigned',
+    'in_progress': 'admin.dashboard.status.inProgress',
+    'exam_available': 'admin.dashboard.status.examAvailable',
+    'exam_passed': 'admin.dashboard.status.examPassed',
+    'completed': 'admin.dashboard.status.completed',
+    'failed': 'admin.dashboard.status.failed',
+    'annulled': 'admin.dashboard.status.annulled',
   };
-  return statusMap[status] || status;
+  const key = statusKeyMap[status];
+  return key ? t(key) : status;
 }
 
 export function AdminDashboard() {
-  const [activeSection, setActiveSection] = useState<'overview' | 'courses' | 'users' | 'tests' | 'reports' | 'categories' | 'licenses' | 'contacts'>('overview');
-  const [showCourseEditor, setShowCourseEditor] = useState(false);
-  const [showTestEditor, setShowTestEditor] = useState(false);
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const [activeSection, setActiveSection] = useState<'overview' | 'courses' | 'users' | 'tests' | 'reports' | 'categories' | 'licenses' | 'contacts' | 'extra-attempts' | 'vacancies' | 'vacancy-applications' | 'vacancy-statistics' | 'projects' | 'project-categories' | 'partners' | 'certificates'>('overview');
   const [showUserEditor, setShowUserEditor] = useState(false);
   const [showLicenseEditor, setShowLicenseEditor] = useState(false);
+  const [showVacancyEditor, setShowVacancyEditor] = useState(false);
+  const [showProjectEditor, setShowProjectEditor] = useState(false);
+  const [showPartnerEditor, setShowPartnerEditor] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
+  const [vacanciesRefreshTrigger, setVacanciesRefreshTrigger] = useState(0);
+  const [projectsRefreshTrigger, setProjectsRefreshTrigger] = useState(0);
+  const [partnersRefreshTrigger, setPartnersRefreshTrigger] = useState(0);
   const [selectedCourseForStudents, setSelectedCourseForStudents] = useState<any>(null);
   const [coursesRefetch, setCoursesRefetch] = useState<(() => void) | null>(null);
   const [testsRefetch, setTestsRefetch] = useState<(() => void) | null>(null);
@@ -51,85 +72,29 @@ export function AdminDashboard() {
   const [licensesRefreshTrigger, setLicensesRefreshTrigger] = useState(0);
 
   const handleCreateCourse = () => {
-    setEditingItem(null);
-    setShowCourseEditor(true);
+    navigate('/admin/courses/new/edit');
   };
 
   const handleEditCourse = (course: Course) => {
-    setEditingItem(course);
-    setShowCourseEditor(true);
+    // Навигируем на страницу редактирования курса
+    navigate(`/admin/courses/${course.id}/edit`);
   };
 
-  const handleSaveCourse = async (course: Partial<Course>) => {
-    try {
-      // Валидация обязательных полей
-      if (!course.title || !course.title.trim()) {
-        toast.error('Введите название курса');
-        return;
-      }
-      
-      if (!course.category) {
-        toast.error('Выберите категорию курса');
-        return;
-      }
-      
-      if (editingItem) {
-        await coursesService.updateCourse(editingItem.id, course);
-        toast.success('Курс успешно обновлен');
-      } else {
-        await coursesService.createCourse(course);
-        toast.success('Курс успешно создан');
-      }
-      setShowCourseEditor(false);
-      setEditingItem(null);
-      // Обновить список курсов
-      if (coursesRefetch) {
-        coursesRefetch();
-      }
-    } catch (error: any) {
-      toast.error(`Ошибка сохранения курса: ${error.message || 'Неизвестная ошибка'}`);
-      console.error('Failed to save course:', error);
-    }
-  };
 
   const handleCreateTest = () => {
-    setEditingItem(null);
-    setShowTestEditor(true);
+    navigate('/admin/tests/new');
   };
 
   const handleEditTest = async (test: Test) => {
     try {
-      // Загружаем тест заново, чтобы получить актуальные данные с courseId
-      const fullTest = await testsService.getTest(test.id);
-      setEditingItem(fullTest);
-      setShowTestEditor(true);
+      // Навигируем на страницу редактирования теста
+      navigate(`/admin/tests/${test.id}/edit`);
     } catch (error: any) {
-      toast.error(`Ошибка загрузки теста: ${error.message || 'Неизвестная ошибка'}`);
+      toast.error(`${t('admin.dashboard.messages.testLoadError')}: ${error.message || t('admin.dashboard.messages.unknownError')}`);
       console.error('Failed to load test:', error);
     }
   };
 
-  const handleSaveTest = async (test: Partial<Test>) => {
-    try {
-      let savedTest: Test;
-      if (editingItem) {
-        savedTest = await testsService.updateTest(editingItem.id, test);
-        toast.success('Тест успешно обновлен');
-      } else {
-        savedTest = await testsService.createTest(test);
-        toast.success('Тест успешно создан');
-      }
-      setShowTestEditor(false);
-      setEditingItem(null);
-      // Обновить список тестов
-      if (testsRefetch) {
-        testsRefetch();
-      }
-    } catch (error: any) {
-      toast.error(`Ошибка сохранения теста: ${error.message || 'Неизвестная ошибка'}`);
-      console.error('Failed to save test:', error);
-    }
-  };
 
   const handleCreateUser = () => {
     setEditingItem(null);
@@ -155,16 +120,16 @@ export function AdminDashboard() {
     try {
       if (editingItem) {
         await licensesService.updateLicense(editingItem.id, license, file);
-        toast.success('Лицензия успешно обновлена');
+        toast.success(t('admin.dashboard.messages.licenseUpdateSuccess'));
       } else {
         await licensesService.createLicense(license, file);
-        toast.success('Лицензия успешно создана');
+        toast.success(t('admin.dashboard.messages.licenseCreateSuccess'));
       }
       setShowLicenseEditor(false);
       setEditingItem(null);
       setLicensesRefreshTrigger(prev => prev + 1);
     } catch (error: any) {
-      toast.error(`Ошибка сохранения лицензии: ${error.message || 'Неизвестная ошибка'}`);
+      toast.error(`${t('admin.dashboard.messages.licenseSaveError')}: ${error.message || t('admin.dashboard.messages.unknownError')}`);
       console.error('Failed to save license:', error);
     }
   };
@@ -173,18 +138,18 @@ export function AdminDashboard() {
     try {
       if (editingItem) {
         await usersService.updateUser(editingItem.id, user);
-        toast.success('Пользователь успешно обновлен');
+        toast.success(t('admin.dashboard.messages.userUpdateSuccess'));
       } else {
         const createdUser = await usersService.createUser(user);
         const password = createdUser.generated_password || user.password;
-        const userName = user.fullName || user.full_name || user.phone || 'пользователя';
+        const userName = user.fullName || user.full_name || user.phone || t('admin.users.userLower');
         
         // Показываем пароль после создания
         if (password) {
           toast.success(
-            `Пользователь "${userName}" успешно создан!`,
+            t('admin.dashboard.messages.userCreated', { name: userName }),
             {
-              description: `Пароль: ${password}\n\nСкопируйте пароль для передачи пользователю.`,
+              description: t('admin.dashboard.messages.passwordCopy', { password }),
               duration: 15000, // Показывать 15 секунд
             }
           );
@@ -197,7 +162,7 @@ export function AdminDashboard() {
           console.log(`Пароль: ${password}`);
           console.log(`========================\n`);
         } else {
-          toast.success('Пользователь успешно создан');
+          toast.success(t('admin.dashboard.messages.userCreateSuccess'));
         }
       }
       setShowUserEditor(false);
@@ -205,8 +170,129 @@ export function AdminDashboard() {
       // Обновление списка пользователей
       setUsersRefreshTrigger(prev => prev + 1);
     } catch (error: any) {
-      toast.error(`Ошибка сохранения пользователя: ${error.message || 'Неизвестная ошибка'}`);
+      toast.error(`${t('admin.dashboard.messages.userSaveError')}: ${error.message || t('admin.dashboard.messages.unknownError')}`);
       console.error('Failed to save user:', error);
+    }
+  };
+
+  const handleCreateVacancy = () => {
+    setEditingItem(null);
+    setShowVacancyEditor(true);
+  };
+
+  const handleEditVacancy = (vacancy: Vacancy) => {
+    setEditingItem(vacancy);
+    setShowVacancyEditor(true);
+  };
+
+  const handleSaveVacancy = async (vacancy: Partial<Vacancy>) => {
+    try {
+      if (editingItem) {
+        await vacanciesService.updateVacancy(editingItem.id, vacancy);
+        toast.success(t('admin.dashboard.messages.vacancyUpdateSuccess'));
+      } else {
+        await vacanciesService.createVacancy(vacancy);
+        toast.success(t('admin.dashboard.messages.vacancyCreateSuccess'));
+      }
+      setShowVacancyEditor(false);
+      setEditingItem(null);
+      setVacanciesRefreshTrigger(prev => prev + 1);
+    } catch (error: any) {
+      toast.error(`${t('admin.dashboard.messages.vacancySaveError')}: ${error.message || t('admin.dashboard.messages.unknownError')}`);
+      console.error('Failed to save vacancy:', error);
+    }
+  };
+
+  const handleCreateProject = () => {
+    setEditingItem(null);
+    setShowProjectEditor(true);
+  };
+
+  const handleEditProject = async (project: Project) => {
+    try {
+      // Загружаем полную информацию о проекте для редактирования
+      const projectDetail = await projectsService.getProject(project.id);
+      setEditingItem(projectDetail);
+      setShowProjectEditor(true);
+    } catch (error: any) {
+      toast.error(`${t('admin.dashboard.messages.projectLoadError')}: ${error.message || t('admin.dashboard.messages.unknownError')}`);
+      console.error('Failed to load project details:', error);
+    }
+  };
+
+  const handleSaveProject = async (project: Partial<Project>, imageFile?: File): Promise<Project> => {
+    try {
+      if (!project.title?.trim()) {
+        toast.error(t('admin.dashboard.messages.projectTitleRequired'));
+        throw new Error(t('admin.dashboard.messages.projectTitleRequiredError'));
+      }
+      
+      let savedProject: Project;
+      if (editingItem) {
+        savedProject = await projectsService.updateProject(editingItem.id, project, imageFile);
+        toast.success(t('admin.dashboard.messages.projectUpdateSuccess'));
+      } else {
+        savedProject = await projectsService.createProject(project, imageFile);
+        toast.success(t('admin.dashboard.messages.projectCreateSuccess'));
+      }
+      setShowProjectEditor(false);
+      setEditingItem(null);
+      setProjectsRefreshTrigger(prev => prev + 1);
+      return savedProject;
+    } catch (error: any) {
+      toast.error(`${t('admin.dashboard.messages.projectSaveError')}: ${error.message || t('admin.dashboard.messages.unknownError')}`);
+      console.error('Failed to save project:', error);
+      throw error;
+    }
+  };
+
+  const handleCreatePartner = () => {
+    setEditingItem(null);
+    setShowPartnerEditor(true);
+  };
+
+  const handleEditPartner = (partner: Partner) => {
+    setEditingItem(partner);
+    setShowPartnerEditor(true);
+  };
+
+  const handleSavePartner = async (partner: Partial<Partner>, logoFile?: File): Promise<Partner> => {
+    try {
+      if (!partner.name?.trim()) {
+        toast.error(t('partners.nameRequired'));
+        throw new Error(t('partners.nameRequired'));
+      }
+
+      let savedPartner: Partner;
+      if (editingItem) {
+        const formData = new FormData();
+        formData.append('name', partner.name);
+        if (partner.website) formData.append('website', partner.website);
+        formData.append('order', String(partner.order || 0));
+        formData.append('is_active', String(partner.is_active !== undefined ? partner.is_active : true));
+        if (logoFile) formData.append('logo', logoFile);
+        
+        savedPartner = await partnersService.updatePartner(editingItem.id, formData);
+        toast.success(t('partners.updateSuccess'));
+      } else {
+        const formData = new FormData();
+        formData.append('name', partner.name);
+        if (partner.website) formData.append('website', partner.website);
+        formData.append('order', String(partner.order || 0));
+        formData.append('is_active', String(partner.is_active !== undefined ? partner.is_active : true));
+        if (logoFile) formData.append('logo', logoFile);
+        
+        savedPartner = await partnersService.createPartner(formData);
+        toast.success(t('partners.createSuccess'));
+      }
+      setShowPartnerEditor(false);
+      setEditingItem(null);
+      setPartnersRefreshTrigger(prev => prev + 1);
+      return savedPartner;
+    } catch (error: any) {
+      toast.error(`${t('partners.saveError')}: ${error.message || t('messages.error.generic')}`);
+      console.error('Failed to save partner:', error);
+      throw error;
     }
   };
 
@@ -214,8 +300,8 @@ export function AdminDashboard() {
     <div className="min-h-screen bg-gray-50 pt-20">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Панель администратора</h1>
-          <p className="text-gray-600">Управление учебной платформой UNICOVER</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('admin.dashboard.title')}</h1>
+          <p className="text-gray-600">{t('admin.dashboard.subtitle')}</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
@@ -232,7 +318,7 @@ export function AdminDashboard() {
                   }`}
                 >
                   <TrendingUp className="w-5 h-5" />
-                  <span className="font-medium">Обзор</span>
+                  <span className="font-medium">{t('admin.dashboard.navigation.overview')}</span>
                 </button>
                 <button
                   onClick={() => setActiveSection('courses')}
@@ -243,7 +329,7 @@ export function AdminDashboard() {
                   }`}
                 >
                   <BookOpen className="w-5 h-5" />
-                  <span className="font-medium">Курсы</span>
+                  <span className="font-medium">{t('admin.dashboard.navigation.courses')}</span>
                 </button>
                 <button
                   onClick={() => setActiveSection('users')}
@@ -254,7 +340,7 @@ export function AdminDashboard() {
                   }`}
                 >
                   <Users className="w-5 h-5" />
-                  <span className="font-medium">Пользователи</span>
+                  <span className="font-medium">{t('admin.dashboard.navigation.users')}</span>
                 </button>
                 <button
                   onClick={() => setActiveSection('tests')}
@@ -265,7 +351,7 @@ export function AdminDashboard() {
                   }`}
                 >
                   <FileQuestion className="w-5 h-5" />
-                  <span className="font-medium">Тесты</span>
+                  <span className="font-medium">{t('admin.dashboard.navigation.tests')}</span>
                 </button>
                 <button
                   onClick={() => setActiveSection('reports')}
@@ -276,7 +362,18 @@ export function AdminDashboard() {
                   }`}
                 >
                   <Award className="w-5 h-5" />
-                  <span className="font-medium">Отчеты</span>
+                  <span className="font-medium">{t('admin.dashboard.navigation.reports')}</span>
+                </button>
+                <button
+                  onClick={() => setActiveSection('certificates')}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    activeSection === 'certificates'
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <Award className="w-5 h-5" />
+                  <span className="font-medium">{t('admin.dashboard.navigation.certificates')}</span>
                 </button>
                 <button
                   onClick={() => setActiveSection('categories')}
@@ -287,7 +384,7 @@ export function AdminDashboard() {
                   }`}
                 >
                   <Tag className="w-5 h-5" />
-                  <span className="font-medium">Категории</span>
+                  <span className="font-medium">{t('admin.dashboard.navigation.categories')}</span>
                 </button>
                 <button
                   onClick={() => setActiveSection('licenses')}
@@ -298,7 +395,7 @@ export function AdminDashboard() {
                   }`}
                 >
                   <FileText className="w-5 h-5" />
-                  <span className="font-medium">Лицензии</span>
+                  <span className="font-medium">{t('admin.dashboard.navigation.licenses')}</span>
                 </button>
                 <button
                   onClick={() => setActiveSection('contacts')}
@@ -309,7 +406,84 @@ export function AdminDashboard() {
                   }`}
                 >
                   <Mail className="w-5 h-5" />
-                  <span className="font-medium">Обратная связь</span>
+                  <span className="font-medium">{t('admin.contacts.title')}</span>
+                </button>
+                <button
+                  onClick={() => setActiveSection('extra-attempts')}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    activeSection === 'extra-attempts'
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <RotateCcw className="w-5 h-5 flex-shrink-0" />
+                  <span className="font-medium text-sm leading-tight">{t('admin.extraAttempts.title')}</span>
+                </button>
+                <button
+                  onClick={() => setActiveSection('vacancies')}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    activeSection === 'vacancies'
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <FileText className="w-5 h-5" />
+                  <span className="font-medium">{t('admin.dashboard.navigation.vacancies')}</span>
+                </button>
+                <button
+                  onClick={() => setActiveSection('vacancy-applications')}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    activeSection === 'vacancy-applications'
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <Users className="w-5 h-5" />
+                  <span className="font-medium">{t('admin.dashboard.navigation.vacancyApplications')}</span>
+                </button>
+                <button
+                  onClick={() => setActiveSection('vacancy-statistics')}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    activeSection === 'vacancy-statistics'
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <TrendingUp className="w-5 h-5" />
+                  <span className="font-medium">{t('admin.dashboard.navigation.vacancyStatistics')}</span>
+                </button>
+                <button
+                  onClick={() => setActiveSection('projects')}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    activeSection === 'projects'
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <Building2 className="w-5 h-5" />
+                  <span className="font-medium">{t('admin.projects.title')}</span>
+                </button>
+                <button
+                  onClick={() => setActiveSection('project-categories')}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    activeSection === 'project-categories'
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <Tag className="w-5 h-5" />
+                  <span className="font-medium">{t('admin.categories.title')}</span>
+                </button>
+                <button
+                  onClick={() => setActiveSection('partners')}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    activeSection === 'partners'
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <Handshake className="w-5 h-5" />
+                  <span className="font-medium">{t('admin.partners.title')}</span>
                 </button>
               </nav>
             </div>
@@ -357,27 +531,47 @@ export function AdminDashboard() {
             {activeSection === 'contacts' && (
               <ContactManagement />
             )}
+            {activeSection === 'certificates' && (
+              <CertificateManagement />
+            )}
+            {activeSection === 'extra-attempts' && (
+              <ExtraAttemptRequests />
+            )}
+            {activeSection === 'vacancies' && (
+              <VacancyManagement
+                onCreate={handleCreateVacancy}
+                onEdit={handleEditVacancy}
+                refreshTrigger={vacanciesRefreshTrigger}
+              />
+            )}
+            {activeSection === 'vacancy-applications' && (
+              <VacancyApplications />
+            )}
+            {activeSection === 'vacancy-statistics' && (
+              <VacancyStatistics />
+            )}
+            {activeSection === 'projects' && (
+              <ProjectManagement
+                onCreate={handleCreateProject}
+                onEdit={handleEditProject}
+                refreshTrigger={projectsRefreshTrigger}
+              />
+            )}
+            {activeSection === 'project-categories' && (
+              <ProjectCategoryManagement refreshTrigger={projectsRefreshTrigger} />
+            )}
+            {activeSection === 'partners' && (
+              <PartnerManagement
+                onCreate={handleCreatePartner}
+                onEdit={handleEditPartner}
+                refreshTrigger={partnersRefreshTrigger}
+              />
+            )}
           </div>
         </div>
       </div>
 
       {/* Modals */}
-      {showCourseEditor && (
-        <CourseEditor
-          course={editingItem}
-          onSave={handleSaveCourse}
-          onCancel={() => setShowCourseEditor(false)}
-        />
-      )}
-
-      {showTestEditor && (
-        <TestEditor
-          test={editingItem}
-          onSave={handleSaveTest}
-          onCancel={() => setShowTestEditor(false)}
-        />
-      )}
-
       {showUserEditor && (
         <UserEditor
           user={editingItem}
@@ -396,6 +590,38 @@ export function AdminDashboard() {
           }}
         />
       )}
+
+      {showVacancyEditor && (
+        <VacancyEditor
+          vacancy={editingItem}
+          onSave={handleSaveVacancy}
+          onCancel={() => {
+            setShowVacancyEditor(false);
+            setEditingItem(null);
+          }}
+        />
+      )}
+
+      {showProjectEditor && (
+        <ProjectEditor
+          project={editingItem}
+          onSave={handleSaveProject}
+          onCancel={() => {
+            setShowProjectEditor(false);
+            setEditingItem(null);
+          }}
+        />
+      )}
+      {showPartnerEditor && (
+        <PartnerEditor
+          partner={editingItem}
+          onSave={handleSavePartner}
+          onCancel={() => {
+            setShowPartnerEditor(false);
+            setEditingItem(null);
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -409,6 +635,7 @@ function OverviewSection({
   onCreateTest: () => void;
   onCreateUser: () => void;
 }) {
+  const { t } = useTranslation();
   const { stats, loading, error } = useAnalytics();
 
   if (loading) {
@@ -416,7 +643,7 @@ function OverviewSection({
       <div className="space-y-6">
         <div className="text-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Загрузка статистики...</p>
+          <p className="mt-4 text-gray-600">{t('admin.dashboard.overview.loadingStats')}</p>
         </div>
       </div>
     );
@@ -426,17 +653,17 @@ function OverviewSection({
     return (
       <div className="space-y-6">
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-red-800">Ошибка загрузки статистики: {error}</p>
+          <p className="text-red-800">{t('admin.dashboard.overview.loadStatsError')}: {error}</p>
         </div>
       </div>
     );
   }
 
   const statsData = stats ? [
-    { label: 'Всего студентов', value: stats.total_students, change: `Активных: ${stats.active_students}`, color: 'blue' },
-    { label: 'Активных курсов', value: stats.active_courses, change: `Завершено: ${stats.completed_courses}`, color: 'green' },
-    { label: 'Тестов сегодня', value: stats.tests_today, change: `Успеваемость: ${stats.success_rate}%`, color: 'orange' },
-    { label: 'Выдано сертификатов', value: stats.total_certificates, change: `За месяц: +${stats.certificates_this_month}`, color: 'purple' },
+    { label: t('admin.dashboard.overview.totalStudents'), value: stats.total_students, change: `${t('admin.dashboard.overview.activeStudents')}: ${stats.active_students}`, color: 'blue' },
+    { label: t('admin.dashboard.overview.activeCourses'), value: stats.active_courses, change: `${t('admin.dashboard.overview.completedCourses')}: ${stats.completed_courses}`, color: 'green' },
+    { label: t('admin.dashboard.overview.testsToday'), value: stats.tests_today, change: `${t('admin.dashboard.overview.successRate')}: ${stats.success_rate}%`, color: 'orange' },
+    { label: t('admin.dashboard.overview.totalCertificates'), value: stats.total_certificates, change: `${t('admin.dashboard.overview.thisMonth')}: +${stats.certificates_this_month}`, color: 'purple' },
   ] : [];
 
   return (
@@ -456,11 +683,11 @@ function OverviewSection({
 
       {/* Recent Activity */}
       <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Последняя активность</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-4">{t('admin.dashboard.overview.recentActivity')}</h2>
         <div className="space-y-4">
           <div className="text-center py-8 text-gray-500">
-            <p>Активность будет отображаться здесь</p>
-            <p className="text-sm mt-1">Данные загружаются из системы</p>
+            <p>{t('admin.dashboard.overview.activityWillBeDisplayed')}</p>
+            <p className="text-sm mt-1">{t('admin.dashboard.overview.dataLoadingFromSystem')}</p>
           </div>
         </div>
       </div>
@@ -472,24 +699,24 @@ function OverviewSection({
           className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow text-left cursor-pointer"
         >
           <Plus className="w-8 h-8 text-blue-600 mb-3" />
-          <h3 className="font-bold text-gray-900 mb-1">Создать курс</h3>
-          <p className="text-sm text-gray-600">Добавить новый учебный курс</p>
+          <h3 className="font-bold text-gray-900 mb-1">{t('admin.dashboard.overview.createCourse')}</h3>
+          <p className="text-sm text-gray-600">{t('admin.dashboard.overview.createCourseDesc')}</p>
         </button>
         <button 
           onClick={onCreateUser}
           className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow text-left cursor-pointer"
         >
           <Users className="w-8 h-8 text-green-600 mb-3" />
-          <h3 className="font-bold text-gray-900 mb-1">Добавить студента</h3>
-          <p className="text-sm text-gray-600">Зарегистрировать нового слушателя</p>
+          <h3 className="font-bold text-gray-900 mb-1">{t('admin.dashboard.overview.addStudent')}</h3>
+          <p className="text-sm text-gray-600">{t('admin.dashboard.overview.addStudentDesc')}</p>
         </button>
         <button 
           onClick={onCreateTest}
           className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow text-left cursor-pointer"
         >
           <FileQuestion className="w-8 h-8 text-orange-600 mb-3" />
-          <h3 className="font-bold text-gray-900 mb-1">Создать тест</h3>
-          <p className="text-sm text-gray-600">Добавить экзаменационный тест</p>
+          <h3 className="font-bold text-gray-900 mb-1">{t('admin.dashboard.overview.createTest')}</h3>
+          <p className="text-sm text-gray-600">{t('admin.dashboard.overview.createTestDesc')}</p>
         </button>
       </div>
     </div>
@@ -505,6 +732,7 @@ function CoursesSection({
   onEdit: (course: Course) => void,
   onRefetch?: (refetch: () => void) => void
 }) {
+  const { t } = useTranslation();
   const [selectedCourseForStudents, setSelectedCourseForStudents] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -580,7 +808,7 @@ function CoursesSection({
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="text-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Загрузка курсов...</p>
+          <p className="mt-4 text-gray-600">{t('admin.dashboard.courses.loading')}</p>
         </div>
       </div>
     );
@@ -591,12 +819,12 @@ function CoursesSection({
     return (
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="text-center py-12">
-          <p className="text-red-600 mb-4">Ошибка загрузки курсов: {error}</p>
+          <p className="text-red-600 mb-4">{t('admin.dashboard.courses.loadError')}: {error}</p>
           <button 
             onClick={() => refetch && refetch()} 
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
-            Попробовать снова
+            {t('admin.dashboard.courses.tryAgain')}
           </button>
         </div>
       </div>
@@ -607,10 +835,10 @@ function CoursesSection({
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-gray-900">Управление курсами</h2>
+          <h2 className="text-xl font-bold text-gray-900">{t('admin.dashboard.courses.management')}</h2>
           <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors" onClick={onCreate}>
             <Plus className="w-4 h-4" />
-            Создать курс
+            {t('admin.courses.createCourse')}
           </button>
         </div>
 
@@ -620,7 +848,7 @@ function CoursesSection({
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Поиск курсов..."
+              placeholder={t('admin.dashboard.courses.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -633,7 +861,7 @@ function CoursesSection({
             }`}
           >
             <Filter className="w-4 h-4" />
-            Фильтры
+            {t('admin.dashboard.courses.filters')}
           </button>
         </div>
 
@@ -642,13 +870,13 @@ function CoursesSection({
           <div className="bg-gray-50 rounded-lg p-4 mb-6 border border-gray-200">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Категория</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t('admin.dashboard.courses.category')}</label>
                   <select
                     value={filterCategory}
                     onChange={(e) => setFilterCategory(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
-                    <option value="all">Все категории</option>
+                    <option value="all">{t('admin.dashboard.courses.allCategories')}</option>
                     {categories.map(cat => (
                       <option key={cat.id} value={cat.id}>{cat.name}</option>
                     ))}
@@ -656,16 +884,16 @@ function CoursesSection({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Статус</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t('admin.dashboard.courses.status')}</label>
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  <option value="all">Все статусы</option>
-                  <option value="in_development">В разработке</option>
-                  <option value="draft">Черновик</option>
-                  <option value="published">Опубликован</option>
+                  <option value="all">{t('admin.dashboard.courses.allStatuses')}</option>
+                  <option value="in_development">{t('admin.dashboard.status.inDevelopment')}</option>
+                  <option value="draft">{t('admin.dashboard.status.draft')}</option>
+                  <option value="published">{t('admin.dashboard.status.published')}</option>
                 </select>
               </div>
 
@@ -678,7 +906,7 @@ function CoursesSection({
                   }}
                   className="w-full px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-white transition-colors"
                 >
-                  Сбросить фильтры
+                  {t('admin.dashboard.courses.resetFilters')}
                 </button>
               </div>
             </div>
@@ -690,18 +918,18 @@ function CoursesSection({
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Название курса</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Категория</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Студентов</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Статус</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Действия</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('admin.dashboard.courses.courseTitle')}</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('admin.dashboard.courses.category')}</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('admin.dashboard.courses.students')}</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('admin.dashboard.courses.status')}</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('admin.dashboard.courses.actions')}</th>
               </tr>
             </thead>
             <tbody>
               {coursesArray.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-8 text-center text-gray-500">
-                    {searchQuery || filterStatus !== 'all' || filterCategory !== 'all' ? 'Курсы не найдены' : 'Нет курсов. Создайте первый курс, нажав кнопку "Создать курс"'}
+                    {searchQuery || filterStatus !== 'all' || filterCategory !== 'all' ? t('admin.dashboard.courses.coursesNotFound') : t('admin.dashboard.courses.noCourses')}
                   </td>
                 </tr>
               ) : (
@@ -725,18 +953,20 @@ function CoursesSection({
                   };
 
                   const getStatusBadge = (status: string) => {
-                    const statusMap: Record<string, { text: string; class: string }> = {
-                      'in_development': { text: 'В разработке', class: 'bg-orange-100 text-orange-800' },
-                      'draft': { text: 'Черновик', class: 'bg-gray-100 text-gray-800' },
-                      'published': { text: 'Опубликован', class: 'bg-green-100 text-green-800' },
-                      'assigned': { text: 'Назначен', class: 'bg-blue-100 text-blue-800' },
-                      'in_progress': { text: 'В процессе', class: 'bg-yellow-100 text-yellow-800' },
-                      'completed': { text: 'Завершен', class: 'bg-green-100 text-green-800' },
+                    const statusMap: Record<string, { textKey: string; class: string }> = {
+                      'in_development': { textKey: 'admin.dashboard.status.inDevelopment', class: 'bg-orange-100 text-orange-800' },
+                      'draft': { textKey: 'admin.dashboard.status.draft', class: 'bg-gray-100 text-gray-800' },
+                      'published': { textKey: 'admin.dashboard.status.published', class: 'bg-green-100 text-green-800' },
+                      'assigned': { textKey: 'admin.dashboard.status.assigned', class: 'bg-blue-100 text-blue-800' },
+                      'in_progress': { textKey: 'admin.dashboard.status.inProgress', class: 'bg-yellow-100 text-yellow-800' },
+                      'completed': { textKey: 'admin.dashboard.status.completed', class: 'bg-green-100 text-green-800' },
                     };
-                    const statusInfo = statusMap[status] || { text: getStatusText(status), class: 'bg-gray-100 text-gray-800' };
+                    const statusInfo = statusMap[status];
+                    const text = statusInfo ? t(statusInfo.textKey) : getStatusText(status, t);
+                    const className = statusInfo?.class || 'bg-gray-100 text-gray-800';
                     return (
-                      <span className={`px-2 py-1 ${statusInfo.class} text-xs font-semibold rounded`}>
-                        {statusInfo.text}
+                      <span className={`px-2 py-1 ${className} text-xs font-semibold rounded`}>
+                        {text}
                       </span>
                     );
                   };
@@ -758,31 +988,31 @@ function CoursesSection({
                       <td className="py-4 px-4">
                         <div className="flex gap-2">
                           <button className="text-blue-600 hover:text-blue-700 text-sm font-medium" onClick={() => onEdit(course)}>
-                            Редактировать
+                            {t('admin.dashboard.courses.edit')}
                           </button>
                           <button 
                             className="text-gray-600 hover:text-gray-700 text-sm font-medium"
                             onClick={() => setSelectedCourseForStudents(course)}
                           >
-                            Студенты
+                            {t('admin.dashboard.courses.studentsLabel')}
                           </button>
                           <button
                             className="text-red-600 hover:text-red-700 text-sm font-medium"
                             onClick={async () => {
-                              if (window.confirm(`Вы уверены, что хотите удалить курс "${course.title}"?\n\nЭто действие невозможно отменить.`)) {
+                              if (window.confirm(t('admin.dashboard.courses.deleteConfirm', { title: course.title }))) {
                                 try {
                                   await coursesService.deleteCourse(course.id);
-                                  toast.success('Курс успешно удален');
+                                  toast.success(t('admin.dashboard.courses.deleteSuccess'));
                                   if (refetch) {
                                     refetch();
                                   }
                                 } catch (error: any) {
-                                  toast.error(`Ошибка: ${error.message || 'Не удалось удалить курс'}`);
+                                  toast.error(`${t('admin.dashboard.courses.deleteError')}: ${error.message || t('admin.dashboard.courses.deleteFailed')}`);
                                 }
                               }
                             }}
                           >
-                            Удалить
+                            {t('admin.dashboard.courses.delete')}
                           </button>
                         </div>
                       </td>
@@ -826,10 +1056,10 @@ function TestsSection({
   onEdit?: (test: Test) => void,
   onRefetch?: (refetch: () => void) => void
 }) {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 20;
-  const [courses, setCourses] = useState<Course[]>([]);
   
   // Параметры для запроса с пагинацией
   const testParams: any = {
@@ -839,27 +1069,6 @@ function TestsSection({
   if (searchQuery) testParams.search = searchQuery;
   
   const { tests, pagination, loading, refetch } = useTests(testParams);
-  
-  // Загружаем курсы для отображения названий
-  useEffect(() => {
-    const loadCourses = async () => {
-      try {
-        const response = await coursesService.getCourses({ page_size: 1000 });
-        setCourses(response.results);
-      } catch (error) {
-        console.error('Failed to load courses:', error);
-        setCourses([]);
-      }
-    };
-    loadCourses();
-  }, []);
-  
-  // Функция для получения названия курса по ID
-  const getCourseTitle = (courseId: string | number | undefined): string => {
-    if (!courseId) return '—';
-    const course = courses.find(c => String(c.id) === String(courseId));
-    return course?.title || '—';
-  };
 
   // Передаем функцию refetch родительскому компоненту
   useEffect(() => {
@@ -881,7 +1090,7 @@ function TestsSection({
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="text-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Загрузка тестов...</p>
+          <p className="mt-4 text-gray-600">{t('admin.dashboard.tests.loading')}</p>
         </div>
       </div>
     );
@@ -891,12 +1100,12 @@ function TestsSection({
     <div className="bg-white rounded-lg shadow-md p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Конструктор тестов</h2>
-          <p className="text-gray-600">Управление экзаменационными тестами и банком вопросов</p>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">{t('admin.dashboard.tests.constructor')}</h2>
+          <p className="text-gray-600">{t('admin.dashboard.tests.management')}</p>
         </div>
         <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors" onClick={onCreate}>
           <Plus className="w-4 h-4" />
-          Создать тест
+          {t('admin.tests.createTest')}
         </button>
       </div>
 
@@ -905,7 +1114,7 @@ function TestsSection({
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
         <input
           type="text"
-          placeholder="Поиск тестов..."
+          placeholder={t('admin.dashboard.tests.searchPlaceholder')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -917,17 +1126,16 @@ function TestsSection({
         <table className="w-full">
           <thead>
             <tr className="border-b border-gray-200 bg-gray-50">
-              <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Название</th>
-              <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Курс</th>
-              <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Вопросов</th>
-              <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Действия</th>
+              <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('admin.dashboard.tests.title')}</th>
+              <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('admin.dashboard.tests.questions')}</th>
+              <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('admin.dashboard.tests.actions')}</th>
             </tr>
           </thead>
           <tbody>
             {testsArray.length === 0 ? (
               <tr>
-                <td colSpan={4} className="py-8 text-center text-gray-500">
-                  {searchQuery ? 'Тесты не найдены' : 'Нет тестов. Создайте первый тест, нажав кнопку "Создать тест"'}
+                <td colSpan={3} className="py-8 text-center text-gray-500">
+                  {searchQuery ? t('admin.dashboard.tests.testsNotFound') : t('admin.dashboard.tests.noTests')}
                 </td>
               </tr>
             ) : (
@@ -935,11 +1143,6 @@ function TestsSection({
                 <tr key={test.id} className="border-b border-gray-100 hover:bg-gray-50">
                   <td className="py-4 px-4">
                     <div className="font-medium text-gray-900">{test.title}</div>
-                  </td>
-                  <td className="py-4 px-4">
-                    <span className="text-sm text-gray-600">
-                      {getCourseTitle(test.courseId || test.course)}
-                    </span>
                   </td>
                   <td className="py-4 px-4">
                     <span className="text-sm text-gray-900">
@@ -953,26 +1156,26 @@ function TestsSection({
                           className="text-blue-600 hover:text-blue-700 text-sm font-medium"
                           onClick={() => onEdit(test)}
                         >
-                          Редактировать
+                          {t('admin.dashboard.tests.edit')}
                         </button>
                       )}
                       <button
                         className="text-red-600 hover:text-red-700 text-sm font-medium"
                         onClick={async () => {
-                          if (window.confirm(`Вы уверены, что хотите удалить тест "${test.title}"?\n\nЭто действие невозможно отменить.`)) {
+                          if (window.confirm(t('admin.dashboard.tests.deleteConfirm', { title: test.title }))) {
                             try {
                               await testsService.deleteTest(test.id);
-                              toast.success('Тест успешно удален');
+                              toast.success(t('admin.dashboard.tests.deleteSuccess'));
                               if (refetch) {
                                 refetch();
                               }
                             } catch (error: any) {
-                              toast.error(`Ошибка: ${error.message || 'Не удалось удалить тест'}`);
+                              toast.error(`${t('admin.dashboard.tests.deleteError')}: ${error.message || t('admin.dashboard.tests.deleteFailed')}`);
                             }
                           }
                         }}
                       >
-                        Удалить
+                        {t('admin.dashboard.tests.delete')}
                       </button>
                     </div>
                   </td>
@@ -998,6 +1201,7 @@ function TestsSection({
 }
 
 function ReportsSection() {
+  const { t } = useTranslation();
   const { stats, loading: statsLoading } = useAnalytics();
   const { data: enrollmentData, loading: enrollmentLoading } = useEnrollmentTrend();
   const { data: testResultsData, loading: testResultsLoading } = useTestResultsDistribution();
@@ -1011,7 +1215,7 @@ function ReportsSection() {
       <div className="space-y-6">
         <div className="text-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Загрузка отчетов...</p>
+          <p className="mt-4 text-gray-600">{t('admin.dashboard.reports.loading')}</p>
         </div>
       </div>
     );
@@ -1023,34 +1227,34 @@ function ReportsSection() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-gray-600">Общая успеваемость</span>
+            <span className="text-sm text-gray-600">{t('admin.dashboard.reports.overallPerformance')}</span>
           </div>
           <div className="text-3xl font-bold text-green-600">{stats?.success_rate || 0}%</div>
-          <p className="text-xs text-gray-500 mt-1">Процент сданных тестов</p>
+          <p className="text-xs text-gray-500 mt-1">{t('admin.dashboard.reports.percentPassed')}</p>
         </div>
 
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-gray-600">Средний балл</span>
+            <span className="text-sm text-gray-600">{t('admin.dashboard.reports.averageScore')}</span>
           </div>
           <div className="text-3xl font-bold text-blue-600">{stats?.avg_score || 0}</div>
-          <p className="text-xs text-gray-500 mt-1">По всем попыткам</p>
+          <p className="text-xs text-gray-500 mt-1">{t('admin.dashboard.reports.byAllAttempts')}</p>
         </div>
 
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-gray-600">Завершено курсов</span>
+            <span className="text-sm text-gray-600">{t('admin.dashboard.reports.completedCourses')}</span>
           </div>
           <div className="text-3xl font-bold text-purple-600">{stats?.completed_courses || 0}</div>
-          <p className="text-xs text-gray-500 mt-1">Всего завершено</p>
+          <p className="text-xs text-gray-500 mt-1">{t('admin.dashboard.reports.totalCompleted')}</p>
         </div>
 
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-gray-600">Активных студентов</span>
+            <span className="text-sm text-gray-600">{t('admin.dashboard.reports.activeStudents')}</span>
           </div>
           <div className="text-3xl font-bold text-orange-600">{stats?.active_students || 0}</div>
-          <p className="text-xs text-gray-500 mt-1">Из {stats?.total_students || 0} всего</p>
+          <p className="text-xs text-gray-500 mt-1">{t('admin.dashboard.reports.ofTotal', { total: stats?.total_students || 0 })}</p>
         </div>
       </div>
 
@@ -1058,10 +1262,10 @@ function ReportsSection() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Enrollment Trend */}
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">Динамика регистраций</h3>
+          <h3 className="text-lg font-bold text-gray-900 mb-4">{t('admin.dashboard.reports.enrollmentTrend')}</h3>
           {enrollmentData.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
-              <p>Нет данных для отображения</p>
+              <p>{t('admin.dashboard.reports.noData')}</p>
             </div>
           ) : (
             <ResponsiveContainer width="100%" height={300}>
@@ -1071,7 +1275,7 @@ function ReportsSection() {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Line type="monotone" dataKey="students" stroke="#3b82f6" strokeWidth={2} name="Студенты" />
+                <Line type="monotone" dataKey="students" stroke="#3b82f6" strokeWidth={2} name={t('admin.dashboard.reports.students')} />
               </LineChart>
             </ResponsiveContainer>
           )}
@@ -1079,10 +1283,10 @@ function ReportsSection() {
 
         {/* Test Results Distribution */}
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">Распределение результатов тестов</h3>
+          <h3 className="text-lg font-bold text-gray-900 mb-4">{t('admin.dashboard.reports.testResultsDistribution')}</h3>
           {testResultsData.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
-              <p>Нет данных для отображения</p>
+              <p>{t('admin.dashboard.reports.noData')}</p>
             </div>
           ) : (
             <ResponsiveContainer width="100%" height={300}>
@@ -1111,15 +1315,15 @@ function ReportsSection() {
       {/* Charts Row 2 */}
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-gray-900">Популярность курсов</h3>
+          <h3 className="text-lg font-bold text-gray-900">{t('admin.dashboard.reports.coursesPopularity')}</h3>
           <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
             <Download className="w-4 h-4" />
-            Экспорт
+            {t('admin.dashboard.reports.export')}
           </button>
         </div>
         {coursesPopularity.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
-            <p>Нет данных для отображения</p>
+            <p>{t('admin.dashboard.reports.noData')}</p>
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={300}>
@@ -1129,7 +1333,7 @@ function ReportsSection() {
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar dataKey="students" fill="#3b82f6" name="Студентов" />
+              <Bar dataKey="students" fill="#3b82f6" name={t('admin.dashboard.reports.studentsCount')} />
             </BarChart>
           </ResponsiveContainer>
         )}
@@ -1137,23 +1341,23 @@ function ReportsSection() {
 
       {/* Top Students Table */}
       <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-lg font-bold text-gray-900 mb-4">Лучшие студенты</h3>
+        <h3 className="text-lg font-bold text-gray-900 mb-4">{t('admin.dashboard.reports.topStudents')}</h3>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Место</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">ФИО</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Завершено курсов</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Средний балл</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Сертификатов</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('admin.dashboard.reports.place')}</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('admin.dashboard.reports.fullName')}</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('admin.dashboard.reports.completedCourses')}</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('admin.dashboard.reports.averageScore')}</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('admin.dashboard.reports.certificates')}</th>
               </tr>
             </thead>
             <tbody>
               {topStudents.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-8 text-center text-gray-500">
-                    Нет данных о студентах
+                    {t('admin.dashboard.reports.noStudentsData')}
                   </td>
                 </tr>
               ) : (
@@ -1189,27 +1393,27 @@ function ReportsSection() {
 
       {/* Export Options */}
       <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-lg font-bold text-gray-900 mb-4">Экспорт отчетов</h3>
+        <h3 className="text-lg font-bold text-gray-900 mb-4">{t('admin.dashboard.reports.exportReports')}</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <button className="flex items-center justify-center gap-2 px-6 py-4 border-2 border-gray-300 text-gray-700 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all">
             <Download className="w-5 h-5" />
             <div className="text-left">
-              <div className="font-semibold">Сводный отчет</div>
-              <div className="text-xs text-gray-500">PDF / Excel</div>
+              <div className="font-semibold">{t('admin.dashboard.reports.summaryReport')}</div>
+              <div className="text-xs text-gray-500">{t('admin.dashboard.reports.pdfExcel')}</div>
             </div>
           </button>
           <button className="flex items-center justify-center gap-2 px-6 py-4 border-2 border-gray-300 text-gray-700 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all">
             <Download className="w-5 h-5" />
             <div className="text-left">
-              <div className="font-semibold">Результаты тестов</div>
-              <div className="text-xs text-gray-500">Excel</div>
+              <div className="font-semibold">{t('admin.dashboard.reports.testResults')}</div>
+              <div className="text-xs text-gray-500">{t('admin.dashboard.reports.excel')}</div>
             </div>
           </button>
           <button className="flex items-center justify-center gap-2 px-6 py-4 border-2 border-gray-300 text-gray-700 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all">
             <Download className="w-5 h-5" />
             <div className="text-left">
-              <div className="font-semibold">Выданные сертификаты</div>
-              <div className="text-xs text-gray-500">PDF / Excel</div>
+              <div className="font-semibold">{t('admin.dashboard.reports.issuedCertificates')}</div>
+              <div className="text-xs text-gray-500">{t('admin.dashboard.reports.pdfExcel')}</div>
             </div>
           </button>
         </div>
@@ -1219,6 +1423,7 @@ function ReportsSection() {
 }
 
 function CategoriesSection() {
+  const { t } = useTranslation();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -1233,7 +1438,7 @@ function CategoriesSection() {
       setCategories(data);
       setError(null);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Ошибка загрузки категорий';
+      const message = err instanceof Error ? err.message : t('admin.dashboard.categories.loadError');
       setError(message);
       console.error('Failed to fetch categories:', err);
     } finally {
@@ -1259,30 +1464,30 @@ function CategoriesSection() {
     try {
       if (editingCategory) {
         await categoriesService.updateCategory(editingCategory.id, category);
-        toast.success('Категория успешно обновлена');
+        toast.success(t('admin.dashboard.categories.updateSuccess'));
       } else {
         await categoriesService.createCategory(category);
-        toast.success('Категория успешно создана');
+        toast.success(t('admin.dashboard.categories.createSuccess'));
       }
       setShowEditor(false);
       setEditingCategory(null);
       fetchCategories();
     } catch (error: any) {
-      toast.error(`Ошибка сохранения категории: ${error.message || 'Неизвестная ошибка'}`);
+      toast.error(`${t('admin.dashboard.categories.saveError')}: ${error.message || t('admin.dashboard.messages.unknownError')}`);
       console.error('Failed to save category:', error);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Вы уверены, что хотите удалить эту категорию?\n\nЭто действие невозможно отменить.')) {
+    if (!window.confirm(t('admin.dashboard.categories.deleteConfirm'))) {
       return;
     }
     try {
       await categoriesService.deleteCategory(id);
-      toast.success('Категория успешно удалена');
+      toast.success(t('admin.dashboard.categories.deleteSuccess'));
       fetchCategories();
     } catch (error: any) {
-      toast.error(`Ошибка удаления категории: ${error.message || 'Неизвестная ошибка'}`);
+      toast.error(`${t('admin.dashboard.categories.deleteError')}: ${error.message || t('admin.dashboard.messages.unknownError')}`);
       console.error('Failed to delete category:', error);
     }
   };
@@ -1298,7 +1503,7 @@ function CategoriesSection() {
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="text-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Загрузка категорий...</p>
+          <p className="mt-4 text-gray-600">{t('admin.dashboard.categories.loading')}</p>
         </div>
       </div>
     );
@@ -1308,12 +1513,12 @@ function CategoriesSection() {
     return (
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="text-center py-12">
-          <p className="text-red-600 mb-4">Ошибка загрузки категорий: {error}</p>
+          <p className="text-red-600 mb-4">{t('admin.dashboard.categories.loadError')}: {error}</p>
           <button 
             onClick={fetchCategories} 
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
-            Попробовать снова
+            {t('admin.dashboard.categories.tryAgain')}
           </button>
         </div>
       </div>
@@ -1324,13 +1529,13 @@ function CategoriesSection() {
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-gray-900">Управление категориями</h2>
+          <h2 className="text-xl font-bold text-gray-900">{t('admin.dashboard.categories.management')}</h2>
           <button 
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors" 
             onClick={handleCreate}
           >
             <Plus className="w-4 h-4" />
-            Создать категорию
+            {t('admin.dashboard.categories.editor.create')}
           </button>
         </div>
 
@@ -1339,7 +1544,7 @@ function CategoriesSection() {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
             type="text"
-            placeholder="Поиск категорий..."
+            placeholder={t('admin.dashboard.categories.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -1351,20 +1556,20 @@ function CategoriesSection() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Название</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Название (КЗ)</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Название (EN)</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Порядок</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Курсов</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Статус</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Действия</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('admin.dashboard.categories.name')}</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('admin.dashboard.categories.nameKz')}</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('admin.dashboard.categories.nameEn')}</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('admin.dashboard.categories.order')}</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('admin.dashboard.categories.courses')}</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('admin.dashboard.categories.status')}</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('admin.dashboard.categories.actions')}</th>
               </tr>
             </thead>
             <tbody>
               {filteredCategories.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="py-8 text-center text-gray-500">
-                    {searchQuery ? 'Категории не найдены' : 'Нет категорий. Создайте первую категорию, нажав кнопку "Создать категорию"'}
+                    {searchQuery ? t('admin.dashboard.categories.categoriesNotFound') : t('admin.dashboard.categories.noCategories')}
                   </td>
                 </tr>
               ) : (
@@ -1389,12 +1594,12 @@ function CategoriesSection() {
                       {category.is_active ? (
                         <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded">
                           <CheckCircle className="w-3 h-3" />
-                          Активна
+                          {t('admin.dashboard.categories.active')}
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded">
                           <XCircle className="w-3 h-3" />
-                          Неактивна
+                          {t('admin.dashboard.categories.inactive')}
                         </span>
                       )}
                     </td>
@@ -1404,13 +1609,13 @@ function CategoriesSection() {
                           className="text-blue-600 hover:text-blue-700 text-sm font-medium" 
                           onClick={() => handleEdit(category)}
                         >
-                          Редактировать
+                          {t('admin.dashboard.categories.edit')}
                         </button>
                         <button
                           className="text-red-600 hover:text-red-700 text-sm font-medium"
                           onClick={() => handleDelete(category.id)}
                         >
-                          Удалить
+                          {t('admin.dashboard.categories.delete')}
                         </button>
                       </div>
                     </td>
@@ -1446,6 +1651,7 @@ function CategoryEditorModal({
   onSave: (category: Partial<Category>) => void;
   onCancel: () => void;
 }) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<Partial<Category>>(category || {
     name: '',
     name_kz: '',
@@ -1471,19 +1677,19 @@ function CategoryEditorModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.name.trim()) {
-      toast.error('Введите название категории');
+      toast.error(t('admin.dashboard.categories.editor.nameRequired'));
       return;
     }
     onSave(formData);
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-30 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg shadow-2xl ring-4 ring-white ring-opacity-50 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-900">
-              {category ? 'Редактировать категорию' : 'Создать категорию'}
+              {category ? t('admin.dashboard.categories.editor.edit') : t('admin.dashboard.categories.editor.create')}
             </h2>
             <button 
               onClick={onCancel}
@@ -1496,13 +1702,13 @@ function CategoryEditorModal({
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Название (RU) *
+                {t('admin.dashboard.categories.editor.nameRu')}
               </label>
               <input
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Введите название категории"
+                placeholder={t('admin.dashboard.categories.editor.namePlaceholder')}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               />
@@ -1511,26 +1717,26 @@ function CategoryEditorModal({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Название (KZ)
+                  {t('admin.dashboard.categories.editor.nameKz')}
                 </label>
                 <input
                   type="text"
                   value={formData.name_kz}
                   onChange={(e) => setFormData({ ...formData, name_kz: e.target.value })}
-                  placeholder="Название на казахском"
+                  placeholder={t('admin.dashboard.categories.editor.nameKzPlaceholder')}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Название (EN)
+                  {t('admin.dashboard.categories.editor.nameEn')}
                 </label>
                 <input
                   type="text"
                   value={formData.name_en}
                   onChange={(e) => setFormData({ ...formData, name_en: e.target.value })}
-                  placeholder="Название на английском"
+                  placeholder={t('admin.dashboard.categories.editor.nameEnPlaceholder')}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
@@ -1538,12 +1744,12 @@ function CategoryEditorModal({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Описание
+                {t('admin.dashboard.categories.editor.description')}
               </label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Описание категории"
+                placeholder={t('admin.dashboard.categories.editor.descriptionPlaceholder')}
                 rows={3}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
@@ -1551,7 +1757,7 @@ function CategoryEditorModal({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Порядок отображения
+                {t('admin.dashboard.categories.editor.displayOrder')}
               </label>
               <input
                 type="number"
@@ -1569,7 +1775,7 @@ function CategoryEditorModal({
                   onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
                   className="rounded"
                 />
-                <span className="text-sm text-gray-700">Активна</span>
+                <span className="text-sm text-gray-700">{t('admin.dashboard.categories.editor.active')}</span>
               </label>
             </div>
 
@@ -1579,13 +1785,13 @@ function CategoryEditorModal({
                 onClick={onCancel}
                 className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                Отмена
+                {t('admin.dashboard.categories.editor.cancel')}
               </button>
               <button
                 type="submit"
                 className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
-                Сохранить
+                {t('admin.dashboard.categories.editor.save')}
               </button>
             </div>
           </form>
@@ -1596,6 +1802,7 @@ function CategoryEditorModal({
 }
 
 function CourseStudentsModal({ course, onClose }: { course: any, onClose: () => void }) {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddStudents, setShowAddStudents] = useState(false);
   const [enrollments, setEnrollments] = useState<any[]>([]);
@@ -1610,7 +1817,7 @@ function CourseStudentsModal({ course, onClose }: { course: any, onClose: () => 
         setEnrollments(data);
         setError(null);
       } catch (err: any) {
-        setError(err.message || 'Ошибка загрузки студентов');
+        setError(err.message || t('admin.dashboard.courses.courseStudents.loadError'));
         console.error('Failed to fetch course students:', err);
       } finally {
         setLoading(false);
@@ -1629,25 +1836,46 @@ function CourseStudentsModal({ course, onClose }: { course: any, onClose: () => 
       const data = await coursesService.getCourseStudents(course.id);
       setEnrollments(data);
       setShowAddStudents(false);
+      toast.success(t('admin.dashboard.courses.courseStudents.addSuccess'));
     } catch (error: any) {
-      alert(`Ошибка: ${error.message || 'Не удалось добавить студентов'}`);
+      toast.error(`${t('admin.dashboard.courses.courseStudents.addError')}: ${error.message || t('admin.dashboard.courses.courseStudents.addFailed')}`);
+    }
+  };
+
+  const handleRevokeEnrollment = async (userId: string, studentName: string) => {
+    if (!window.confirm(t('admin.dashboard.courses.courseStudents.revokeConfirm', { courseTitle: course.title, studentName }))) {
+      return;
+    }
+
+    try {
+      await coursesService.revokeEnrollment(course.id, userId);
+      // Обновляем список студентов
+      const data = await coursesService.getCourseStudents(course.id);
+      setEnrollments(data);
+      toast.success(t('admin.dashboard.courses.courseStudents.revokeSuccess'));
+    } catch (error: any) {
+      toast.error(`${t('admin.dashboard.courses.courseStudents.revokeError')}: ${error.message || t('admin.dashboard.courses.courseStudents.revokeFailed')}`);
     }
   };
 
   const students = enrollments.map(enrollment => {
-    const student = enrollment.student || enrollment;
+    const student = enrollment.student || enrollment.user || enrollment;
     const courseData = enrollment.course || {};
     
     // Получаем средний балл из попыток тестов (если есть)
     // Пока используем прогресс как приблизительную оценку
     const score = enrollment.progress || 0;
     
+    // ID пользователя для отзыва курса
+    const userId = student?.id || enrollment.user?.id || enrollment.user || enrollment.id;
+    
     return {
-      id: student.id || enrollment.id,
-      name: student.full_name || student.fullName || 'Неизвестно',
-      email: student.email || '',
-      phone: student.phone || '',
-      company: student.organization || '',
+      id: userId,
+      enrollmentId: enrollment.id, // ID enrollment для отслеживания
+      name: student?.full_name || student?.fullName || t('admin.dashboard.courses.courseStudents.unknown'),
+      email: student?.email || '',
+      phone: student?.phone || '',
+      company: student?.organization || '',
       progress: enrollment.progress || 0,
       score: score,
       status: enrollment.status || 'assigned',
@@ -1674,11 +1902,11 @@ function CourseStudentsModal({ course, onClose }: { course: any, onClose: () => 
 
   if (loading) {
     return (
-      <div className="fixed inset-0 bg-gray-900 bg-opacity-30 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-50">
         <div className="bg-white rounded-lg shadow-2xl ring-4 ring-white ring-opacity-50 p-8">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Загрузка студентов...</p>
+            <p className="mt-4 text-gray-600">{t('admin.dashboard.courses.courseStudents.loading')}</p>
           </div>
         </div>
       </div>
@@ -1687,15 +1915,15 @@ function CourseStudentsModal({ course, onClose }: { course: any, onClose: () => 
 
   if (error) {
     return (
-      <div className="fixed inset-0 bg-gray-900 bg-opacity-30 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-50">
         <div className="bg-white rounded-lg shadow-2xl ring-4 ring-white ring-opacity-50 p-8 max-w-md">
           <div className="text-center">
-            <p className="text-red-600 mb-4">Ошибка: {error}</p>
+            <p className="text-red-600 mb-4">{t('admin.dashboard.courses.courseStudents.loadError')}: {error}</p>
             <button
               onClick={onClose}
               className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
-              Закрыть
+              {t('admin.dashboard.courses.courseStudents.close')}
             </button>
           </div>
         </div>
@@ -1704,14 +1932,14 @@ function CourseStudentsModal({ course, onClose }: { course: any, onClose: () => 
   }
 
   return (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-30 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg shadow-2xl ring-4 ring-white ring-opacity-50 max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-start justify-between mb-4">
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-1">
-                Студенты курса
+                {t('admin.dashboard.courses.courseStudents.title')}
               </h2>
               <p className="text-gray-600">{course.title}</p>
             </div>
@@ -1726,19 +1954,19 @@ function CourseStudentsModal({ course, onClose }: { course: any, onClose: () => 
           {/* Stats */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="bg-blue-50 rounded-lg p-4">
-              <p className="text-sm text-blue-600 mb-1">Всего студентов</p>
+              <p className="text-sm text-blue-600 mb-1">{t('admin.dashboard.courses.courseStudents.totalStudents')}</p>
               <p className="text-2xl font-bold text-blue-700">{students.length}</p>
             </div>
             <div className="bg-green-50 rounded-lg p-4">
-              <p className="text-sm text-green-600 mb-1">Завершили курс</p>
+              <p className="text-sm text-green-600 mb-1">{t('admin.dashboard.courses.courseStudents.completed')}</p>
               <p className="text-2xl font-bold text-green-700">{completedCount}</p>
             </div>
             <div className="bg-orange-50 rounded-lg p-4">
-              <p className="text-sm text-orange-600 mb-1">В процессе</p>
+              <p className="text-sm text-orange-600 mb-1">{t('admin.dashboard.courses.courseStudents.inProgress')}</p>
               <p className="text-2xl font-bold text-orange-700">{inProgressCount}</p>
             </div>
             <div className="bg-purple-50 rounded-lg p-4">
-              <p className="text-sm text-purple-600 mb-1">Средний балл</p>
+              <p className="text-sm text-purple-600 mb-1">{t('admin.dashboard.courses.courseStudents.averageScore')}</p>
               <p className="text-2xl font-bold text-purple-700">{averageScore}%</p>
             </div>
           </div>
@@ -1750,7 +1978,7 @@ function CourseStudentsModal({ course, onClose }: { course: any, onClose: () => 
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Поиск по имени, email, компании..."
+              placeholder={t('admin.dashboard.courses.courseStudents.searchPlaceholder')}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
@@ -1762,12 +1990,13 @@ function CourseStudentsModal({ course, onClose }: { course: any, onClose: () => 
             <table className="w-full">
               <thead className="sticky top-0 bg-white">
                 <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Студент</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Контакты</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Компания</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Прогресс</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Оценка</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Статус</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('admin.dashboard.courses.courseStudents.student')}</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('admin.dashboard.courses.courseStudents.contacts')}</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('admin.dashboard.courses.courseStudents.company')}</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('admin.dashboard.courses.courseStudents.progress')}</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('admin.dashboard.courses.courseStudents.score')}</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('admin.dashboard.courses.courseStudents.status')}</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('admin.dashboard.courses.courseStudents.actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -1777,7 +2006,7 @@ function CourseStudentsModal({ course, onClose }: { course: any, onClose: () => 
                       <div>
                         <div className="font-medium text-gray-900">{student.name}</div>
                         <div className="text-xs text-gray-500">
-                          Зачислен: {student.enrolledDate}
+                          {t('admin.dashboard.courses.courseStudents.enrolled')}: {student.enrolledDate}
                         </div>
                       </div>
                     </td>
@@ -1818,12 +2047,17 @@ function CourseStudentsModal({ course, onClose }: { course: any, onClose: () => 
                         {student.status === 'completed' || student.status === 'exam_passed' ? (
                           <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded w-fit">
                             <CheckCircle className="w-3 h-3" />
-                            Завершен
+                            {t('admin.dashboard.status.completed')}
+                          </span>
+                        ) : student.status === 'annulled' ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded w-fit">
+                            <XCircle className="w-3 h-3" />
+                            {t('admin.dashboard.status.annulled')}
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded w-fit">
                             <BookOpen className="w-3 h-3" />
-                            {getStatusText(student.status)}
+                            {getStatusText(student.status, t)}
                           </span>
                         )}
                         {student.completedDate && (
@@ -1833,6 +2067,21 @@ function CourseStudentsModal({ course, onClose }: { course: any, onClose: () => 
                         )}
                       </div>
                     </td>
+                    <td className="py-4 px-4">
+                      {student.status !== 'annulled' && (
+                        <button
+                          onClick={() => handleRevokeEnrollment(student.id, student.name)}
+                          className="flex items-center gap-2 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title={t('admin.dashboard.courses.courseStudents.revokeTitle')}
+                        >
+                          <Ban className="w-4 h-4" />
+                          {t('admin.dashboard.courses.courseStudents.revoke')}
+                        </button>
+                      )}
+                      {student.status === 'annulled' && (
+                        <span className="text-xs text-gray-500">{t('admin.dashboard.courses.courseStudents.revoked')}</span>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -1841,8 +2090,8 @@ function CourseStudentsModal({ course, onClose }: { course: any, onClose: () => 
             {filteredStudents.length === 0 && (
               <div className="text-center py-12">
                 <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-500">Студенты не найдены</p>
-                <p className="text-sm text-gray-400 mt-1">Попробуйте изменить параметры поиска</p>
+                <p className="text-gray-500">{t('admin.dashboard.courses.courseStudents.studentsNotFound')}</p>
+                <p className="text-sm text-gray-400 mt-1">{t('admin.dashboard.courses.courseStudents.tryChangingSearch')}</p>
               </div>
             )}
           </div>
@@ -1856,18 +2105,18 @@ function CourseStudentsModal({ course, onClose }: { course: any, onClose: () => 
               className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
             >
               <UserPlus className="w-4 h-4" />
-              Добавить студентов
+              {t('admin.dashboard.courses.courseStudents.addStudents')}
             </button>
             <div className="flex gap-3">
               <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-white transition-colors">
                 <Download className="w-4 h-4" />
-                Экспорт списка
+                {t('admin.dashboard.courses.courseStudents.exportList')}
               </button>
               <button 
                 onClick={onClose}
                 className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
-                Закрыть
+                {t('admin.dashboard.courses.courseStudents.close')}
               </button>
             </div>
           </div>

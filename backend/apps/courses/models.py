@@ -49,10 +49,18 @@ class Course(models.Model):
         ('blended', 'Blended'),
     ]
     
+    LANGUAGE_CHOICES = [
+        ('ru', 'Russian'),
+        ('kz', 'Kazakh'),
+        ('en', 'English'),
+    ]
+    
     title = models.CharField(max_length=255)
     title_kz = models.CharField(max_length=255, blank=True)
     title_en = models.CharField(max_length=255, blank=True)
     description = models.TextField(blank=True)
+    description_kz = models.TextField(blank=True, help_text='Description in Kazakh')
+    description_en = models.TextField(blank=True, help_text='Description in English')
     category = models.ForeignKey('Category', related_name='courses', on_delete=models.PROTECT, null=True, blank=True)
     duration = models.IntegerField(default=0, help_text='Duration in hours')
     format = models.CharField(max_length=20, choices=FORMAT_CHOICES, default='online')
@@ -62,6 +70,8 @@ class Course(models.Model):
     timer_minutes = models.IntegerField(null=True, blank=True, help_text='Timer in minutes')
     pdek_commission = models.CharField(max_length=255, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='in_development')
+    language = models.CharField(max_length=2, choices=LANGUAGE_CHOICES, default='ru', help_text='Language of the course content')
+    final_test = models.ForeignKey('tests.Test', related_name='final_courses', on_delete=models.SET_NULL, null=True, blank=True, help_text='Final test for course completion')
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -77,9 +87,20 @@ class Course(models.Model):
 class Module(models.Model):
     """Course module"""
     
+    LANGUAGE_CHOICES = [
+        ('ru', 'Russian'),
+        ('kz', 'Kazakh'),
+        ('en', 'English'),
+    ]
+    
     course = models.ForeignKey(Course, related_name='modules', on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
+    title_kz = models.CharField(max_length=255, blank=True, help_text='Title in Kazakh')
+    title_en = models.CharField(max_length=255, blank=True, help_text='Title in English')
     description = models.TextField(blank=True)
+    description_kz = models.TextField(blank=True, help_text='Description in Kazakh')
+    description_en = models.TextField(blank=True, help_text='Description in English')
+    language = models.CharField(max_length=2, choices=LANGUAGE_CHOICES, default='ru', help_text='Language of the module (inherits from course)')
     order = models.IntegerField(default=0)
     
     created_at = models.DateTimeField(auto_now_add=True)
@@ -104,11 +125,24 @@ class Lesson(models.Model):
         ('quiz', 'Quiz'),
     ]
     
+    LANGUAGE_CHOICES = [
+        ('ru', 'Russian'),
+        ('kz', 'Kazakh'),
+        ('en', 'English'),
+    ]
+    
     module = models.ForeignKey(Module, related_name='lessons', on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
+    title_kz = models.CharField(max_length=255, blank=True, help_text='Title in Kazakh')
+    title_en = models.CharField(max_length=255, blank=True, help_text='Title in English')
     description = models.TextField(blank=True)
+    description_kz = models.TextField(blank=True, help_text='Description in Kazakh')
+    description_en = models.TextField(blank=True, help_text='Description in English')
     type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='text')
     content = models.TextField(blank=True)
+    content_kz = models.TextField(blank=True, help_text='Content in Kazakh')
+    content_en = models.TextField(blank=True, help_text='Content in English')
+    language = models.CharField(max_length=2, choices=LANGUAGE_CHOICES, default='ru', help_text='Language of the lesson (inherits from course)')
     video_url = models.URLField(blank=True, null=True)
     thumbnail_url = models.URLField(blank=True, null=True)
     pdf_url = models.URLField(blank=True, null=True)
@@ -141,6 +175,7 @@ class CourseEnrollment(models.Model):
         ('in_progress', 'In Progress'),
         ('exam_available', 'Exam Available'),
         ('exam_passed', 'Exam Passed'),
+        ('pending_pdek', 'Pending PDEK Review'),
         ('completed', 'Completed'),
         ('failed', 'Failed'),
         ('annulled', 'Annulled'),
@@ -176,4 +211,72 @@ class LessonProgress(models.Model):
     
     def __str__(self):
         return f"{self.enrollment.user.full_name or self.enrollment.user.phone} - {self.lesson.title}"
+
+
+class CourseCompletionVerification(models.Model):
+    """Course completion SMS verification"""
+    
+    enrollment = models.OneToOneField(CourseEnrollment, related_name='completion_verification', on_delete=models.CASCADE)
+    otp_code = models.CharField(max_length=6, blank=True)
+    otp_expires_at = models.DateTimeField(null=True, blank=True)
+    verified = models.BooleanField(default=False)
+    verified_at = models.DateTimeField(null=True, blank=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'course_completion_verifications'
+    
+    def __str__(self):
+        return f"{self.enrollment.user.full_name or self.enrollment.user.phone} - {self.enrollment.course.title}"
+    
+    def generate_otp(self):
+        """Generate OTP code"""
+        import random
+        import string
+        from django.utils import timezone
+        from datetime import timedelta
+        import logging
+        
+        logger = logging.getLogger(__name__)
+        
+        self.otp_code = ''.join(random.choices(string.digits, k=6))
+        self.otp_expires_at = timezone.now() + timedelta(minutes=10)
+        self.save()
+        
+        logger.info(f"Generated OTP for enrollment {self.enrollment.id}: '{self.otp_code}', expires at {self.otp_expires_at}")
+        
+        return self.otp_code
+    
+    def verify_otp(self, code):
+        """Verify OTP code"""
+        from django.utils import timezone
+        import logging
+        
+        logger = logging.getLogger(__name__)
+        
+        # Нормализуем код: убираем пробелы и приводим к строке
+        code = str(code).strip()
+        
+        logger.info(f"Verifying OTP: code='{code}', stored='{self.otp_code}', enrollment={self.enrollment.id}")
+        
+        if not self.otp_code or not self.otp_expires_at:
+            logger.warning(f"OTP verification failed: missing otp_code or otp_expires_at")
+            return False
+        
+        if timezone.now() > self.otp_expires_at:
+            logger.warning(f"OTP verification failed: expired. Now: {timezone.now()}, Expires: {self.otp_expires_at}")
+            return False
+        
+        otp_code = str(self.otp_code).strip()
+        if otp_code != code:
+            logger.warning(f"OTP verification failed: code mismatch. Expected: '{otp_code}', Got: '{code}'")
+            return False
+        
+        logger.info(f"OTP verification successful for enrollment {self.enrollment.id}")
+        self.verified = True
+        self.verified_at = timezone.now()
+        self.save()
+        return True
 

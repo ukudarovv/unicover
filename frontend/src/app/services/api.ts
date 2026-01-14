@@ -60,13 +60,18 @@ class ApiClient {
     };
 
     // Don't set Content-Type for FormData (browser will set it automatically with boundary)
-    if (!(options.body instanceof FormData)) {
+    const isFormData = options.body instanceof FormData;
+    if (!isFormData) {
       headers['Content-Type'] = 'application/json';
     }
 
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
+
+    // Add language header for multilingual support
+    const language = localStorage.getItem('language') || 'ru';
+    headers['Accept-Language'] = language;
 
     try {
       const response = await fetch(url, {
@@ -115,6 +120,8 @@ class ApiClient {
             errorMessage = data.detail;
           } else if (data.message) {
             errorMessage = data.message;
+          } else if (data.error) {
+            errorMessage = data.error;
           } else if (data.non_field_errors && Array.isArray(data.non_field_errors)) {
             errorMessage = data.non_field_errors[0];
           } else if (typeof data === 'object') {
@@ -122,6 +129,9 @@ class ApiClient {
             const firstKey = Object.keys(data)[0];
             if (firstKey && Array.isArray(data[firstKey])) {
               errorMessage = `${firstKey}: ${data[firstKey][0]}`;
+            } else {
+              // Log the full data for debugging
+              console.error('API Error Response:', data);
             }
           }
         }
@@ -153,18 +163,22 @@ class ApiClient {
 
   async get<T>(endpoint: string, params?: Record<string, any>, options?: { responseType?: 'json' | 'blob' }): Promise<T> {
     let url = endpoint;
-    if (params) {
+    
+    // Add parameters to query string only if params are provided
+    if (params && Object.keys(params).length > 0) {
       const searchParams = new URLSearchParams();
       Object.entries(params).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
           searchParams.append(key, String(value));
         }
       });
+      
       const queryString = searchParams.toString();
       if (queryString) {
         url += `?${queryString}`;
       }
     }
+    
     return this.request<T>(url, { method: 'GET', responseType: options?.responseType });
   }
 

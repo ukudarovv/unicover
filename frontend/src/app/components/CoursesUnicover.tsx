@@ -1,10 +1,11 @@
-import { Shield, Flame, Zap, Briefcase, Wrench, Filter } from 'lucide-react';
+import { Shield, Flame, Zap, Briefcase, Wrench, Filter, Globe } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { coursesService } from '../services/courses';
 import { categoriesService, Category } from '../services/categories';
 import { Course } from '../types/lms';
 import { useUser } from '../contexts/UserContext';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 // Fallback иконки для категорий, если в базе нет icon
@@ -19,10 +20,17 @@ const categoryIcons: Record<string, typeof Shield> = {
 export function CoursesUnicover() {
   const navigate = useNavigate();
   const { user } = useUser();
+  const { i18n, t } = useTranslation();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null); // null = использовать язык интерфейса
   const [courses, setCourses] = useState<Course[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Получаем текущий язык интерфейса
+  const currentInterfaceLanguage = i18n.language || localStorage.getItem('language') || 'ru';
+  // Используем выбранный язык фильтра или язык интерфейса
+  const languageToUse = selectedLanguage || currentInterfaceLanguage;
 
   // Загружаем категории из API
   useEffect(() => {
@@ -45,13 +53,16 @@ export function CoursesUnicover() {
     fetchCategories();
   }, []);
 
-  // Загружаем курсы
+  // Загружаем курсы с учетом языка
   useEffect(() => {
     const fetchCourses = async () => {
       try {
         setLoading(true);
-        // Получаем курсы - API возвращает пагинированный ответ
-        const response = await coursesService.getCourses({ status: 'published' });
+        // Получаем курсы с фильтрацией по языку - API возвращает пагинированный ответ
+        const response = await coursesService.getCourses({ 
+          status: 'published',
+          language: languageToUse
+        });
         // Извлекаем массив курсов из пагинированного ответа
         let coursesList: Course[] = [];
         
@@ -78,7 +89,16 @@ export function CoursesUnicover() {
       }
     };
     fetchCourses();
-  }, []);
+  }, [languageToUse]);
+  
+  // Сбрасываем выбранный язык фильтра при изменении языка интерфейса
+  useEffect(() => {
+    // Если выбранный язык фильтра совпадает со старым языком интерфейса, сбрасываем его
+    // чтобы использовать новый язык интерфейса
+    if (selectedLanguage === null || selectedLanguage === currentInterfaceLanguage) {
+      setSelectedLanguage(null);
+    }
+  }, [currentInterfaceLanguage]);
 
   // Фильтруем курсы по выбранной категории
   const filteredCourses = selectedCategory === 'all' 
@@ -119,15 +139,15 @@ export function CoursesUnicover() {
 
   // Получаем название категории для отображения
   const getCategoryName = (categoryId: string | null | undefined): string => {
-    if (!categoryId || categoryId === 'all') return 'Все курсы';
+    if (!categoryId || categoryId === 'all') return t('education.courses.allCourses');
     const category = categories.find(cat => cat.id === categoryId);
-    return category?.name || 'Неизвестная категория';
+    return category?.name || t('education.courses.unknownCategory');
   };
 
   const handleEnrollClick = (course: Course) => {
     if (!user) {
       // Если пользователь не авторизован, перенаправляем на страницу входа
-      toast.info('Для записи на курс необходимо войти в систему');
+      toast.info(t('education.courses.loginRequired'));
       navigate('/login', { state: { returnTo: `/student/course/${course.id}` } });
       return;
     }
@@ -136,7 +156,7 @@ export function CoursesUnicover() {
     if (user.role === 'student') {
       navigate(`/student/course/${course.id}`);
     } else {
-      toast.info('Эта функция доступна только для студентов');
+      toast.info(t('education.courses.studentsOnly'));
     }
   };
 
@@ -146,7 +166,7 @@ export function CoursesUnicover() {
         <div className="container mx-auto px-4">
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Загрузка курсов...</p>
+            <p className="mt-4 text-gray-600">{t('education.courses.loading')}</p>
           </div>
         </div>
       </section>
@@ -158,21 +178,72 @@ export function CoursesUnicover() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <div className="inline-block bg-blue-100 text-blue-600 px-4 py-2 rounded-full mb-4">
-            Образовательные программы
+            {t('education.courses.badge')}
           </div>
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Программы обучения
+            {t('education.courses.title')}
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Широкий спектр курсов для подготовки и повышения квалификации специалистов
+            {t('education.courses.subtitle')}
           </p>
         </div>
 
-        {/* Filter */}
+        {/* Language Filter */}
+        <div className="mb-8">
+          <div className="flex items-center gap-2 mb-4 text-gray-700">
+            <Globe className="w-5 h-5" />
+            <span className="font-medium">{t('education.courses.languageFilter')}</span>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <button
+              onClick={() => setSelectedLanguage(null)}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
+                selectedLanguage === null
+                  ? 'bg-green-600 text-white shadow-md'
+                  : 'bg-white text-gray-700 hover:bg-green-50 border border-gray-200'
+              }`}
+              title={`${t('education.courses.auto')}: ${currentInterfaceLanguage === 'ru' ? t('education.courses.russian') : currentInterfaceLanguage === 'kz' ? t('education.courses.kazakh') : t('education.courses.english')}`}
+            >
+              {t('education.courses.auto')} ({currentInterfaceLanguage === 'ru' ? 'РУ' : currentInterfaceLanguage === 'kz' ? 'ҚЗ' : 'EN'})
+            </button>
+            <button
+              onClick={() => setSelectedLanguage('ru')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
+                selectedLanguage === 'ru'
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'bg-white text-gray-700 hover:bg-blue-50 border border-gray-200'
+              }`}
+            >
+              {t('education.courses.russian')}
+            </button>
+            <button
+              onClick={() => setSelectedLanguage('kz')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
+                selectedLanguage === 'kz'
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'bg-white text-gray-700 hover:bg-blue-50 border border-gray-200'
+              }`}
+            >
+              {t('education.courses.kazakh')}
+            </button>
+            <button
+              onClick={() => setSelectedLanguage('en')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
+                selectedLanguage === 'en'
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'bg-white text-gray-700 hover:bg-blue-50 border border-gray-200'
+              }`}
+            >
+              {t('education.courses.english')}
+            </button>
+          </div>
+        </div>
+
+        {/* Category Filter */}
         <div className="mb-12">
           <div className="flex items-center gap-2 mb-4 text-gray-700">
             <Filter className="w-5 h-5" />
-            <span className="font-medium">Фильтр по категориям:</span>
+            <span className="font-medium">{t('education.courses.categoryFilter')}</span>
           </div>
           <div className="flex flex-wrap gap-3">
             {/* Кнопка "Все курсы" */}
@@ -184,7 +255,7 @@ export function CoursesUnicover() {
                   : 'bg-white text-gray-700 hover:bg-blue-50 border border-gray-200'
               }`}
             >
-              Все курсы
+              {t('education.courses.allCourses')}
             </button>
             {/* Динамические категории из API */}
             {categories.map((cat) => (
@@ -226,11 +297,11 @@ export function CoursesUnicover() {
                   </div>
                 </div>
                 
-                <p className="text-gray-600 mb-6">{course.description || 'Описание курса'}</p>
+                <p className="text-gray-600 mb-6">{course.description || t('education.courses.defaultDescription')}</p>
                 
                 {course.modules && course.modules.length > 0 && (
                   <div className="bg-gray-50 p-4 rounded-lg">
-                    <h4 className="font-semibold text-gray-900 mb-3 text-sm">Модули курса:</h4>
+                    <h4 className="font-semibold text-gray-900 mb-3 text-sm">{t('education.courses.courseModules')}</h4>
                     <ul className="space-y-2">
                       {course.modules.slice(0, 4).map((module, idx) => (
                         <li key={module.id || idx} className="flex items-start gap-2 text-sm text-gray-600">
@@ -246,7 +317,7 @@ export function CoursesUnicover() {
                   onClick={() => handleEnrollClick(course)}
                   className="mt-6 w-full bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
                 >
-                  {user ? 'Перейти к курсу' : 'Записаться на курс'}
+                  {user ? t('education.courses.goToCourse') : t('education.courses.enroll')}
                 </button>
               </div>
             );
@@ -255,7 +326,7 @@ export function CoursesUnicover() {
 
         {filteredCourses.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-gray-500">Курсы в данной категории скоро появятся</p>
+            <p className="text-gray-500">{t('education.courses.noCoursesInCategory')}</p>
           </div>
         )}
       </div>

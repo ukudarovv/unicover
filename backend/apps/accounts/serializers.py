@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import User
+from .models import User, SMSVerificationCode
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -150,4 +150,40 @@ class TokenSerializer(serializers.Serializer):
             'refresh': str(refresh),
             'user': UserSerializer(user).data
         }
+
+
+class SendSMSVerificationSerializer(serializers.Serializer):
+    """Serializer for sending SMS verification code"""
+    phone = serializers.CharField(required=True, max_length=20)
+    purpose = serializers.ChoiceField(
+        choices=SMSVerificationCode.PURPOSE_CHOICES,
+        default='verification'
+    )
+    
+    def validate_phone(self, value):
+        """Validate phone number format"""
+        # Remove all non-digit characters for validation
+        digits_only = ''.join(filter(str.isdigit, str(value)))
+        
+        # Check if phone has reasonable length (7-15 digits)
+        if len(digits_only) < 7 or len(digits_only) > 15:
+            raise serializers.ValidationError('Invalid phone number format.')
+        
+        return value
+
+
+class VerifySMSSerializer(serializers.Serializer):
+    """Serializer for verifying SMS code"""
+    phone = serializers.CharField(required=True, max_length=20)
+    code = serializers.CharField(required=True, max_length=6, min_length=6)
+    purpose = serializers.ChoiceField(
+        choices=SMSVerificationCode.PURPOSE_CHOICES,
+        default='verification'
+    )
+    
+    def validate_code(self, value):
+        """Validate code format"""
+        if not value.isdigit():
+            raise serializers.ValidationError('Code must contain only digits.')
+        return value
 

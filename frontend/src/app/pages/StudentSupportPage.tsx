@@ -1,9 +1,11 @@
 import { Header } from '../components/Header';
 import { FooterUnicover } from '../components/FooterUnicover';
 import { Link } from 'react-router-dom';
-import { Mail, Phone, MessageCircle, ArrowLeft } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Mail, Phone, ArrowLeft } from 'lucide-react';
 
 export function StudentSupportPage() {
+  const { t } = useTranslation();
   return (
     <>
       <Header />
@@ -16,16 +18,16 @@ export function StudentSupportPage() {
               className="text-blue-600 hover:text-blue-700 text-sm font-medium mb-4 inline-flex items-center"
             >
               <ArrowLeft className="w-4 h-4 mr-1" />
-              Вернуться в личный кабинет
+              {t('pages.support.backToDashboard')}
             </Link>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Поддержка</h1>
-            <p className="text-gray-600">Свяжитесь с нами, если у вас возникли вопросы</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('pages.support.title')}</h1>
+            <p className="text-gray-600">{t('pages.support.description')}</p>
           </div>
 
           <div className="max-w-4xl mx-auto">
             {/* Contact Information */}
             <div className="bg-white rounded-lg shadow-md p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Контактная информация</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">{t('pages.support.contactInfo')}</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="flex items-start">
@@ -33,11 +35,11 @@ export function StudentSupportPage() {
                     <Phone className="w-6 h-6 text-blue-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 mb-1">Телефон</h3>
+                    <h3 className="font-semibold text-gray-900 mb-1">{t('pages.support.phone')}</h3>
                     <a href="tel:+77001234567" className="text-blue-600 hover:text-blue-700">
                       +7 (700) 123-45-67
                     </a>
-                    <p className="text-sm text-gray-600 mt-1">Пн-Пт: 9:00 - 18:00</p>
+                    <p className="text-sm text-gray-600 mt-1">{t('pages.support.workingHours')}</p>
                   </div>
                 </div>
 
@@ -46,11 +48,11 @@ export function StudentSupportPage() {
                     <Mail className="w-6 h-6 text-green-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 mb-1">Email</h3>
+                    <h3 className="font-semibold text-gray-900 mb-1">{t('pages.support.email')}</h3>
                     <a href="mailto:support@unicover.kz" className="text-blue-600 hover:text-blue-700">
                       support@unicover.kz
                     </a>
-                    <p className="text-sm text-gray-600 mt-1">Ответим в течение 24 часов</p>
+                    <p className="text-sm text-gray-600 mt-1">{t('pages.support.responseTime')}</p>
                   </div>
                 </div>
               </div>
@@ -58,80 +60,36 @@ export function StudentSupportPage() {
 
             {/* FAQ Section */}
             <div className="bg-white rounded-lg shadow-md p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Часто задаваемые вопросы</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">{t('pages.support.faq')}</h2>
               
               <div className="space-y-6">
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Как начать обучение?</h3>
+                  <h3 className="font-semibold text-gray-900 mb-2">{t('pages.support.faq1.question')}</h3>
                   <p className="text-gray-600">
-                    Перейдите в раздел "Мои курсы" и выберите курс для начала обучения. 
-                    После назначения курса администратором, он появится в вашем личном кабинете.
+                    {t('pages.support.faq1.answer')}
                   </p>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Как пройти тест?</h3>
+                  <h3 className="font-semibold text-gray-900 mb-2">{t('pages.support.faq2.question')}</h3>
                   <p className="text-gray-600">
-                    Выберите доступный тест в разделе "Тесты" и нажмите "Начать тестирование". 
-                    У вас есть ограниченное количество попыток для прохождения теста.
+                    {t('pages.support.faq2.answer')}
                   </p>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Где получить сертификат?</h3>
+                  <h3 className="font-semibold text-gray-900 mb-2">{t('pages.support.faq3.question')}</h3>
                   <p className="text-gray-600">
-                    После успешного завершения курса и прохождения экзамена, сертификат будет 
-                    доступен в разделе "Документы" вашего личного кабинета.
+                    {t('pages.support.faq3.answer')}
                   </p>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Что делать, если возникли технические проблемы?</h3>
+                  <h3 className="font-semibold text-gray-900 mb-2">{t('pages.support.faq4.question')}</h3>
                   <p className="text-gray-600">
-                    Свяжитесь с нашей службой поддержки по телефону или email, указанным выше. 
-                    Мы поможем решить возникшие проблемы.
+                    {t('pages.support.faq4.answer')}
                   </p>
                 </div>
-              </div>
-            </div>
-
-            {/* Quick Links */}
-            <div className="bg-white rounded-lg shadow-md p-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Полезные ссылки</h2>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Link
-                  to="/student/courses"
-                  className="p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
-                >
-                  <div className="flex items-center mb-2">
-                    <MessageCircle className="w-5 h-5 text-blue-600 mr-2" />
-                    <span className="font-semibold text-gray-900">Мои курсы</span>
-                  </div>
-                  <p className="text-sm text-gray-600">Просмотр всех ваших курсов</p>
-                </Link>
-
-                <Link
-                  to="/student/tests"
-                  className="p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
-                >
-                  <div className="flex items-center mb-2">
-                    <MessageCircle className="w-5 h-5 text-blue-600 mr-2" />
-                    <span className="font-semibold text-gray-900">Тесты</span>
-                  </div>
-                  <p className="text-sm text-gray-600">Доступные тесты для прохождения</p>
-                </Link>
-
-                <Link
-                  to="/student/documents"
-                  className="p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
-                >
-                  <div className="flex items-center mb-2">
-                    <MessageCircle className="w-5 h-5 text-blue-600 mr-2" />
-                    <span className="font-semibold text-gray-900">Документы</span>
-                  </div>
-                  <p className="text-sm text-gray-600">Сертификаты и протоколы</p>
-                </Link>
               </div>
             </div>
           </div>

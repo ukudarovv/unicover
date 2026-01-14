@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { FooterUnicover } from '../components/FooterUnicover';
 import { TestInterface } from '../components/lms/TestInterface';
@@ -12,21 +12,126 @@ import { toast } from 'sonner';
 export function TestPage() {
   const { testId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { test, loading: testLoading } = useTest(testId);
   const [attemptId, setAttemptId] = useState<number | null>(null);
   const [testCompleted, setTestCompleted] = useState(false);
   const [testResult, setTestResult] = useState<{ score: number; passed: boolean } | null>(null);
   const [starting, setStarting] = useState(false);
+  const [savedAnswers, setSavedAnswers] = useState<Record<string, any> | null>(null);
+  const [startedAt, setStartedAt] = useState<string | null>(null);
+  
+  // Получаем courseId и attemptId из state (для финального теста)
+  const courseId = (location.state as any)?.courseId;
+  const stateAttemptId = (location.state as any)?.attemptId;
 
-  // Начинаем попытку при загрузке теста
+  // Начинаем попытку при загрузке теста или продолжаем незавершенную
   useEffect(() => {
     if (test && !attemptId && !starting) {
-      const startAttempt = async () => {
+      const initializeAttempt = async () => {
         try {
           setStarting(true);
+          
+          // Если передан attemptId из state (для продолжения теста)
+          if (stateAttemptId) {
+            try {
+              const attempt = await examsService.getTestAttempt(String(stateAttemptId));
+              const attemptIdNum = Number(attempt.id);
+              setAttemptId(attemptIdNum);
+              
+              // Сохраняем ответы и время начала для передачи в TestInterface
+              const savedAnswersData = attempt.answers || {};
+              const startedAtDate = attempt.started_at || attempt.startedAt;
+              setSavedAnswers(savedAnswersData);
+              setStartedAt(startedAtDate);
+              
+              // Сохраняем attemptId и ответы в localStorage для автосохранения
+              localStorage.setItem(`test_${test.id}_progress`, JSON.stringify({
+                attemptId: attemptIdNum,
+                answers: savedAnswersData,
+                startedAt: startedAtDate
+              }));
+              return;
+            } catch (error: any) {
+              console.error('Failed to load attempt from state:', error);
+              // Если не удалось загрузить попытку, продолжаем с проверкой localStorage
+            }
+          }
+          
+          // Проверяем localStorage для незавершенной попытки
+          const savedProgress = localStorage.getItem(`test_${test.id}_progress`);
+          if (savedProgress) {
+            try {
+              const progress = JSON.parse(savedProgress);
+              if (progress.attemptId) {
+                // Проверяем, существует ли эта попытка и не завершена ли она
+                const attempt = await examsService.getTestAttempt(String(progress.attemptId));
+                if (!attempt.completed_at && !attempt.completedAt) {
+                  // Продолжаем незавершенную попытку
+                  const attemptIdNum = Number(attempt.id);
+                  setAttemptId(attemptIdNum);
+                  
+                  // Сохраняем ответы и время начала для передачи в TestInterface
+                  const savedAnswersData = attempt.answers || {};
+                  const startedAtDate = attempt.started_at || attempt.startedAt;
+                  setSavedAnswers(savedAnswersData);
+                  setStartedAt(startedAtDate);
+                  
+                  // Обновляем localStorage с актуальными данными
+                  localStorage.setItem(`test_${test.id}_progress`, JSON.stringify({
+                    attemptId: attemptIdNum,
+                    answers: savedAnswersData,
+                    startedAt: startedAtDate
+                  }));
+                  return;
+                } else {
+                  // Попытка завершена, удаляем из localStorage
+                  localStorage.removeItem(`test_${test.id}_progress`);
+                }
+              }
+            } catch (error: any) {
+              console.error('Failed to load attempt from localStorage:', error);
+              // Если не удалось загрузить попытку, удаляем из localStorage
+              localStorage.removeItem(`test_${test.id}_progress`);
+            }
+          }
+          
+          // Проверяем незавершенные попытки через API
+          try {
+            const attempts = await examsService.getTestAttempts(test.id);
+            const incompleteAttempt = attempts.find(
+              attempt => !attempt.completed_at && !attempt.completedAt
+            );
+            
+            if (incompleteAttempt) {
+              // Продолжаем незавершенную попытку
+              const attemptIdNum = Number(incompleteAttempt.id);
+              setAttemptId(attemptIdNum);
+              
+              // Сохраняем ответы и время начала для передачи в TestInterface
+              const savedAnswersData = incompleteAttempt.answers || {};
+              const startedAtDate = incompleteAttempt.started_at || incompleteAttempt.startedAt;
+              setSavedAnswers(savedAnswersData);
+              setStartedAt(startedAtDate);
+              
+              // Сохраняем в localStorage
+              localStorage.setItem(`test_${test.id}_progress`, JSON.stringify({
+                attemptId: attemptIdNum,
+                answers: savedAnswersData,
+                startedAt: startedAtDate
+              }));
+              return;
+            }
+          } catch (error: any) {
+            console.error('Failed to check incomplete attempts:', error);
+            // Продолжаем с созданием новой попытки
+          }
+          
+          // Начинаем новую попытку
           const attempt = await examsService.startTestAttempt(test.id);
           const attemptIdNum = Number(attempt.id);
           setAttemptId(attemptIdNum);
+          
           // Сохраняем attemptId в localStorage для автосохранения
           localStorage.setItem(`test_${test.id}_progress`, JSON.stringify({
             attemptId: attemptIdNum,
@@ -38,15 +143,19 @@ export function TestPage() {
           setStarting(false);
         }
       };
-      startAttempt();
+      initializeAttempt();
     }
-  }, [test, attemptId, starting, navigate]);
+  }, [test, attemptId, starting, navigate, stateAttemptId]);
 
   const handleTestComplete = async (answers: Answer[], timeSpent: number) => {
     if (!attemptId) return;
 
     try {
       const result = await examsService.submitTestAttempt(String(attemptId));
+      
+      // Удаляем сохраненный прогресс
+      localStorage.removeItem(`test_${test?.id}_progress`);
+      
       setTestResult({ 
         score: result.score || 0, 
         passed: result.passed || false 
@@ -97,7 +206,7 @@ export function TestPage() {
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Ваш результат</p>
                     <p className={`text-3xl font-bold ${testResult.passed ? 'text-green-600' : 'text-red-600'}`}>
-                      {testResult.score}%
+                      {Number(testResult.score || 0).toFixed(2)}%
                     </p>
                   </div>
                   <div>
@@ -123,12 +232,22 @@ export function TestPage() {
               )}
 
               <div className="flex gap-3 justify-center">
-                <button
-                  onClick={() => navigate('/student/dashboard')}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-                >
-                  Вернуться к курсам
-                </button>
+                {/* Если это финальный тест и он пройден, перенаправляем на страницу курса */}
+                {courseId && testResult.passed ? (
+                  <button
+                    onClick={() => navigate(`/student/course/${courseId}`)}
+                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                  >
+                    Вернуться к курсу
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => navigate('/student/dashboard')}
+                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                  >
+                    Вернуться к курсам
+                  </button>
+                )}
                 {testResult.passed && (
                   <button
                     onClick={() => navigate('/student/documents')}
@@ -194,6 +313,8 @@ export function TestPage() {
         questions={test.questions || []}
         onComplete={handleTestComplete}
         onCancel={handleCancel}
+        savedAnswers={savedAnswers || undefined}
+        startedAt={startedAt || undefined}
       />
       <FooterUnicover />
     </>

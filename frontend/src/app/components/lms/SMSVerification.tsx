@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Phone, Shield, CheckCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { smsService, SMSPurpose } from '../../services/smsService';
 
 interface SMSVerificationProps {
   phone: string;
@@ -7,20 +9,30 @@ interface SMSVerificationProps {
   onCancel: () => void;
   title?: string;
   description?: string;
+  otpCode?: string; // Для отображения OTP кода в режиме разработки
+  purpose?: SMSPurpose; // Purpose of SMS verification
+  onResend?: () => Promise<void>; // Optional callback for resend
 }
 
 export function SMSVerification({ 
   phone, 
   onVerified, 
   onCancel,
-  title = 'Подтверждение по SMS',
-  description = 'Введите код подтверждения из SMS'
+  title,
+  description,
+  otpCode,
+  purpose = 'verification',
+  onResend
 }: SMSVerificationProps) {
+  const { t } = useTranslation();
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [timeLeft, setTimeLeft] = useState(120); // 2 минуты
   const [canResend, setCanResend] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState('');
+  
+  const displayTitle = title || t('lms.coursePlayer.smsVerificationTitle');
+  const displayDescription = description || t('lms.coursePlayer.smsVerificationDescription');
 
   useEffect(() => {
     if (timeLeft > 0) {
@@ -59,31 +71,41 @@ export function SMSVerification({
   };
 
   const handleVerify = async (code: string) => {
+    if (code.length !== 6) {
+      setError(t('lms.coursePlayer.smsVerificationCodeError'));
+      setOtp(['', '', '', '', '', '']);
+      document.getElementById('otp-0')?.focus();
+      return;
+    }
+
     setIsVerifying(true);
     setError('');
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    // Demo: accept any 6-digit code or "123456"
-    if (code.length === 6) {
-      onVerified(code);
-    } else {
-      setError('Неверный код. Попробуйте еще раз.');
-      setOtp(['', '', '', '', '', '']);
-      document.getElementById('otp-0')?.focus();
-    }
+    // Просто передаем код на проверку в родительский компонент
+    // Родительский компонент вызовет API для проверки
+    onVerified(code);
 
     setIsVerifying(false);
   };
 
-  const handleResend = () => {
-    setTimeLeft(120);
-    setCanResend(false);
-    setOtp(['', '', '', '', '', '']);
-    setError('');
-    // TODO: Call API to resend SMS
-    console.log('SMS отправлена повторно на', phone);
+  const handleResend = async () => {
+    try {
+      setError('');
+      setCanResend(false);
+      setTimeLeft(120);
+      setOtp(['', '', '', '', '', '']);
+      
+      // If custom resend handler provided, use it
+      if (onResend) {
+        await onResend();
+      } else {
+        // Otherwise use default SMS service
+        await smsService.sendVerificationCode(phone, purpose);
+      }
+    } catch (error: any) {
+      setError(error.message || 'Failed to resend SMS code');
+      setCanResend(true);
+    }
   };
 
   const formatTime = (seconds: number) => {
@@ -97,19 +119,36 @@ export function SMSVerification({
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-30 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-2xl shadow-2xl ring-4 ring-white ring-opacity-50 max-w-md w-full p-8">
         <div className="text-center mb-6">
           <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Shield className="w-8 h-8 text-blue-600" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">{title}</h2>
-          <p className="text-gray-600 text-sm mb-4">{description}</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">{displayTitle}</h2>
+          <p className="text-gray-600 text-sm mb-4">{displayDescription}</p>
           
           <div className="flex items-center justify-center gap-2 text-sm text-gray-600 bg-gray-50 rounded-lg p-3">
             <Phone className="w-4 h-4" />
-            <span>Код отправлен на {maskPhone(phone)}</span>
+            <span>{t('lms.coursePlayer.smsVerificationCodeSent', { phone: maskPhone(phone) })}</span>
           </div>
+          
+          {/* Display OTP code in debug mode */}
+          {otpCode && (
+            <div className="mt-4 p-4 bg-blue-50 border-2 border-blue-300 rounded-lg">
+              <p className="text-sm font-semibold text-blue-900 mb-2 text-center">
+                🔑 {t('lms.coursePlayer.smsVerificationTestCode')}
+              </p>
+              <div className="text-center">
+                <div className="inline-block bg-white px-6 py-3 rounded-lg border-2 border-blue-400">
+                  <span className="text-3xl font-bold text-blue-600 tracking-wider">{otpCode}</span>
+                </div>
+              </div>
+              <p className="text-xs text-blue-700 mt-2 text-center">
+                {t('lms.coursePlayer.smsVerificationEnterCode')}
+              </p>
+            </div>
+          )}
         </div>
 
         {error && (
@@ -141,25 +180,19 @@ export function SMSVerification({
           <div className="text-center">
             {!canResend ? (
               <p className="text-sm text-gray-500">
-                Код действителен: <span className="font-semibold text-blue-600">{formatTime(timeLeft)}</span>
+                {t('lms.coursePlayer.smsVerificationCodeValid', { time: formatTime(timeLeft) })}
               </p>
             ) : (
               <button
                 onClick={handleResend}
                 className="text-sm text-blue-600 hover:text-blue-700 font-medium"
               >
-                Отправить код повторно
+                {t('lms.coursePlayer.smsVerificationResend')}
               </button>
             )}
           </div>
         </div>
 
-        {/* Demo Info */}
-        <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <p className="text-xs text-yellow-800 text-center">
-            <strong>Демо-режим:</strong> Введите любой 6-значный код для подтверждения
-          </p>
-        </div>
 
         {/* Actions */}
         <div className="flex gap-3">
@@ -168,7 +201,7 @@ export function SMSVerification({
             className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
             disabled={isVerifying}
           >
-            Отмена
+            {t('common.cancel')}
           </button>
           <button
             onClick={() => handleVerify(otp.join(''))}
@@ -178,12 +211,12 @@ export function SMSVerification({
             {isVerifying ? (
               <>
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Проверка...
+                {t('lms.coursePlayer.smsVerificationVerifying')}
               </>
             ) : (
               <>
                 <CheckCircle className="w-5 h-5" />
-                Подтвердить
+                {t('lms.coursePlayer.smsVerificationVerify')}
               </>
             )}
           </button>
@@ -191,7 +224,7 @@ export function SMSVerification({
 
         {/* Security Notice */}
         <p className="mt-6 text-xs text-gray-500 text-center">
-          Код подтверждения действителен в течение 2 минут. Не сообщайте код третьим лицам.
+          {t('lms.coursePlayer.smsVerificationSecurityNotice')}
         </p>
       </div>
     </div>

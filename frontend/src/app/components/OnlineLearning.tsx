@@ -1,36 +1,39 @@
 import { Monitor, BookOpen, FileCheck, Clock, Video, Award } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export function OnlineLearning() {
+  const { t } = useTranslation();
+  
   const features = [
     {
       icon: Monitor,
-      title: 'Дистанционный доступ',
-      description: 'Учитесь из любой точки мира в удобное время',
+      title: t('education.online.features.remoteAccess.title'),
+      description: t('education.online.features.remoteAccess.description'),
     },
     {
       icon: Video,
-      title: 'Видео-лекции',
-      description: 'Качественные обучающие материалы от экспертов',
+      title: t('education.online.features.videoLectures.title'),
+      description: t('education.online.features.videoLectures.description'),
     },
     {
       icon: FileCheck,
-      title: 'Онлайн-тестирование',
-      description: 'Проверка знаний через систему тестов',
+      title: t('education.online.features.onlineTesting.title'),
+      description: t('education.online.features.onlineTesting.description'),
     },
     {
       icon: Award,
-      title: 'Сертификаты',
-      description: 'Автоматическая выдача документов после сдачи',
+      title: t('education.online.features.certificates.title'),
+      description: t('education.online.features.certificates.description'),
     },
     {
       icon: Clock,
-      title: 'Гибкий график',
-      description: 'Обучение в своем темпе без привязки к расписанию',
+      title: t('education.online.features.flexibleSchedule.title'),
+      description: t('education.online.features.flexibleSchedule.description'),
     },
     {
       icon: BookOpen,
-      title: 'История обучения',
-      description: 'Доступ к пройденным курсам и материалам',
+      title: t('education.online.features.learningHistory.title'),
+      description: t('education.online.features.learningHistory.description'),
     },
   ];
 
@@ -43,10 +46,10 @@ export function OnlineLearning() {
             <span className="font-medium">E-Learning</span>
           </div>
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Онлайн обучение
+            {t('education.online.title')}
           </h2>
           <p className="text-blue-100 max-w-2xl mx-auto">
-            Современная платформа дистанционного обучения с доступом к курсам, тестированию и получением сертификатов
+            {t('education.online.subtitle')}
           </p>
         </div>
 

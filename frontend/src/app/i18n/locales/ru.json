@@ -16,28 +16,1372 @@
     "error": "Ошибка",
     "success": "Успешно",
     "construction": "Строительство",
-    "education": "Учебный центр"
+    "education": "Учебный центр",
+    "yes": "Да",
+    "no": "Нет",
+    "all": "Все",
+    "active": "Активные",
+    "inactive": "Неактивные",
+    "filters": "Фильтры",
+    "status": "Статус",
+    "actions": "Действия",
+    "view": "Просмотр",
+    "close": "Закрыть",
+    "back": "Назад",
+    "next": "Далее",
+    "previous": "Предыдущий",
+    "submit": "Отправить",
+    "confirm": "Подтвердить",
+    "saving": "Сохранение...",
+    "upload": "Загрузить",
+    "download": "Скачать",
+    "select": "Выбрать",
+    "required": "Обязательно",
+    "optional": "Необязательно",
+    "collapse": "Свернуть"
+  },
+  "navigation": {
+    "menu": "Меню",
+    "personalCabinet": "Личный кабинет",
+    "dashboard": "Панель управления",
+    "courses": "Курсы",
+    "tests": "Тесты",
+    "documents": "Документы",
+    "history": "История",
+    "support": "Поддержка",
+    "partners": "Партнеры",
+    "projects": "Проекты",
+    "vacancies": "Вакансии",
+    "certificateVerification": "Проверка подлинности сертификата"
+  },
+  "partners": {
+    "title": "Наши партнеры",
+    "heading": "Партнеры и клиенты",
+    "description": "Мы гордимся доверием ведущих компаний Казахстана",
+    "management": "Управление партнерами",
+    "managementDescription": "Создание и редактирование партнеров",
+    "addPartner": "Добавить партнера",
+    "editPartner": "Редактировать партнера",
+    "createPartner": "Создать партнера",
+    "companyName": "Название компании",
+    "companyNamePlaceholder": "Введите название компании",
+    "logo": "Логотип",
+    "uploadLogo": "Загрузить логотип",
+    "changeLogo": "Изменить логотип",
+    "fileSelected": "Файл выбран",
+    "logoRecommendation": "Рекомендуемый размер: 200x200px. Форматы: JPG, PNG, WEBP",
+    "website": "Веб-сайт",
+    "websitePlaceholder": "https://example.com",
+    "order": "Порядок отображения",
+    "orderHint": "Меньшее число = выше в списке",
+    "isActive": "Активен (отображается на сайте)",
+    "searchPlaceholder": "Поиск по названию или веб-сайту...",
+    "noPartners": "Нет партнеров",
+    "noPartnersFiltered": "Партнеры не найдены по заданным фильтрам",
+    "noPartnersCreate": "Создайте первого партнера, нажав кнопку \"Добавить партнера\"",
+    "deleteConfirm": "Вы уверены, что хотите удалить этого партнера?",
+    "deleteSuccess": "Партнер успешно удален",
+    "deleteError": "Ошибка удаления партнера",
+    "loadError": "Ошибка загрузки партнеров",
+    "saveError": "Ошибка сохранения партнера",
+    "saveSuccess": "Партнер успешно сохранен",
+    "createSuccess": "Партнер успешно создан",
+    "updateSuccess": "Партнер успешно обновлен",
+    "nameRequired": "Введите название компании",
+    "logoRequired": "Загрузите логотип компании",
+    "table": {
+      "logo": "Логотип",
+      "name": "Название",
+      "website": "Веб-сайт",
+      "order": "Порядок",
+      "status": "Статус",
+      "noLogo": "Нет логотипа"
+    }
+  },
+  "projects": {
+    "badge": "Портфолио",
+    "title": "Выполненные работы",
+    "description": "Примеры успешно реализованных проектов в области проектирования и строительства",
+    "searchPlaceholder": "Поиск по названию или описанию...",
+    "allCategories": "Все категории",
+    "loading": "Загрузка проектов...",
+    "loadError": "Не удалось загрузить проекты",
+    "notFound": "Проекты не найдены"
   },
   "construction": {
     "title": "Строительное направление",
     "about": "О компании",
     "licenses": "Лицензии",
     "projects": "Проекты и работы",
+    "completedWorks": "Выполненные работы",
     "partners": "Партнеры"
+  },
+  "constructionAbout": {
+    "hero": {
+      "badge": "Строительное направление",
+      "title": "О компании",
+      "description": "ТОО «Unicover» — многопрофильная инженерная и проектно-строительная компания, предоставляющая полный комплекс услуг в сфере промышленной безопасности, изысканий, проектирования и строительства."
+    },
+    "breadcrumbs": {
+      "home": "Главная",
+      "construction": "Строительство",
+      "about": "О компании"
+    },
+    "about": {
+      "title": "Наша деятельность",
+      "paragraph1": "ТОО «Unicover» специализируется на выполнении полного цикла работ от инженерных изысканий до ввода объекта в эксплуатацию. Мы работаем в различных отраслях промышленности и гражданского строительства.",
+      "paragraph2": "Компания располагает всеми необходимыми лицензиями и аттестатами, подтверждающими право выполнения работ в области изысканий, проектирования и строительства. Наши специалисты имеют большой опыт работы с объектами различной сложности.",
+      "paragraph3": "Мы гарантируем высокое качество выполняемых работ, соблюдение всех нормативных требований и стандартов Республики Казахстан, а также индивидуальный подход к каждому проекту."
+    },
+    "services": {
+      "title": "Направления деятельности",
+      "subtitle": "Полный спектр услуг в сфере проектирования и строительства",
+      "surveying": {
+        "title": "Инженерные изыскания",
+        "items": {
+          "geological": "Инженерно-геологические исследования",
+          "hydrogeological": "Инженерно-гидрогеологические работы",
+          "geodetic": "Инженерно-геодезические изыскания",
+          "equipment": "Высокоточное оборудование"
+        }
+      },
+      "design": {
+        "title": "Проектирование",
+        "items": {
+          "technological": "Технологическое проектирование производственных объектов",
+          "architectural": "Архитектурное проектирование (I-III уровни ответственности)",
+          "urban": "Градостроительное проектирование и планирование",
+          "engineering": "Проектирование инженерных систем и сетей",
+          "reconstruction": "Реконструкция и капитальный ремонт"
+        }
+      },
+      "construction": {
+        "title": "Строительно-монтажные работы",
+        "items": {
+          "category": "СМР III категории",
+          "buildings": "Строительство объектов различного назначения",
+          "installation": "Монтаж оборудования",
+          "modernization": "Реконструкция и модернизация",
+          "standards": "Соблюдение СНиП и стандартов РК"
+        }
+      }
+    },
+    "advantages": {
+      "title": "Наши преимущества",
+      "experience": {
+        "title": "Опыт и профессионализм",
+        "description": "Многолетний опыт работы в сфере проектирования и строительства"
+      },
+      "licenses": {
+        "title": "Лицензии и сертификаты",
+        "description": "Полный пакет государственных лицензий и отраслевых аттестатов"
+      },
+      "team": {
+        "title": "Квалифицированная команда",
+        "description": "Высококвалифицированные специалисты с большим опытом работы"
+      }
+    },
+    "cta": {
+      "title": "Готовы начать проект?",
+      "description": "Свяжитесь с нами для обсуждения вашего проекта. Наши специалисты готовы ответить на все ваши вопросы и предложить оптимальное решение.",
+      "contact": "Связаться с нами",
+      "projects": "Наши проекты"
+    }
   },
   "education": {
     "title": "Учебный центр",
     "about": "О центре",
     "programs": "Программы обучения",
     "online": "Онлайн обучение",
-    "cabinet": "Личный кабинет"
+    "cabinet": "Личный кабинет",
+    "certificateVerification": "Проверка подлинности сертификата"
   },
   "contacts": {
+    "badge": "Контакты",
     "title": "Свяжитесь с нами",
+    "description": "Мы готовы ответить на ваши вопросы и обсудить возможности сотрудничества",
+    "mapAddress": "г. Атырау, ул. Студенческий 25, БЦ Bayterek Plaza",
+    "info": {
+      "bin": "БИН",
+      "binValue": "100240007639",
+      "address": "Адрес",
+      "addressValue": "г.Атырау, ул. Студенческий 25\nБЦ Bayterek Plaza, 5 этаж",
+      "phone": "Телефоны",
+      "phoneValue": "+7 (7122) 20-80-92\n+7 708 420-80-92",
+      "email": "Email",
+      "emailValue": "info@unicover.kz",
+      "workingHours": "Режим работы",
+      "workingHoursValue": "Пн-Пт: 9:00 - 18:00\nСб-Вс: Выходной"
+    },
+    "companyDetails": {
+      "title": "Реквизиты компании",
+      "fullName": "Полное название",
+      "fullNameValue": "ТОО \"UNICOVER\"",
+      "bin": "БИН",
+      "binValue": "100240007639",
+      "legalAddress": "Юридический адрес",
+      "legalAddressValue": "г. Атырау, ул. Студенческий 25, БЦ Bayterek Plaza, 5 этаж",
+      "email": "Email",
+      "emailValue": "info@unicover.kz"
+    },
+    "form": {
+      "title": "Отправить запрос",
+      "name": "Ваше имя",
+      "namePlaceholder": "Введите ваше имя",
+      "company": "Компания",
+      "companyPlaceholder": "Название вашей компании",
+      "email": "Email",
+      "emailPlaceholder": "your@email.com",
+      "phone": "Телефон",
+      "phonePlaceholder": "+7 (___) ___-____",
+      "direction": "Интересующее направление",
+      "directionPlaceholder": "Выберите направление",
+      "directions": {
+        "construction": "Строительство и проектирование",
+        "engineering": "Инженерные изыскания",
+        "education": "Обучение",
+        "safety": "Промышленная безопасность",
+        "other": "Другое"
+      },
+      "message": "Сообщение",
+      "messagePlaceholder": "Опишите ваш запрос подробнее...",
+      "submit": "Отправить запрос",
+      "submitting": "Отправка...",
+      "requiredFields": "Обязательные поля для заполнения",
+      "thankYou": "Спасибо за ваше сообщение!",
+      "weWillContactYou": "Мы свяжемся с вами в ближайшее время.",
+      "successMessage": "Ваше сообщение успешно отправлено! Мы свяжемся с вами в ближайшее время.",
+      "errorMessage": "Ошибка при отправке сообщения. Попробуйте еще раз."
+    },
     "address": "Адрес",
+    "addressValue": "г.Атырау, ул. Студенческий 25, БЦ Bayterek Plaza, 5 этаж",
     "phone": "Телефоны",
     "email": "Email",
     "workingHours": "Режим работы"
+  },
+  "footer": {
+    "companyDescription": "Многопрофильная инженерная и проектно-строительная компания. Полный комплекс услуг в сфере промышленной безопасности, изысканий, проектирования и строительства.",
+    "copyright": "© {{year}} ТОО «UNICOVER». БИН 100240007639. Все права защищены.",
+    "construction": "Строительство",
+    "education": "Учебный центр",
+    "contacts": "Контакты"
+  },
+  "header": {
+    "russian": "Русский",
+    "kazakh": "Қазақша",
+    "english": "English",
+    "personalCabinet": "Личный кабинет"
+  },
+  "admin": {
+    "partners": {
+      "title": "Партнеры"
+    },
+    "projects": {
+      "title": "Проекты"
+    },
+    "users": {
+      "title": "Пользователи",
+      "addUser": "Добавить пользователя",
+      "editUser": "Редактировать пользователя",
+      "personalData": "Личные данные",
+      "fullNamePlaceholder": "Иванов Иван Иванович",
+      "passwordPlaceholder": "Введите пароль или оставьте пустым для автоматической генерации",
+      "generatePassword": "Сгенерировать случайный пароль",
+      "generate": "Сгенерировать",
+      "passwordGenerated": "Пароль сгенерирован. Сохраните его для передачи пользователю.",
+      "passwordHint": "Если пароль не указан, он будет сгенерирован автоматически. Минимум 8 символов при ручном вводе.",
+      "iinPlaceholder": "000000000000",
+      "city": "Город",
+      "cityPlaceholder": "Город",
+      "workplace": "Место работы",
+      "systemSettings": "Настройки системы",
+      "role": "Роль",
+      "interfaceLanguage": "Язык интерфейса",
+      "accountVerified": "Аккаунт подтвержден",
+      "teacher": "Преподаватель",
+      "loading": "Загрузка пользователей...",
+      "loadError": "Ошибка загрузки пользователей",
+      "totalUsers": "Всего пользователей",
+      "activeStudents": "Активных студентов",
+      "pdekMembers": "Членов ПДЭК",
+      "pendingVerification": "Ожидают проверки",
+      "management": "Управление пользователями",
+      "export": "Экспорт",
+      "import": "Импорт",
+      "exportSuccess": "Пользователи успешно экспортированы",
+      "exportError": "Ошибка экспорта пользователей",
+      "importSuccess": "Импортировано пользователей: {{count}}",
+      "importErrors": "Ошибок при импорте: {{count}}",
+      "importError": "Ошибка импорта пользователей",
+      "searchPlaceholder": "Поиск по имени, email, телефону, ИИН...",
+      "role": "Роль",
+      "allRoles": "Все роли",
+      "students": "Студенты",
+      "pdekMembersFilter": "Члены ПДЭК",
+      "pdekChairmen": "Председатели ПДЭК",
+      "teachers": "Преподаватели",
+      "admins": "Администраторы",
+      "allStatuses": "Все статусы",
+      "verified": "Подтвержден",
+      "unverified": "Не подтвержден",
+      "resetFilters": "Сбросить фильтры",
+      "selected": "Выбрано: {{count}} пользователей",
+      "assignToCourse": "Назначить на курс",
+      "messageFeatureNotImplemented": "Функционал отправки сообщений пока не реализован",
+      "sendMessage": "Отправить сообщение",
+      "deleteConfirm": "Вы уверены, что хотите удалить {{count}} пользователей?\n\nЭто действие невозможно отменить.",
+      "deleteSuccess": "{{count}} пользователей успешно удалены",
+      "deleteError": "Ошибка удаления пользователей",
+      "user": "Пользователь",
+      "contacts": "Контакты",
+      "organization": "Организация",
+      "courses": "Курсы",
+      "progress": "Прогресс",
+      "unknown": "Неизвестно",
+      "noUsersFound": "Пользователи не найдены",
+      "tryChangingSearch": "Попробуйте изменить параметры поиска",
+      "deleteUserConfirm": "Вы уверены, что хотите удалить пользователя \"{{name}}\"?\n\nЭто действие невозможно отменить.",
+      "deleteUserError": "Не удалось удалить пользователя",
+      "userDeletedSuccess": "Пользователь успешно удален",
+      "noUsersSelected": "Не выбраны пользователи для назначения курсов",
+      "noCoursesSelected": "Не выбраны курсы для назначения",
+      "coursesAssigned": "Назначено курсов: {{courses}} для {{users}} пользователей{{errors}}",
+      "assignCoursesError": "Не удалось назначить курсы. Проверьте логи для деталей.",
+      "failed": "Не сдан",
+      "annulled": "Аннулирован",
+      "info": "Информация",
+      "activity": "Активность",
+      "noEmail": "Нет email",
+      "learningStats": "Статистика обучения",
+      "loadingStats": "Загрузка статистики...",
+      "coursesAssignedStat": "Курсов назначено",
+      "completed": "Завершено",
+      "averageScore": "Средний балл",
+      "certificates": "Сертификатов",
+      "assignedCourses": "Назначенные курсы",
+      "loadingCourses": "Загрузка курсов...",
+      "noAssignedCourses": "Нет назначенных курсов",
+      "unknownCourse": "Неизвестный курс",
+      "courseLower": "курс",
+      "userLower": "пользователя",
+      "revokeCourseConfirm": "Вы уверены, что хотите отозвать курс \"{{course}}\" у пользователя \"{{user}}\"?\n\nВсе данные о прохождении курса будут полностью удалены, включая:\n- Прогресс по урокам\n- Попытки тестов\n- Запросы на дополнительные попытки\n- Данные о верификации\n\nЭто действие нельзя отменить.",
+      "revokeCourse": "Отозвать курс",
+      "revokeCourseError": "Не удалось отозвать курс",
+      "courseRevoked": "Курс успешно отозван",
+      "completedLower": "завершено",
+      "enrolled": "Зачислен",
+      "activityHistory": "История активности",
+      "loadingActivity": "Загрузка активности...",
+      "noActivityData": "Нет данных об активности",
+      "receivedCertificate": "Получил сертификат",
+      "completedCourse": "Завершил курс",
+      "assignCourses": "Назначить курсы",
+      "coursesAssignedToUser": "Назначено курсов: {{courses}} для пользователя {{user}}{{errors}}"
+    },
+    "courses": {
+      "title": "Курсы",
+      "editCourse": "Редактировать курс",
+      "createCourse": "Создать курс",
+      "basicInfo": "Основная информация",
+      "courseTitle": "Название курса",
+      "courseTitlePlaceholder": "Введите название курса",
+      "courseDescriptionPlaceholder": "Краткое описание курса",
+      "category": "Категория",
+      "selectCategory": "Выберите категорию",
+      "loadingCategories": "Загрузка категорий...",
+      "duration": "Длительность (часы)",
+      "courseStatus": "Статус курса",
+      "inDevelopment": "В разработке",
+      "draft": "Черновик",
+      "published": "Опубликован",
+      "finalTest": "Финальный тест",
+      "noFinalTest": "Нет финального теста",
+      "loadingTests": "Загрузка тестов...",
+      "modulesAndLessons": "Модули и уроки",
+      "addModule": "Добавить модуль",
+      "newModule": "Новый модуль",
+      "moduleTitlePlaceholder": "Название модуля",
+      "moduleDescriptionPlaceholder": "Описание модуля",
+      "expand": "Развернуть",
+      "lessons": "Уроки",
+      "addLesson": "Добавить урок",
+      "noTitle": "Без названия",
+      "minutes": "мин",
+      "required": "Обязательный",
+      "noLessons": "Нет уроков. Нажмите \"Добавить урок\" для начала.",
+      "noModules": "Нет модулей. Нажмите \"Добавить модуль\" для начала.",
+      "saveCourse": "Сохранить курс",
+      "createLesson": "Создать урок",
+      "editLesson": "Редактировать урок",
+      "lessonTitle": "Название урока",
+      "lessonTitlePlaceholder": "Введите название урока",
+      "enterLessonTitle": "Введите название урока",
+      "lessonDescription": "Описание урока",
+      "lessonDescriptionPlaceholder": "Краткое описание того, что изучается в уроке",
+      "lessonType": "Тип урока",
+      "durationMinutes": "Длительность (минуты)",
+      "requiredLesson": "Обязательный урок для прохождения курса",
+      "lessonContent": "Контент урока",
+      "textContent": "Текстовое содержание",
+      "textContentPlaceholder": "Введите текст урока. Можно использовать форматирование...",
+      "markdownTip": "Совет: Для больших текстов можно использовать редактор Markdown",
+      "videoUrl": "URL видео",
+      "videoUrlPlaceholder": "https://www.youtube.com/watch?v=... или https://vimeo.com/...",
+      "videoSupported": "Поддерживаются: YouTube, Vimeo, собственный сервер",
+      "videoThumbnail": "Миниатюра видео (URL)",
+      "allowDownload": "Разрешить скачивание",
+      "trackProgress": "Отслеживать просмотр",
+      "pdfUrl": "URL PDF документа",
+      "uploadPdf": "Загрузить PDF файл",
+      "selectFile": "Выбрать файл",
+      "orEnterUrl": "или введите URL выше",
+      "allowDownloadPdf": "Разрешить скачивание PDF",
+      "selectTest": "Выберите тест",
+      "selectTestOption": "Выберите тест",
+      "testsCreatedInAdmin": "Тесты создаются в разделе \"Тесты\" админ-панели",
+      "maxAttempts": "Максимум попыток",
+      "saveLesson": "Сохранить урок",
+      "lessonTypes": {
+        "text": "Текст",
+        "video": "Видео",
+        "pdf": "PDF",
+        "quiz": "Тест"
+      }
+    },
+    "tests": {
+      "title": "Тесты",
+      "editTest": "Редактировать тест",
+      "createTest": "Создать тест",
+      "testSettings": "Настройки теста",
+      "testTitle": "Название теста",
+      "testTitlePlaceholder": "Введите название теста",
+      "description": "Описание",
+      "descriptionPlaceholder": "Описание теста и инструкции",
+      "timeLimit": "Время (мин)",
+      "passingScore": "Проходной балл (%)",
+      "maxAttempts": "Попыток",
+      "shuffleQuestions": "Перемешивать вопросы",
+      "showResults": "Показывать результаты",
+      "questions": "Вопросы",
+      "addQuestion": "Добавить вопрос",
+      "question": "Вопрос",
+      "points": "Баллы",
+      "questionText": "Текст вопроса",
+      "collapse": "Свернуть",
+      "options": "Варианты",
+      "answerOptions": "Варианты ответов",
+      "addOption": "Добавить вариант",
+      "option": "Вариант {{number}}",
+      "selectOneCorrect": "Выберите один правильный ответ",
+      "selectMultipleCorrect": "Выберите один или несколько правильных ответов",
+      "correctAnswer": "Правильный ответ",
+      "correctAnswerPlaceholder": "Введите правильный ответ",
+      "shortAnswerHint": "Для вопросов с кратким ответом укажите правильный ответ",
+      "noQuestions": "Нет вопросов. Нажмите \"Добавить вопрос\" для начала.",
+      "saveTest": "Сохранить тест",
+      "questionTypes": {
+        "singleChoice": "Один правильный ответ",
+        "multipleChoice": "Несколько правильных ответов",
+        "yesNo": "Да/Нет",
+        "shortAnswer": "Краткий ответ"
+      }
+    },
+    "licenses": {
+      "title": "Лицензии"
+    },
+    "vacancies": {
+      "title": "Вакансии"
+    },
+    "contacts": {
+      "title": "Обратная связь"
+    },
+    "overview": {
+      "title": "Обзор"
+    },
+    "categories": {
+      "title": "Категории проектов"
+    },
+    "extraAttempts": {
+      "title": "Доп. попытки"
+    },
+    "dashboard": {
+      "title": "Панель администратора",
+      "subtitle": "Управление учебной платформой UNICOVER",
+      "navigation": {
+        "overview": "Обзор",
+        "courses": "Курсы",
+        "users": "Пользователи",
+        "tests": "Тесты",
+        "reports": "Отчеты",
+        "certificates": "Сертификаты",
+        "categories": "Категории",
+        "licenses": "Лицензии",
+        "vacancies": "Вакансии",
+        "vacancyApplications": "Отклики на вакансии",
+        "vacancyStatistics": "Статистика вакансий"
+      },
+      "overview": {
+        "loadingStats": "Загрузка статистики...",
+        "loadStatsError": "Ошибка загрузки статистики",
+        "totalStudents": "Всего студентов",
+        "activeStudents": "Активных",
+        "activeCourses": "Активных курсов",
+        "completedCourses": "Завершено",
+        "testsToday": "Тестов сегодня",
+        "successRate": "Успеваемость",
+        "totalCertificates": "Выдано сертификатов",
+        "thisMonth": "За месяц",
+        "recentActivity": "Последняя активность",
+        "activityWillBeDisplayed": "Активность будет отображаться здесь",
+        "dataLoadingFromSystem": "Данные загружаются из системы",
+        "createCourse": "Создать курс",
+        "createCourseDesc": "Добавить новый учебный курс",
+        "addStudent": "Добавить студента",
+        "addStudentDesc": "Зарегистрировать нового слушателя",
+        "createTest": "Создать тест",
+        "createTestDesc": "Добавить экзаменационный тест"
+      },
+      "courses": {
+        "management": "Управление курсами",
+        "loading": "Загрузка курсов...",
+        "loadError": "Ошибка загрузки курсов",
+        "tryAgain": "Попробовать снова",
+        "searchPlaceholder": "Поиск курсов...",
+        "filters": "Фильтры",
+        "allCategories": "Все категории",
+        "allStatuses": "Все статусы",
+        "resetFilters": "Сбросить фильтры",
+        "courseTitle": "Название курса",
+        "category": "Категория",
+        "students": "Студентов",
+        "status": "Статус",
+        "actions": "Действия",
+        "edit": "Редактировать",
+        "studentsLabel": "Студенты",
+        "delete": "Удалить",
+        "noCourses": "Нет курсов. Создайте первый курс, нажав кнопку \"Создать курс\"",
+        "coursesNotFound": "Курсы не найдены",
+        "deleteConfirm": "Вы уверены, что хотите удалить курс \"{{title}}\"?\n\nЭто действие невозможно отменить.",
+        "deleteSuccess": "Курс успешно удален",
+        "deleteError": "Ошибка",
+        "deleteFailed": "Не удалось удалить курс",
+        "courseStudents": {
+          "title": "Студенты курса",
+          "totalStudents": "Всего студентов",
+          "completed": "Завершили курс",
+          "inProgress": "В процессе",
+          "averageScore": "Средний балл",
+          "loading": "Загрузка студентов...",
+          "loadError": "Ошибка",
+          "close": "Закрыть",
+          "searchPlaceholder": "Поиск по имени, email, компании...",
+          "student": "Студент",
+          "contacts": "Контакты",
+          "company": "Компания",
+          "progress": "Прогресс",
+          "score": "Оценка",
+          "status": "Статус",
+          "actions": "Действия",
+          "enrolled": "Зачислен",
+          "revoke": "Отозвать",
+          "revokeTitle": "Отозвать курс",
+          "revokeConfirm": "Вы уверены, что хотите отозвать курс \"{{courseTitle}}\" у студента \"{{studentName}}\"?\n\nВсе данные о прохождении курса будут полностью удалены, включая:\n- Прогресс по урокам\n- Попытки тестов\n- Запросы на дополнительные попытки\n- Данные о верификации\n\nЭто действие нельзя отменить.",
+          "revokeSuccess": "Курс успешно отозван",
+          "revokeError": "Ошибка",
+          "revokeFailed": "Не удалось отозвать курс",
+          "revoked": "Курс отозван",
+          "studentsNotFound": "Студенты не найдены",
+          "tryChangingSearch": "Попробуйте изменить параметры поиска",
+          "addStudents": "Добавить студентов",
+          "exportList": "Экспорт списка",
+          "addSuccess": "Студенты успешно добавлены",
+          "addError": "Ошибка",
+          "addFailed": "Не удалось добавить студентов",
+          "unknown": "Неизвестно"
+        }
+      },
+      "tests": {
+        "constructor": "Конструктор тестов",
+        "management": "Управление экзаменационными тестами и банком вопросов",
+        "loading": "Загрузка тестов...",
+        "searchPlaceholder": "Поиск тестов...",
+        "title": "Название",
+        "questions": "Вопросов",
+        "actions": "Действия",
+        "edit": "Редактировать",
+        "delete": "Удалить",
+        "noTests": "Нет тестов. Создайте первый тест, нажав кнопку \"Создать тест\"",
+        "testsNotFound": "Тесты не найдены",
+        "deleteConfirm": "Вы уверены, что хотите удалить тест \"{{title}}\"?\n\nЭто действие невозможно отменить.",
+        "deleteSuccess": "Тест успешно удален",
+        "deleteError": "Ошибка",
+        "deleteFailed": "Не удалось удалить тест"
+      },
+      "reports": {
+        "loading": "Загрузка отчетов...",
+        "overallPerformance": "Общая успеваемость",
+        "percentPassed": "Процент сданных тестов",
+        "averageScore": "Средний балл",
+        "byAllAttempts": "По всем попыткам",
+        "completedCourses": "Завершено курсов",
+        "totalCompleted": "Всего завершено",
+        "activeStudents": "Активных студентов",
+        "ofTotal": "Из {{total}} всего",
+        "enrollmentTrend": "Динамика регистраций",
+        "testResultsDistribution": "Распределение результатов тестов",
+        "noData": "Нет данных для отображения",
+        "students": "Студенты",
+        "coursesPopularity": "Популярность курсов",
+        "export": "Экспорт",
+        "studentsCount": "Студентов",
+        "topStudents": "Лучшие студенты",
+        "place": "Место",
+        "fullName": "ФИО",
+        "completedCourses": "Завершено курсов",
+        "averageScore": "Средний балл",
+        "certificates": "Сертификатов",
+        "noStudentsData": "Нет данных о студентах",
+        "exportReports": "Экспорт отчетов",
+        "summaryReport": "Сводный отчет",
+        "pdfExcel": "PDF / Excel",
+        "testResults": "Результаты тестов",
+        "excel": "Excel",
+        "issuedCertificates": "Выданные сертификаты"
+      },
+      "categories": {
+        "management": "Управление категориями",
+        "loading": "Загрузка категорий...",
+        "loadError": "Ошибка загрузки категорий",
+        "tryAgain": "Попробовать снова",
+        "searchPlaceholder": "Поиск категорий...",
+        "name": "Название",
+        "nameKz": "Название (КЗ)",
+        "nameEn": "Название (EN)",
+        "order": "Порядок",
+        "courses": "Курсов",
+        "status": "Статус",
+        "actions": "Действия",
+        "edit": "Редактировать",
+        "delete": "Удалить",
+        "noCategories": "Нет категорий. Создайте первую категорию, нажав кнопку \"Создать категорию\"",
+        "categoriesNotFound": "Категории не найдены",
+        "active": "Активна",
+        "inactive": "Неактивна",
+        "editor": {
+          "edit": "Редактировать категорию",
+          "create": "Создать категорию",
+          "nameRu": "Название (RU) *",
+          "namePlaceholder": "Введите название категории",
+          "nameKz": "Название (KZ)",
+          "nameKzPlaceholder": "Название на казахском",
+          "nameEn": "Название (EN)",
+          "nameEnPlaceholder": "Название на английском",
+          "description": "Описание",
+          "descriptionPlaceholder": "Описание категории",
+          "displayOrder": "Порядок отображения",
+          "active": "Активна",
+          "cancel": "Отмена",
+          "save": "Сохранить",
+          "nameRequired": "Введите название категории"
+        },
+        "deleteConfirm": "Вы уверены, что хотите удалить эту категорию?\n\nЭто действие невозможно отменить.",
+        "updateSuccess": "Категория успешно обновлена",
+        "createSuccess": "Категория успешно создана",
+        "deleteSuccess": "Категория успешно удалена",
+        "saveError": "Ошибка сохранения категории",
+        "deleteError": "Ошибка удаления категории"
+      },
+      "status": {
+        "inDevelopment": "В разработке",
+        "draft": "Черновик",
+        "published": "Опубликован",
+        "assigned": "Назначен",
+        "inProgress": "В процессе",
+        "examAvailable": "Экзамен доступен",
+        "examPassed": "Экзамен пройден",
+        "completed": "Завершен",
+        "failed": "Не сдан",
+        "annulled": "Аннулирован"
+      },
+      "messages": {
+        "testUpdateSuccess": "Тест успешно обновлен",
+        "testCreateSuccess": "Тест успешно создан",
+        "testLoadError": "Ошибка загрузки теста",
+        "testSaveError": "Ошибка сохранения теста",
+        "licenseUpdateSuccess": "Лицензия успешно обновлена",
+        "licenseCreateSuccess": "Лицензия успешно создана",
+        "licenseSaveError": "Ошибка сохранения лицензии",
+        "userUpdateSuccess": "Пользователь успешно обновлен",
+        "userCreateSuccess": "Пользователь успешно создан",
+        "userSaveError": "Ошибка сохранения пользователя",
+        "userCreated": "Пользователь \"{{name}}\" успешно создан!",
+        "passwordCopy": "Пароль: {{password}}\n\nСкопируйте пароль для передачи пользователю.",
+        "vacancyUpdateSuccess": "Вакансия успешно обновлена",
+        "vacancyCreateSuccess": "Вакансия успешно создана",
+        "vacancySaveError": "Ошибка сохранения вакансии",
+        "projectLoadError": "Ошибка загрузки проекта",
+        "projectTitleRequired": "Введите название проекта",
+        "projectTitleRequiredError": "Название проекта обязательно",
+        "projectUpdateSuccess": "Проект успешно обновлен",
+        "projectCreateSuccess": "Проект успешно создан",
+        "projectSaveError": "Ошибка сохранения проекта",
+        "unknownError": "Неизвестная ошибка"
+      }
+    }
+  },
+  "lms": {
+    "student": {
+      "dashboard": "Личный кабинет студента",
+      "dashboardWelcome": "Добро пожаловать! Здесь вы можете управлять своим обучением",
+      "activeCourses": "Активные курсы",
+      "completedCourses": "Завершено курсов",
+      "certificates": "Сертификатов",
+      "goToCourses": "Перейти к курсам →",
+      "viewHistory": "Посмотреть историю →",
+      "viewDocuments": "Просмотр документов →",
+      "unreadNotifications": "У вас {{count}} непрочитанных уведомлений",
+      "unreadNotifications_one": "У вас {{count}} непрочитанное уведомление",
+      "unreadNotifications_few": "У вас {{count}} непрочитанных уведомления",
+      "unreadNotifications_many": "У вас {{count}} непрочитанных уведомлений",
+      "courses": "Мои курсы",
+      "tests": "Тесты",
+      "documents": "Документы",
+      "history": "История обучения",
+      "noActiveCourses": "У вас пока нет активных курсов",
+      "noActiveCoursesDesc": "Курсы появятся здесь после назначения администратором",
+      "noCompletedCourses": "У вас пока нет завершенных курсов",
+      "noCompletedCoursesDesc": "Завершенные курсы будут отображаться здесь",
+      "viewCourse": "Перейти к курсу",
+      "continue": "Продолжить",
+      "allCourses": "Все курсы",
+      "progress": "Прогресс",
+      "documentsDesc": "Сертификаты, протоколы и справки",
+      "historyDesc": "Завершенные курсы и результаты",
+      "supportDesc": "Задать вопрос или получить помощь",
+      "status": {
+        "inProgress": "В процессе обучения",
+        "completed": "Завершен",
+        "pendingPdek": "Ожидает проверки",
+        "assigned": "Назначен",
+        "examAvailable": "Экзамен доступен",
+        "examPassed": "Экзамен сдан",
+        "failed": "Экзамен не сдан"
+      },
+      "coursesPage": {
+        "title": "Мои курсы",
+        "subtitle": "Управление вашими курсами и обучением",
+        "backToDashboard": "← Вернуться в личный кабинет",
+        "loading": "Загрузка курсов...",
+        "loadError": "Ошибка загрузки",
+        "backToDashboardButton": "Вернуться в личный кабинет",
+        "activeCoursesTitle": "Активные курсы",
+        "completedCoursesTitle": "Завершенные курсы",
+        "hours": "часов",
+        "goToExam": "Перейти к экзамену",
+        "viewStatus": "Просмотр статуса",
+        "continueLearning": "Продолжить обучение",
+        "viewCourse": "Просмотреть курс",
+        "noCourses": "Нет курсов",
+        "noCoursesDesc": "У вас пока нет назначенных курсов",
+        "categories": {
+          "industrial_safety": "Промышленная безопасность",
+          "fire_safety": "Пожарная безопасность",
+          "electrical_safety": "Электробезопасность",
+          "labor_protection": "Охрана труда",
+          "professions": "Рабочие профессии"
+        }
+      },
+      "historyPage": {
+        "title": "История обучения",
+        "subtitle": "Завершенные курсы и достижения",
+        "backToDashboard": "← Вернуться в личный кабинет",
+        "loading": "Загрузка истории...",
+        "loadError": "Ошибка загрузки",
+        "backToDashboardButton": "Вернуться в личный кабинет",
+        "courseCompleted": "Курс завершен",
+        "progress100": "Прогресс: 100%",
+        "viewCourse": "Просмотреть курс",
+        "certificates": "Сертификаты",
+        "noHistory": "История пуста",
+        "noHistoryDesc": "У вас пока нет завершенных курсов",
+        "goToCourses": "Перейти к курсам",
+        "categories": {
+          "industrial_safety": "Промышленная безопасность",
+          "fire_safety": "Пожарная безопасность",
+          "electrical_safety": "Электробезопасность",
+          "labor_protection": "Охрана труда",
+          "professions": "Рабочие профессии"
+        }
+      },
+      "testsPage": {
+        "title": "Доступные тесты",
+        "subtitle": "Выберите тест для прохождения",
+        "backToDashboard": "← Вернуться в личный кабинет",
+        "loading": "Загрузка тестов...",
+        "loadError": "Ошибка загрузки",
+        "backToDashboardButton": "Вернуться в личный кабинет",
+        "questions": "Вопросов",
+        "time": "Время",
+        "minutes": "мин",
+        "passingScore": "Проходной балл",
+        "attempts": "Попыток",
+        "attemptsRemaining": "из",
+        "startTesting": "Начать тестирование",
+        "noTests": "Нет доступных тестов",
+        "noTestsDesc": "На данный момент нет тестов для прохождения"
+      }
+    },
+    "coursePlayer": {
+      "finalTest": "Финальный тест",
+      "finalTestDesc": "Все уроки завершены. Для завершения курса необходимо пройти финальный тест.",
+      "continueTest": "Продолжить тест",
+      "takeFinalTest": "Пройти финальный тест",
+      "loading": "Загрузка...",
+      "pendingReview": "В ожидании проверки и подписания",
+      "pendingReviewDesc": "Курс завершен и отправлен на проверку комиссией PDEK. После проверки и подписания протокола вы получите сертификат.",
+      "pendingReviewStatus": "Ожидает подписания протокола",
+      "courseCompleted": "Курс завершен",
+      "courseCompletedDesc": "Поздравляем! Курс успешно завершен, протокол подписан. Сертификат доступен в разделе \"Документы\".",
+      "readyToComplete": "Готово к завершению",
+      "readyToCompleteDesc": "Все уроки {{finalTest}}завершены. Нажмите кнопку ниже для завершения курса.",
+      "readyToCompleteDescWithTest": "и финальный тест ",
+      "completeCourse": "Завершить курс",
+      "testNotLinked": "Тест не привязан к этому уроку",
+      "noQuestions": "В тесте нет вопросов",
+      "maxAttemptsReached": "Достигнуто максимальное количество попыток ({{max}})",
+      "continueTestTitle": "Продолжить тест",
+      "continue": "Продолжить",
+      "startTest": "Начать тест",
+      "loadingTest": "Загрузка теста...",
+      "testCode": "Код для тестирования: {{code}}",
+      "smsSent": "SMS код отправлен на ваш телефон",
+      "smsRequestError": "Ошибка при запросе SMS кода",
+      "courseCompletedSuccess": "Курс успешно завершен и отправлен на проверку PDEK",
+      "smsVerifyError": "Ошибка при верификации SMS кода",
+      "smsVerificationTitle": "Подтверждение по SMS",
+      "smsVerificationDescription": "Введите код подтверждения из SMS",
+      "smsVerificationCodeSent": "Код отправлен на {{phone}}",
+      "smsVerificationTestCode": "Код для тестирования (режим разработки):",
+      "smsVerificationEnterCode": "Введите этот код в поле ниже",
+      "smsVerificationCodeValid": "Код действителен: {{time}}",
+      "smsVerificationResend": "Отправить код повторно",
+      "smsVerificationVerifying": "Проверка...",
+      "smsVerificationVerify": "Подтвердить",
+      "smsVerificationSecurityNotice": "Код подтверждения действителен в течение 2 минут. Не сообщайте код третьим лицам.",
+      "smsVerificationCodeError": "Код должен состоять из 6 цифр",
+      "testContinueSuccess": "Продолжение теста",
+      "testCompleteError": "Ошибка при завершении теста",
+      "testLoadError": "Ошибка при загрузке теста",
+      "attemptLoadError": "Ошибка при загрузке попытки",
+      "resultsLoadError": "Ошибка при загрузке результатов",
+      "finalTestCompleteError": "Ошибка при завершении финального теста",
+      "testResultTitle": "Результаты теста",
+      "testResultPassed": "Тест успешно пройден!",
+      "testResultPassedDesc": "Поздравляем с успешным прохождением проверочного теста",
+      "testResultFailed": "Тест не пройден",
+      "testResultFailedDesc": "К сожалению, вы не набрали проходной балл",
+      "testResultScore": "Ваш результат",
+      "testResultPassingScore": "Проходной балл",
+      "testResultTimeSpent": "Время прохождения",
+      "testProgress": "Прогресс выполнения",
+      "testResultLessonCompleted": "Урок будет автоматически отмечен как завершенный. Вы можете продолжить изучение курса.",
+      "testResultRemainingAttempts": "У вас осталось {{count}} {{attempts}}. Рекомендуем повторить материал урока перед следующей попыткой.",
+      "testResultNoAttempts": "Все попытки использованы. Обратитесь к администратору для получения дополнительных попыток.",
+      "testResultAttempt": "попытка",
+      "testResultAttempts2": "попытки",
+      "testResultAttempts5": "попыток",
+      "testResultRetake": "Повторить тест",
+      "testResultBackToCourse": "Вернуться к курсу",
+      "testResultDetails": "Детальные результаты ({{correct}} из {{total}} правильно)",
+      "testResultYourAnswer": "Ваш ответ",
+      "testResultNotAnswered": "Не отвечено",
+      "testResultCorrectAnswer": "Правильный ответ"
+    },
+    "documents": {
+      "title": "Мои документы",
+      "subtitle": "Сертификаты, протоколы и справки об обучении",
+      "certificates": "Сертификаты",
+      "protocols": "Протоколы",
+      "searchPlaceholder": "Поиск по названию курса или номеру документа...",
+      "noCertificates": "Нет сертификатов",
+      "noCertificatesSearch": "Ничего не найдено",
+      "noCertificatesDesc": "Завершите курс и сдайте экзамен для получения сертификата",
+      "noCertificatesSearchDesc": "Попробуйте изменить поисковый запрос",
+      "noProtocols": "Нет протоколов",
+      "noProtocolsSearch": "Ничего не найдено",
+      "noProtocolsDesc": "Протоколы экзаменов появятся здесь после сдачи тестов",
+      "noProtocolsSearchDesc": "Попробуйте изменить поисковый запрос",
+      "downloadSuccess": "Сертификат скачан",
+      "downloadError": "Ошибка при скачивании сертификата",
+      "protocolDownloadSuccess": "Протокол скачан",
+      "protocolDownloadError": "Ошибка при скачивании протокола",
+      "loadError": "Ошибка загрузки документов",
+      "certificateNumber": "Сертификат №{{number}}",
+      "issued": "Выдан: {{date}}",
+      "validUntil": "Действителен до: {{date}}",
+      "valid": "Действителен",
+      "expired": "Истек",
+      "downloadPdf": "Скачать PDF",
+      "template": "Шаблон:",
+      "openFile": "Открыть файл",
+      "download": "Скачать",
+      "qrCode": "QR-код: {{code}}",
+      "verifyAuthenticity": "Проверить подлинность",
+      "protocolNumber": "Протокол №{{number}}",
+      "examDate": "Дата экзамена:",
+      "result": "Результат:",
+      "passed": "Сдал",
+      "failed": "Не сдал",
+      "passingScore": "Проходной балл:",
+      "signatures": "Подписи:",
+      "signaturesTitle": "Подписи комиссии ПДЭК:",
+      "chairman": "Председатель",
+      "member": "Член",
+      "rejectionReason": "Причина отклонения:",
+      "viewProtocol": "Просмотр протокола",
+      "status": {
+        "approved": "Утвержден",
+        "pendingChairman": "Ожидает председателя",
+        "pendingPdek": "На утверждении ПДЭК",
+        "rejected": "Отклонен",
+        "created": "Сформирован"
+      }
+    },
+    "pdek": {
+      "dashboard": "Дашборд ПДЭК",
+      "pending": "На подпись",
+      "signed": "Подписано мной",
+      "chairman": "Председатель ПДЭК",
+      "member": "Член комиссии ПДЭК",
+      "commissionName": "Комиссия по проверке и допуску к экзаменационным квалификациям",
+      "commissionDescription": "Комиссия по проверке и допуску к экзаменационным квалификациям",
+      "pendingSignatures": "Ожидают подписи",
+      "signedByMe": "Подписано мной",
+      "totalProtocols": "Всего протоколов",
+      "protocolsToSign": "Протоколы на подпись",
+      "signedProtocols": "Подписанные протоколы",
+      "noProtocols": "Нет протоколов",
+      "noProtocolsDesc": "Протоколы для подписи появятся здесь после сдачи экзаменов",
+      "noProtocolsDescription": "Протоколы для подписи появятся здесь после сдачи экзаменов",
+      "protocolNumber": "Протокол №{{number}}",
+      "pendingSignature": "Ожидает подписи",
+      "signedByMembers": "Подписан членами",
+      "student": "Слушатель:",
+      "iin": "ИИН:",
+      "examDate": "Дата экзамена:",
+      "result": "Результат:",
+      "passed": "сдал",
+      "failed": "не сдал",
+      "signatureStatus": "Статус подписей:",
+      "chairmanRole": "Председатель",
+      "memberRole": "Член комиссии",
+      "viewDetails": "Подробнее",
+      "details": "Подробнее",
+      "signSms": "Подписать (SMS)",
+      "signed": "Подписан",
+      "signedStatus": "Подписан",
+      "view": "Просмотр",
+      "viewProtocol": "Просмотр протокола",
+      "protocolDetails": "Протокол №{{number}}",
+      "studentInfo": "Информация о слушателе",
+      "fullName": "ФИО:",
+      "phone": "Телефон:",
+      "notSpecified": "Не указано",
+      "examInfo": "Информация об экзамене",
+      "course": "Курс:",
+      "score": "Балл:",
+      "passingScore": "Проходной балл:",
+      "signaturesTitle": "Подписи комиссии ПДЭК",
+      "pdekSignatures": "Подписи комиссии ПДЭК",
+      "awaitingSignatureStatus": "Ожидает подписи",
+      "testCode": "Код для тестирования: {{code}}",
+      "otpSent": "OTP код отправлен на ваш телефон",
+      "signRequestError": "Ошибка при запросе подписи",
+      "signSuccess": "Протокол успешно подписан",
+      "signError": "Ошибка при подписании протокола",
+      "otpDescription": "Введите код подтверждения из SMS для подписания протокола"
+    }
+  },
+  "pages": {
+    "home": {
+      "title": "Главная"
+    },
+    "projects": {
+      "title": "Проекты"
+    },
+    "vacancies": {
+      "title": "Вакансии",
+      "badge": "Карьера",
+      "heroTitle": "Вакансии",
+      "heroDescription": "Присоединяйтесь к команде ТОО «Unicover»! Мы предлагаем интересные проекты, профессиональное развитие и достойные условия работы.",
+      "breadcrumbs": {
+        "home": "Главная",
+        "construction": "Строительство",
+        "vacancies": "Вакансии"
+      },
+      "loading": "Загрузка вакансий...",
+      "noVacancies": "В данный момент нет открытых вакансий",
+      "status": {
+        "open": "Открыта"
+      },
+      "details": "Подробнее",
+      "info": {
+        "title": "Не нашли подходящую вакансию?",
+        "description": "Отправьте нам свое резюме, и мы свяжемся с вами, когда появится подходящая позиция.",
+        "contactButton": "Связаться с нами"
+      },
+      "error": {
+        "loadError": "Ошибка загрузки вакансий"
+      },
+      "salary": {
+        "negotiable": "По договоренности",
+        "from": "от",
+        "to": "до"
+      }
+    },
+    "support": {
+      "title": "Поддержка",
+      "description": "Свяжитесь с нами, если у вас возникли вопросы",
+      "backToDashboard": "Вернуться в личный кабинет",
+      "contactInfo": "Контактная информация",
+      "phone": "Телефон",
+      "email": "Email",
+      "workingHours": "Пн-Пт: 9:00 - 18:00",
+      "responseTime": "Ответим в течение 24 часов",
+      "faq": "Часто задаваемые вопросы",
+      "faq1": {
+        "question": "Как начать обучение?",
+        "answer": "Перейдите в раздел \"Мои курсы\" и выберите курс для начала обучения. После назначения курса администратором, он появится в вашем личном кабинете."
+      },
+      "faq2": {
+        "question": "Как пройти тест?",
+        "answer": "Выберите доступный тест в разделе \"Тесты\" и нажмите \"Начать тестирование\". У вас есть ограниченное количество попыток для прохождения теста."
+      },
+      "faq3": {
+        "question": "Где получить сертификат?",
+        "answer": "После успешного завершения курса и прохождения экзамена, сертификат будет доступен в разделе \"Документы\" вашего личного кабинета."
+      },
+      "faq4": {
+        "question": "Что делать, если возникли технические проблемы?",
+        "answer": "Свяжитесь с нашей службой поддержки по телефону или email, указанным выше. Мы поможем решить возникшие проблемы."
+      }
+    },
+    "verifyCertificate": {
+      "title": "Проверка подлинности сертификата",
+      "description": "Введите номер сертификата для проверки его подлинности",
+      "placeholder": "Введите номер сертификата (например, CERT-2025-ABC12345)",
+      "verify": "Проверить",
+      "certificateNumber": "Номер сертификата",
+      "enterNumber": "Введите номер сертификата",
+      "enterNumberMessage": "Пожалуйста, введите номер сертификата для проверки",
+      "verificationError": "Ошибка при проверке сертификата",
+      "verificationErrorMessage": "Произошла ошибка при проверке сертификата. Пожалуйста, попробуйте еще раз.",
+      "valid": "Сертификат действителен",
+      "validDescription": "Подлинность сертификата подтверждена",
+      "invalid": "Сертификат не найден или недействителен",
+      "invalidMessage": "Сертификат с указанным номером не найден в базе данных",
+      "student": "Студент",
+      "course": "Курс",
+      "issueDate": "Дата выдачи",
+      "validUntil": "Действителен до",
+      "expired": "Сертификат истек"
+    }
+  },
+  "forms": {
+    "login": {
+      "title": "Вход в систему",
+      "subtitle": "Учебный центр UNICOVER",
+      "phone": "Номер телефона",
+      "phonePlaceholder": "+7 (XXX) XXX-XX-XX",
+      "password": "Пароль",
+      "passwordPlaceholder": "Введите пароль",
+      "remember": "Запомнить меня",
+      "forgotPassword": "Забыли пароль?",
+      "noAccount": "Нет аккаунта?",
+      "register": "Зарегистрироваться",
+      "loginButton": "Войти",
+      "loggingIn": "Вход...",
+      "invalidCredentials": "Неверный телефон или пароль",
+      "loginError": "Ошибка при входе. Попробуйте снова.",
+      "demoAccounts": {
+        "title": "Демо-аккаунты",
+        "subtitle": "Войдите под разными ролями для тестирования функционала",
+        "demoVersion": "Демонстрационная версия. Используйте аккаунты справа →",
+        "student": "Студент (Слушатель)",
+        "studentDesc": "Прохождение курсов, тестов, получение сертификатов",
+        "pdekMember": "Член ПДЭК",
+        "pdekMemberDesc": "Подписание протоколов экзаменов",
+        "pdekChairman": "Председатель ПДЭК",
+        "pdekChairmanDesc": "Финальное утверждение протоколов",
+        "admin": "Администратор",
+        "adminDesc": "Управление системой, курсами, пользователями",
+        "loginAs": "Войти как {{role}}"
+      }
+    },
+    "register": {
+      "title": "Регистрация",
+      "subtitle": "Создайте аккаунт для доступа к курсам",
+      "fullName": "ФИО",
+      "fullNamePlaceholder": "Введите ваше ФИО",
+      "phone": "Телефон",
+      "password": "Пароль",
+      "confirmPassword": "Подтвердите пароль",
+      "iin": "ИИН",
+      "city": "Город",
+      "organization": "Компания",
+      "organizationPlaceholder": "Название вашей компании (опционально)",
+      "haveAccount": "Уже есть аккаунт?",
+      "login": "Войти",
+      "loginLink": "Войдите",
+      "registerButton": "Зарегистрироваться",
+      "registering": "Регистрация...",
+      "registerError": "Ошибка при регистрации. Попробуйте снова.",
+      "terms": "Я согласен с",
+      "termsLink": "условиями использования",
+      "and": "и",
+      "privacyLink": "политикой конфиденциальности",
+      "important": "Важно:",
+      "importantMessage": "После регистрации вы получите SMS с кодом подтверждения на указанный номер телефона для активации аккаунта."
+    }
+  },
+  "messages": {
+    "success": {
+      "saved": "Успешно сохранено",
+      "deleted": "Успешно удалено",
+      "created": "Успешно создано",
+      "updated": "Успешно обновлено"
+    },
+    "error": {
+      "generic": "Произошла ошибка",
+      "network": "Ошибка сети",
+      "validation": "Ошибка валидации",
+      "notFound": "Не найдено",
+      "unauthorized": "Не авторизован",
+      "forbidden": "Доступ запрещен"
+    }
+  },
+  "homepage": {
+    "hero": {
+      "bin": "БИН 100240007639",
+      "companyName": "ТОО \"UNICOVER\"",
+      "subtitle": "Инженерная и проектно-строительная компания",
+      "description": "Полный комплекс услуг в сфере промышленной безопасности, изысканий, проектирования, строительных работ и профессионального обучения",
+      "construction": {
+        "title": "Строительство",
+        "description": "Проектирование, изыскания и строительно-монтажные работы"
+      },
+      "education": {
+        "title": "Учебный центр",
+        "description": "Подготовка и переподготовка специалистов в области промышленной безопасности"
+      },
+      "learnMore": "Подробнее",
+      "stats": {
+        "licenses": {
+          "title": "Лицензии",
+          "description": "Полный пакет государственных лицензий и аттестатов"
+        },
+        "quality": {
+          "title": "Качество",
+          "description": "Соблюдение высоких стандартов и норм РК"
+        },
+        "training": {
+          "title": "Обучение",
+          "description": "Современные программы подготовки специалистов"
+        }
+      }
+    },
+    "about": {
+      "badge": "О компании",
+      "title": "ТОО «Unicover»",
+      "heading": "Многопрофильная инженерная и проектно-строительная компания",
+      "description1": "ТОО «Unicover» оказывает полный комплекс услуг в сфере промышленной безопасности, изысканий, проектирования и строительных работ. Мы работаем на рынке Казахстана, соблюдая высокие стандарты качества, безопасности и нормативного соответствия.",
+      "description2": "Компания располагает всеми необходимыми лицензиями и аттестатами, подтверждающими компетентность и право выполнения работ повышенной технической сложности.",
+      "weCombine": "Мы объединяем:",
+      "combineItems": {
+        "professionalism": "Профессионализм инженерной команды",
+        "technologies": "Современные технологии",
+        "knowledge": "Глубокое знание нормативной базы"
+      },
+      "ourGoal": {
+        "title": "Наша цель",
+        "description": "Создавать надёжные решения, которые работают долгие годы"
+      },
+      "principles": {
+        "title": "Наши принципы",
+        "quality": {
+          "title": "Качество",
+          "description": "Высокие стандарты выполнения работ"
+        },
+        "safety": {
+          "title": "Безопасность",
+          "description": "Соблюдение норм промышленной безопасности"
+        },
+        "responsibility": {
+          "title": "Ответственность",
+          "description": "Профессиональный подход к каждому проекту"
+        },
+        "transparency": {
+          "title": "Прозрачность",
+          "description": "Открытость и честность в работе"
+        }
+      },
+      "imageAlt": "О компании UNICOVER"
+    },
+    "construction": {
+      "badge": "Строительное направление",
+      "title": "Проектирование и строительство",
+      "description": "Полный цикл работ от инженерных изысканий до ввода объекта в эксплуатацию",
+      "services": {
+        "surveys": {
+          "title": "Инженерные изыскания",
+          "items": {
+            "geological": "Инженерно-геологические исследования",
+            "hydrogeological": "Инженерно-гидрогеологические работы",
+            "geodetic": "Инженерно-геодезические изыскания",
+            "equipment": "Высокоточное оборудование"
+          }
+        },
+        "design": {
+          "title": "Проектирование",
+          "items": {
+            "technological": "Технологическое проектирование производственных объектов",
+            "architectural": "Архитектурное проектирование (I-III уровни ответственности)",
+            "urban": "Градостроительное проектирование и планирование",
+            "engineering": "Проектирование инженерных систем и сетей",
+            "reconstruction": "Реконструкция и капитальный ремонт"
+          }
+        },
+        "construction": {
+          "title": "Строительно-монтажные работы",
+          "items": {
+            "category": "СМР III категории",
+            "buildings": "Строительство объектов различного назначения",
+            "installation": "Монтаж оборудования",
+            "modernization": "Реконструкция и модернизация",
+            "standards": "Соблюдение СНиП и стандартов РК"
+          }
+        }
+      },
+      "licenses": {
+        "title": "Лицензии и аттестаты",
+        "description": "ТОО «Unicover» обладает полным пакетом государственных лицензий и отраслевых аттестатов, подтверждающих право выполнения работ в следующих областях:",
+        "surveys": {
+          "title": "Изыскания и проектирование",
+          "items": {
+            "surveys": "Лицензия на инженерные изыскания",
+            "design": "Лицензия на проектирование",
+            "architectural": "Архитектурное проектирование I-III уровней"
+          }
+        },
+        "construction": {
+          "title": "Строительство",
+          "items": {
+            "category": "Лицензия на СМР III категории",
+            "reconstruction": "Реконструкция и модернизация объектов",
+            "repair": "Капитальный ремонт зданий"
+          }
+        }
+      }
+    },
+    "education": {
+      "badge": "Образовательное направление",
+      "title": "Учебный центр UNICOVER",
+      "description": "Подготовка и переподготовка специалистов в сфере промышленной безопасности",
+      "safety": {
+        "title": "Промышленная безопасность",
+        "description": "Компания имеет аттестат на право проведения работ в области промышленной безопасности, включающий:",
+        "items": {
+          "training": "Подготовку и переподготовку специалистов и работников в сфере промышленной безопасности",
+          "safetyRequirements": "Обучение требованиям безопасности при эксплуатации опасных производственных объектов"
+        },
+        "commitment": "Мы обеспечиваем высокий уровень компетенций персонала предприятий, реализуя образовательные программы, соответствующие отраслевым нормам и стандартам Республики Казахстан."
+      },
+      "features": {
+        "certificate": {
+          "title": "Аттестат на право выполнения работ",
+          "description": "Официальное разрешение на подготовку специалистов в области промышленной безопасности"
+        },
+        "teachers": {
+          "title": "Опытные преподаватели",
+          "description": "Профессиональный состав с практическим опытом работы на опасных объектах"
+        },
+        "programs": {
+          "title": "Современные программы",
+          "description": "Актуальные образовательные программы, соответствующие стандартам РК"
+        },
+        "documents": {
+          "title": "Официальные документы",
+          "description": "Выдача сертификатов и протоколов установленного образца"
+        }
+      },
+      "imageAlt": "Учебный центр"
+    },
+    "contacts": {
+      "badge": "Контакты",
+      "title": "Свяжитесь с нами",
+      "description": "Мы готовы ответить на ваши вопросы и обсудить возможности сотрудничества",
+      "info": {
+        "bin": {
+          "title": "БИН",
+          "content": "100240007639"
+        },
+        "address": {
+          "title": "Адрес",
+          "content": "г.Атырау, ул. Студенческий 25\nБЦ Bayterek Plaza, 5 этаж"
+        },
+        "phone": {
+          "title": "Телефоны",
+          "content": "+7 (7122) 20-80-92\n+7 708 420-80-92"
+        },
+        "email": {
+          "title": "Email",
+          "content": "info@unicover.kz"
+        },
+        "workingHours": {
+          "title": "Режим работы",
+          "content": "Пн-Пт: 9:00 - 18:00\nСб-Вс: Выходной"
+        }
+      },
+      "companyDetails": {
+        "title": "Реквизиты компании",
+        "fullName": "Полное название",
+        "fullNameValue": "ТОО \"UNICOVER\"",
+        "bin": "БИН",
+        "binValue": "100240007639",
+        "legalAddress": "Юридический адрес",
+        "legalAddressValue": "г. Атырау, ул. Студенческий 25, БЦ Bayterek Plaza, 5 этаж",
+        "email": "Email",
+        "emailValue": "info@unicover.kz"
+      },
+      "form": {
+        "title": "Отправить запрос",
+        "name": "Ваше имя",
+        "namePlaceholder": "Введите ваше имя",
+        "company": "Компания",
+        "companyPlaceholder": "Название вашей компании",
+        "email": "Email",
+        "emailPlaceholder": "your@email.com",
+        "phone": "Телефон",
+        "phonePlaceholder": "+7 (___) ___-____",
+        "direction": "Интересующее направление",
+        "directionPlaceholder": "Выберите направление",
+        "directions": {
+          "construction": "Строительство и проектирование",
+          "engineering": "Инженерные изыскания",
+          "education": "Обучение",
+          "safety": "Промышленная безопасность",
+          "other": "Другое"
+        },
+        "message": "Сообщение",
+        "messagePlaceholder": "Опишите ваш запрос подробнее...",
+        "submit": "Отправить запрос",
+        "sending": "Отправка...",
+        "requiredFields": "Обязательные поля для заполнения",
+        "successMessage": "Ваше сообщение успешно отправлено! Мы свяжемся с вами в ближайшее время.",
+        "errorMessage": "Ошибка при отправке сообщения. Попробуйте еще раз.",
+        "thankYou": "Спасибо за ваше сообщение!",
+        "contactSoon": "Мы свяжемся с вами в ближайшее время."
+      }
+    }
   }
 }
-

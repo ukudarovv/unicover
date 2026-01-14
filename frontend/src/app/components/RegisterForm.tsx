@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { User, Mail, Lock, UserPlus, Phone, Eye, EyeOff } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { authService, RegisterData } from '../services/auth';
 import { ApiError } from '../services/api';
 import { useUser } from '../contexts/UserContext';
 
 export function RegisterForm() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { login } = useUser();
   const [formData, setFormData] = useState<RegisterData>({
@@ -63,10 +65,10 @@ export function RegisterForm() {
           const errors = Object.values(err.data).flat();
           setError(Array.isArray(errors) ? errors.join(', ') : err.message);
         } else {
-          setError(err.message || 'Ошибка при регистрации');
+          setError(err.message || t('forms.register.registerError'));
         }
       } else {
-        setError('Ошибка при регистрации. Попробуйте снова.');
+        setError(t('forms.register.registerError'));
       }
     } finally {
       setLoading(false);
@@ -79,14 +81,16 @@ export function RegisterForm() {
         <div className="max-w-md mx-auto">
           <div className="bg-white p-8 rounded-2xl shadow-lg">
             <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <UserPlus className="w-8 h-8" />
-              </div>
+              <img 
+                src="/logo.jpg" 
+                alt="UNICOVER Logo" 
+                className="h-16 w-auto object-contain mx-auto mb-4"
+              />
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Регистрация
+                {t('forms.register.title')}
               </h2>
               <p className="text-gray-600 text-sm">
-                Создайте аккаунт для доступа к курсам
+                {t('forms.register.subtitle')}
               </p>
             </div>
 
@@ -173,7 +177,7 @@ export function RegisterForm() {
 
               <div>
                 <label htmlFor="reg-password" className="block text-sm font-medium text-gray-700 mb-2">
-                  Пароль *
+                  {t('forms.register.password')} *
                 </label>
                 <div className="relative">
                   <Lock className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -200,7 +204,7 @@ export function RegisterForm() {
 
               <div>
                 <label htmlFor="reg-password-confirm" className="block text-sm font-medium text-gray-700 mb-2">
-                  Подтвердите пароль *
+                  {t('forms.register.confirmPassword')} *
                 </label>
                 <div className="relative">
                   <Lock className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -233,13 +237,13 @@ export function RegisterForm() {
                   className="mt-1 rounded"
                 />
                 <label htmlFor="terms" className="text-sm text-gray-600">
-                  Я согласен с{' '}
+                  {t('forms.register.terms')}{' '}
                   <a href="#terms" className="text-blue-600 hover:text-blue-700">
-                    условиями использования
+                    {t('forms.register.termsLink')}
                   </a>
-                  {' '}и{' '}
+                  {' '}{t('forms.register.and')}{' '}
                   <a href="#privacy" className="text-blue-600 hover:text-blue-700">
-                    политикой конфиденциальности
+                    {t('forms.register.privacyLink')}
                   </a>
                 </label>
               </div>
@@ -250,22 +254,22 @@ export function RegisterForm() {
                 className="w-full bg-blue-600 text-white px-8 py-4 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <UserPlus className="w-5 h-5" />
-                {loading ? 'Регистрация...' : 'Зарегистрироваться'}
+                {loading ? t('forms.register.registering') : t('forms.register.registerButton')}
               </button>
             </form>
 
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600">
-                Уже есть аккаунт?{' '}
+                {t('forms.register.haveAccount')}{' '}
                 <Link to="/login" className="font-medium text-blue-600 hover:text-blue-700">
-                  Войдите
+                  {t('forms.register.loginLink')}
                 </Link>
               </p>
             </div>
 
             <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
               <p className="text-sm text-blue-800">
-                <strong>Важно:</strong> После регистрации вы получите SMS с кодом подтверждения на указанный номер телефона для активации аккаунта.
+                <strong>{t('forms.register.important')}</strong> {t('forms.register.importantMessage')}
               </p>
             </div>
           </div>

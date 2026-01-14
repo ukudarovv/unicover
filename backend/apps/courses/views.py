@@ -5,7 +5,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django.utils import timezone
 
-from .models import Category, Course, Module, Lesson, CourseEnrollment, LessonProgress
+from .models import Category, Course, Module, Lesson, CourseEnrollment, LessonProgress, CourseCompletionVerification
 from .serializers import (
     CategorySerializer,
     CourseSerializer,
@@ -13,8 +13,14 @@ from .serializers import (
     CourseEnrollmentSerializer,
     LessonProgressSerializer,
     LessonSerializer,
+    CourseCompletionVerificationSerializer,
+    OTPRequestSerializer,
+    OTPVerifySerializer,
 )
 from apps.accounts.permissions import IsAdmin, IsAdminOrReadOnly
+from apps.exams.models import TestAttempt
+from apps.accounts.models import User
+from apps.core.utils import get_request_language
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -48,13 +54,16 @@ class CourseViewSet(viewsets.ModelViewSet):
     queryset = Course.objects.prefetch_related('modules__lessons').all()
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ['status', 'category__id']
+    filterset_fields = ['status', 'category__id', 'language']
     search_fields = ['title', 'title_kz', 'title_en', 'description']
     ordering_fields = ['created_at', 'title']
     ordering = ['-created_at']
     
     def get_permissions(self):
         """Allow read access to all, write access only to admins"""
+        # Allow authenticated users to request and verify completion OTP, self-enroll, and view course with progress
+        if self.action in ['request_completion_otp', 'verify_completion_otp', 'enroll', 'with_progress']:
+            return [permissions.IsAuthenticated()]
         if self.action in ['list', 'retrieve']:
             return [permissions.AllowAny()]
         return [IsAdminOrReadOnly()]
@@ -65,11 +74,23 @@ class CourseViewSet(viewsets.ModelViewSet):
         return CourseSerializer
     
     def get_queryset(self):
-        """Filter courses for public access"""
+        """Filter courses for public access and by language"""
         queryset = super().get_queryset()
         # Для неавторизованных пользователей показываем только опубликованные курсы
         if not hasattr(self.request.user, 'is_authenticated') or not self.request.user.is_authenticated:
             queryset = queryset.filter(status='published')
+        
+        # Фильтрация по языку (если не указан явно в параметрах запроса)
+        # Для админов (staff) не применяем автоматическую фильтрацию по языку
+        is_admin = hasattr(self.request.user, 'is_authenticated') and self.request.user.is_authenticated and (
+            self.request.user.is_staff or 
+            getattr(self.request.user, 'role', None) == 'admin'
+        )
+        
+        if 'language' not in self.request.query_params and not is_admin:
+            lang = get_request_language(self.request)
+            queryset = queryset.filter(language=lang)
+        
         return queryset
     
     @action(detail=True, methods=['get'])
@@ -82,12 +103,38 @@ class CourseViewSet(viewsets.ModelViewSet):
     
     @action(detail=True, methods=['post'])
     def enroll(self, request, pk=None):
-        """Enroll students in course"""
+        """Enroll students in course (self-enrollment or admin enrollment)"""
         course = self.get_object()
         user_ids = request.data.get('user_ids', [])
         
+        # Self-enrollment: если user_ids не указан, записать текущего пользователя
+        if not user_ids:
+            enrollment, created = CourseEnrollment.objects.get_or_create(
+                user=request.user,
+                course=course,
+                defaults={'status': 'assigned'}
+            )
+            if created:
+                return Response({
+                    'message': 'Successfully enrolled in course',
+                    'enrollment_id': enrollment.id
+                }, status=status.HTTP_201_CREATED)
+            else:
+                return Response({
+                    'message': 'Already enrolled in this course',
+                    'enrollment_id': enrollment.id
+                }, status=status.HTTP_200_OK)
+        
+        # Admin enrollment: записать список пользователей (только для админов)
         if not isinstance(user_ids, list):
             return Response({'error': 'user_ids must be a list'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Проверка прав администратора для массовой записи
+        if not request.user.is_staff:
+            return Response(
+                {'error': 'Only admins can enroll multiple users'},
+                status=status.HTTP_403_FORBIDDEN
+            )
         
         enrolled = []
         for user_id in user_ids:
@@ -109,6 +156,101 @@ class CourseViewSet(viewsets.ModelViewSet):
             'enrolled': enrolled
         }, status=status.HTTP_200_OK)
     
+    @action(detail=True, methods=['post'])
+    def revoke_enrollment(self, request, pk=None):
+        """Revoke course enrollment for a student (completely delete enrollment and all related data)"""
+        course = self.get_object()
+        user_id = request.data.get('user_id')
+        
+        if not user_id:
+            return Response({'error': 'user_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            enrollment = CourseEnrollment.objects.get(
+                course=course,
+                user_id=user_id
+            )
+            
+            enrollment_id = enrollment.id
+            
+            # Delete CourseCompletionVerification if exists (OneToOne with enrollment)
+            from .models import CourseCompletionVerification
+            try:
+                verification = CourseCompletionVerification.objects.get(enrollment=enrollment)
+                verification.delete()
+            except CourseCompletionVerification.DoesNotExist:
+                pass
+            
+            # Get all test IDs for tests in this course
+            from apps.tests.models import Test
+            from apps.courses.models import Lesson
+            course_test_ids = []
+            
+            # Get tests from lessons (lessons have test_id as string, need to find matching Test objects)
+            lesson_test_ids = Lesson.objects.filter(
+                module__course=course,
+                test_id__isnull=False
+            ).exclude(test_id='').values_list('test_id', flat=True).distinct()
+            
+            # Convert test_id strings to integers and find matching Test objects
+            for test_id_str in lesson_test_ids:
+                try:
+                    test_id = int(test_id_str)
+                    if Test.objects.filter(id=test_id).exists():
+                        course_test_ids.append(test_id)
+                except (ValueError, TypeError):
+                    # If test_id is not a valid integer, skip it
+                    continue
+            
+            # Also include final test if exists
+            if course.final_test:
+                course_test_ids.append(course.final_test.id)
+            
+            # Delete all test attempts and extra attempt requests for tests in this course by this user
+            if course_test_ids:
+                from apps.exams.models import TestAttempt, ExtraAttemptRequest
+                TestAttempt.objects.filter(
+                    user_id=user_id,
+                    test_id__in=course_test_ids
+                ).delete()
+                
+                # Delete extra attempt requests for these tests
+                ExtraAttemptRequest.objects.filter(
+                    user_id=user_id,
+                    test_id__in=course_test_ids
+                ).delete()
+            
+            # Delete all certificates related to this course and student
+            from apps.certificates.models import Certificate
+            Certificate.objects.filter(
+                student_id=user_id,
+                course=course
+            ).delete()
+            
+            # Delete all protocols related to this enrollment
+            # (Protocols will be deleted via CASCADE, but we delete explicitly to ensure certificates are handled)
+            from apps.protocols.models import Protocol
+            Protocol.objects.filter(
+                enrollment=enrollment
+            ).delete()
+            
+            # Delete all lesson progress for this enrollment
+            # (CASCADE will handle this, but we do it explicitly for clarity)
+            LessonProgress.objects.filter(enrollment=enrollment).delete()
+            
+            # Delete enrollment (CASCADE will also delete related data)
+            enrollment.delete()
+            
+            return Response({
+                'message': 'Course enrollment and all related data deleted successfully',
+                'enrollment_id': enrollment_id
+            }, status=status.HTTP_200_OK)
+        except CourseEnrollment.DoesNotExist:
+            return Response(
+                {'error': 'Enrollment not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+    
     @action(detail=False, methods=['get'])
     def my_enrollments(self, request):
         """Get current user's enrollments"""
@@ -121,17 +263,19 @@ class CourseViewSet(viewsets.ModelViewSet):
     
     @action(detail=True, methods=['get'])
     def with_progress(self, request, pk=None):
-        """Get course with student's progress"""
+        """Get course with student's progress (auto-enroll if not enrolled)"""
         course = self.get_object()
         enrollment = CourseEnrollment.objects.filter(
             user=request.user,
             course=course
         ).first()
         
+        # Auto-enroll if not enrolled
         if not enrollment:
-            return Response(
-                {'error': 'Not enrolled in this course'},
-                status=status.HTTP_404_NOT_FOUND
+            enrollment = CourseEnrollment.objects.create(
+                user=request.user,
+                course=course,
+                status='assigned'
             )
         
         # Get lesson progress
@@ -155,6 +299,286 @@ class CourseViewSet(viewsets.ModelViewSet):
         data['enrollment_status'] = enrollment.status
         
         return Response(data)
+    
+    @action(detail=True, methods=['post'])
+    def request_completion_otp(self, request, pk=None):
+        """Request OTP for course completion verification"""
+        course = self.get_object()
+        
+        # Get user's enrollment
+        enrollment = CourseEnrollment.objects.filter(
+            user=request.user,
+            course=course
+        ).first()
+        
+        if not enrollment:
+            return Response(
+                {'error': 'Not enrolled in this course'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Check if all lessons are completed
+        total_lessons = Lesson.objects.filter(module__course=course).count()
+        completed_lessons = LessonProgress.objects.filter(
+            enrollment=enrollment,
+            completed=True
+        ).count()
+        
+        if completed_lessons < total_lessons:
+            return Response(
+                {'error': 'Not all lessons are completed'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # If final test exists, check if it's passed
+        if course.final_test:
+            final_test_attempt = TestAttempt.objects.filter(
+                user=request.user,
+                test=course.final_test,
+                passed=True
+            ).order_by('-completed_at').first()
+            
+            if not final_test_attempt:
+                return Response(
+                    {'error': 'Final test not passed yet'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        
+        # Create or get verification
+        verification, created = CourseCompletionVerification.objects.get_or_create(
+            enrollment=enrollment
+        )
+        
+        # Проверяем, существует ли уже действительный OTP
+        from django.utils import timezone
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        otp_code = None
+        otp_is_new = False
+        existing_otp_valid = False
+        
+        if verification.otp_code and verification.otp_expires_at:
+            # Проверяем, не истек ли существующий OTP
+            if timezone.now() <= verification.otp_expires_at:
+                # OTP еще действителен, используем его
+                otp_code = verification.otp_code
+                existing_otp_valid = True
+                logger.info(f"Using existing valid OTP for enrollment {enrollment.id}")
+            else:
+                # OTP истек, нужно сгенерировать новый
+                logger.info(f"Existing OTP expired for enrollment {enrollment.id}, generating new one")
+        
+        # Если OTP не существует или истек, генерируем новый
+        sms_sent = False
+        sms_error = None
+        if not existing_otp_valid:
+            otp_code = verification.generate_otp()
+            otp_is_new = True
+            
+            # Send SMS via SMSC.kz
+            try:
+                from apps.accounts.sms_service import sms_service
+                from django.conf import settings
+                
+                user_phone = request.user.phone
+                
+                # Validate phone number
+                if not user_phone:
+                    logger.error(f"User {request.user.id} has no phone number")
+                    sms_error = "User phone number is missing"
+                else:
+                    logger.info(f"Attempting to send SMS to {user_phone} for course completion {course.id}")
+                    logger.info(f"OTP code generated: {otp_code}")
+                    logger.info(f"SMSC.kz configured: login={settings.SMSC_LOGIN}, password={'***' if settings.SMSC_PASSWORD else 'Not set'}")
+                    
+                    sms_result = sms_service.send_verification_code(
+                        user_phone,
+                        otp_code,
+                        'verification'  # Using 'verification' purpose for course completion
+                    )
+                    
+                    logger.info(f"SMS result: {sms_result}")
+                    
+                    if sms_result['success']:
+                        sms_sent = True
+                        logger.info(f"SMS sent successfully to {user_phone} for course {course.id}")
+                    else:
+                        sms_error = sms_result.get('error', 'Unknown error')
+                        logger.error(f"Failed to send SMS via SMSC.kz: {sms_error}")
+                        logger.error(f"Full SMS result: {sms_result}")
+            except Exception as e:
+                sms_error = str(e)
+                logger.error(f"Exception while sending SMS: {sms_error}", exc_info=True)
+                import traceback
+                logger.error(f"Traceback: {traceback.format_exc()}")
+        
+        # Проверяем, настроен ли SMSC.kz (для формирования ответа)
+        from django.conf import settings
+        is_smsc_configured = (
+            hasattr(settings, 'SMSC_LOGIN') and 
+            settings.SMSC_LOGIN and 
+            hasattr(settings, 'SMSC_PASSWORD') and 
+            settings.SMSC_PASSWORD
+        )
+        
+        # Формируем ответ
+        response_data = {
+            'message': 'OTP code sent to your phone' if (otp_is_new and sms_sent) else ('OTP code generated' if otp_is_new else 'OTP code already sent'),
+            'otp_expires_at': verification.otp_expires_at.isoformat() if verification.otp_expires_at else None,
+            'otp_is_new': otp_is_new,
+            'sms_sent': sms_sent,
+        }
+        
+        # Add error info if SMS failed
+        if sms_error:
+            response_data['sms_error'] = sms_error
+            response_data['warning'] = 'SMS sending failed, but OTP code was generated'
+        
+        # В режиме разработки (без SMSC.kz или при ошибке) возвращаем OTP код в ответе для тестирования
+        if not is_smsc_configured or not sms_sent:
+            response_data['otp_code'] = otp_code
+            response_data['debug'] = True
+            if not is_smsc_configured:
+                response_data['debug_reason'] = 'SMSC.kz not configured'
+            elif not sms_sent:
+                response_data['debug_reason'] = f'SMS sending failed: {sms_error}'
+        
+        return Response(response_data, status=status.HTTP_200_OK)
+    
+    @action(detail=True, methods=['post'])
+    def verify_completion_otp(self, request, pk=None):
+        """Verify OTP and create protocol for PDEK review"""
+        course = self.get_object()
+        serializer = OTPVerifySerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        otp_code = serializer.validated_data['otp_code']
+        
+        # Get user's enrollment
+        enrollment = CourseEnrollment.objects.filter(
+            user=request.user,
+            course=course
+        ).first()
+        
+        if not enrollment:
+            return Response(
+                {'error': 'Not enrolled in this course'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Get verification
+        try:
+            verification = CourseCompletionVerification.objects.get(enrollment=enrollment)
+        except CourseCompletionVerification.DoesNotExist:
+            return Response(
+                {'error': 'Verification not found. Please request OTP first.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Verify OTP
+        import logging
+        from django.conf import settings
+        
+        logger = logging.getLogger(__name__)
+        logger.info(f"Attempting to verify OTP for course {course.id}, user {request.user.id}, code: '{otp_code}'")
+        
+        # Check if SMSC.kz is configured (for debug info)
+        is_smsc_configured = (
+            hasattr(settings, 'SMSC_LOGIN') and 
+            settings.SMSC_LOGIN and 
+            hasattr(settings, 'SMSC_PASSWORD') and 
+            settings.SMSC_PASSWORD
+        )
+        
+        # Get current OTP info for debugging (refresh from DB to ensure we have latest)
+        verification.refresh_from_db()
+        logger.info(f"Verification details: otp_code='{verification.otp_code}', otp_expires_at={verification.otp_expires_at}, verified={verification.verified}")
+        
+        if not verification.verify_otp(otp_code):
+            logger.warning(f"OTP verification failed for course {course.id}, user {request.user.id}, code: '{otp_code}'")
+            error_response = {'error': 'Invalid or expired OTP code'}
+            if not is_smsc_configured:
+                error_response['debug'] = {
+                    'provided_code': otp_code,
+                    'stored_code': verification.otp_code,
+                    'stored_code_exists': bool(verification.otp_code),
+                    'expires_at': verification.otp_expires_at.isoformat() if verification.otp_expires_at else None,
+                }
+            return Response(error_response, status=status.HTTP_400_BAD_REQUEST)
+        
+        logger.info(f"OTP verification successful for course {course.id}, user {request.user.id}")
+        
+        # Get final test attempt if exists
+        final_test_attempt = None
+        if course.final_test:
+            final_test_attempt = TestAttempt.objects.filter(
+                user=request.user,
+                test=course.final_test,
+                passed=True
+            ).order_by('-completed_at').first()
+            
+            if not final_test_attempt:
+                return Response(
+                    {'error': 'Final test attempt not found'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        
+        # Create Protocol
+        from apps.protocols.models import Protocol, ProtocolSignature
+        from django.utils import timezone
+        
+        # Determine protocol parameters
+        if final_test_attempt:
+            exam_date = final_test_attempt.completed_at or timezone.now()
+            score = final_test_attempt.score or 0
+            passing_score = course.final_test.passing_score
+        else:
+            exam_date = timezone.now()
+            score = 0
+            passing_score = course.passing_score
+        
+        protocol = Protocol.objects.create(
+            student=request.user,
+            course=course,
+            attempt=final_test_attempt,  # Can be None if no final test
+            enrollment=enrollment,
+            exam_date=exam_date,
+            score=score,
+            passing_score=passing_score,
+            result='passed',
+            status='pending_pdek'
+        )
+        
+        # Create signatures for PDEK members
+        pdek_members = User.objects.filter(role__in=['pdek_member', 'pdek_chairman'])
+        for member in pdek_members:
+            ProtocolSignature.objects.create(
+                protocol=protocol,
+                signer=member,
+                role='chairman' if member.role == 'pdek_chairman' else 'member'
+            )
+        
+        # Update enrollment status to 'pending_pdek' after protocol creation
+        enrollment.status = 'pending_pdek'
+        enrollment.save()
+        
+        # After all PDEK members sign, enrollment status will be changed to 'completed' in protocols/views.py
+        
+        # Create notification for PDEK members
+        from apps.notifications.models import Notification
+        for member in pdek_members:
+            Notification.objects.create(
+                user=member,
+                type='protocol_ready',
+                title='Новый протокол для подписания',
+                message=f'Протокол {protocol.number} для курса "{course.title}" готов к подписанию'
+            )
+        
+        return Response({
+            'message': 'Course completion verified. Protocol created for PDEK review.',
+            'protocol_id': protocol.id
+        }, status=status.HTTP_200_OK)
 
 
 class LessonViewSet(viewsets.ReadOnlyModelViewSet):
@@ -202,8 +626,13 @@ class LessonViewSet(viewsets.ReadOnlyModelViewSet):
         enrollment.progress = int((completed_lessons / total_lessons * 100) if total_lessons > 0 else 0)
         enrollment.save()
         
+        # Check if all lessons are completed
+        # Status will be changed to 'pending_pdek' after SMS verification
+        all_lessons_completed = completed_lessons >= total_lessons and total_lessons > 0
+        
         return Response({
             'message': 'Lesson completed',
-            'progress': enrollment.progress
+            'progress': enrollment.progress,
+            'all_lessons_completed': all_lessons_completed
         }, status=status.HTTP_200_OK)
 

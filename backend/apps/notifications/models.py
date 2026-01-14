@@ -13,6 +13,9 @@ class Notification(models.Model):
         ('pdek_signature_request', 'PDEK Signature Request'),
         ('exam_passed', 'Exam Passed'),
         ('exam_failed', 'Exam Failed'),
+        ('extra_attempt_request', 'Extra Attempt Request'),
+        ('extra_attempt_approved', 'Extra Attempt Approved'),
+        ('extra_attempt_rejected', 'Extra Attempt Rejected'),
     ]
     
     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='notifications', on_delete=models.CASCADE)

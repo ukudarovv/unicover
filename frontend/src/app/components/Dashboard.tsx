@@ -41,8 +41,14 @@ export function Dashboard() {
     fetchCertificates();
   }, []);
 
-  const completedCourses = courses.filter(c => c.status === 'completed' || c.status === 'exam_passed');
-  const inProgressCourses = courses.filter(c => c.status === 'in_progress' || c.status === 'assigned');
+  const completedCourses = courses.filter(c => c.status === 'completed');
+  const inProgressCourses = courses.filter(c => 
+    c.status === 'in_progress' || 
+    c.status === 'assigned' || 
+    c.status === 'pending_pdek' ||
+    c.status === 'exam_available' ||
+    c.status === 'exam_passed'
+  );
   
   const passedAttempts = attempts.filter(a => a.passed);
   const failedAttempts = attempts.filter(a => !a.passed && a.completed_at);

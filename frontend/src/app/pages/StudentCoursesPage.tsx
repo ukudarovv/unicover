@@ -3,38 +3,47 @@ import { FooterUnicover } from '../components/FooterUnicover';
 import { useMyEnrollments } from '../hooks/useMyEnrollments';
 import { Link } from 'react-router-dom';
 import { BookOpen, Clock, Play, CheckCircle2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
-function getCategoryName(category: any): string {
+function getCategoryName(category: any, t: any): string {
   if (typeof category === 'object' && category !== null) {
     return category.name || category.name_kz || category.name_en || '—';
   }
   const names: Record<string, string> = {
-    'industrial_safety': 'Промышленная безопасность',
-    'fire_safety': 'Пожарная безопасность',
-    'electrical_safety': 'Электробезопасность',
-    'labor_protection': 'Охрана труда',
-    'professions': 'Рабочие профессии',
+    'industrial_safety': t('lms.student.coursesPage.categories.industrial_safety'),
+    'fire_safety': t('lms.student.coursesPage.categories.fire_safety'),
+    'electrical_safety': t('lms.student.coursesPage.categories.electrical_safety'),
+    'labor_protection': t('lms.student.coursesPage.categories.labor_protection'),
+    'professions': t('lms.student.coursesPage.categories.professions'),
   };
   return names[category] || category || '—';
 }
 
-function getStatusText(status: string): string {
+function getStatusText(status: string, t: any): string {
   const statusMap: Record<string, string> = {
-    'assigned': 'Назначен',
-    'in_progress': 'В процессе',
-    'exam_available': 'Экзамен доступен',
-    'completed': 'Завершен',
-    'exam_passed': 'Экзамен сдан',
-    'exam_failed': 'Экзамен не сдан',
+    'assigned': t('lms.student.status.assigned'),
+    'in_progress': t('lms.student.status.inProgress'),
+    'exam_available': t('lms.student.status.examAvailable'),
+    'pending_pdek': t('lms.student.status.pendingPdek'),
+    'completed': t('lms.student.status.completed'),
+    'exam_passed': t('lms.student.status.examPassed'),
+    'exam_failed': t('lms.student.status.failed'),
   };
   return statusMap[status] || status;
 }
 
 export function StudentCoursesPage() {
+  const { t } = useTranslation();
   const { courses, loading, error } = useMyEnrollments();
 
-  const activeCourses = Array.isArray(courses) ? courses.filter(c => c.status === 'in_progress' || c.status === 'exam_available' || c.status === 'assigned') : [];
-  const completedCourses = Array.isArray(courses) ? courses.filter(c => c.status === 'completed' || c.status === 'exam_passed') : [];
+  const activeCourses = Array.isArray(courses) ? courses.filter(c => 
+    c.status === 'in_progress' || 
+    c.status === 'exam_available' || 
+    c.status === 'assigned' || 
+    c.status === 'pending_pdek' ||
+    c.status === 'exam_passed'
+  ) : [];
+  const completedCourses = Array.isArray(courses) ? courses.filter(c => c.status === 'completed') : [];
 
   if (loading) {
     return (
@@ -43,7 +52,7 @@ export function StudentCoursesPage() {
         <div className="min-h-screen bg-gray-50 pt-20 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Загрузка курсов...</p>
+            <p className="mt-4 text-gray-600">{t('lms.student.coursesPage.loading')}</p>
           </div>
         </div>
         <FooterUnicover />
@@ -57,13 +66,13 @@ export function StudentCoursesPage() {
         <Header />
         <div className="min-h-screen bg-gray-50 pt-20 flex items-center justify-center">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Ошибка загрузки</h1>
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">{t('lms.student.coursesPage.loadError')}</h1>
             <p className="text-gray-600 mb-4">{error}</p>
             <Link
               to="/student/dashboard"
               className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
-              Вернуться в личный кабинет
+              {t('lms.student.coursesPage.backToDashboardButton')}
             </Link>
           </div>
         </div>
@@ -83,16 +92,16 @@ export function StudentCoursesPage() {
               to="/student/dashboard"
               className="text-blue-600 hover:text-blue-700 text-sm font-medium mb-4 inline-block"
             >
-              ← Вернуться в личный кабинет
+              {t('lms.student.coursesPage.backToDashboard')}
             </Link>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Мои курсы</h1>
-            <p className="text-gray-600">Управление вашими курсами и обучением</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('lms.student.coursesPage.title')}</h1>
+            <p className="text-gray-600">{t('lms.student.coursesPage.subtitle')}</p>
           </div>
 
           {/* Active Courses */}
           {activeCourses.length > 0 && (
             <div className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Активные курсы</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('lms.student.coursesPage.activeCoursesTitle')}</h2>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {activeCourses.map(course => (
                   <div key={course.id} className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -100,13 +109,13 @@ export function StudentCoursesPage() {
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
                           <span className="inline-block px-3 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full mb-2">
-                            {getCategoryName(course.category)}
+                            {getCategoryName(course.category, t)}
                           </span>
                           <h3 className="text-lg font-bold text-gray-900 mb-2">{course.title}</h3>
-                          <p className="text-sm text-gray-600 mb-2">{course.duration} часов</p>
+                          <p className="text-sm text-gray-600 mb-2">{course.duration} {t('lms.student.coursesPage.hours')}</p>
                           <div className="flex items-center text-sm text-gray-600 mb-4">
                             <Clock className="w-4 h-4 mr-1" />
-                            <span>{getStatusText(course.status || '')}</span>
+                            <span>{getStatusText(course.status || '', t)}</span>
                           </div>
                         </div>
                       </div>
@@ -114,7 +123,7 @@ export function StudentCoursesPage() {
                       {/* Progress Bar */}
                       <div className="mb-4">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm text-gray-600">Прогресс</span>
+                          <span className="text-sm text-gray-600">{t('lms.student.progress')}</span>
                           <span className="text-sm font-semibold text-gray-900">{course.progress || 0}%</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
@@ -130,7 +139,11 @@ export function StudentCoursesPage() {
                         to={`/student/course/${course.id}`}
                         className="block w-full text-center px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
                       >
-                        {course.status === 'exam_available' ? 'Перейти к экзамену' : 'Продолжить обучение'}
+                        {course.status === 'exam_available' 
+                          ? t('lms.student.coursesPage.goToExam')
+                          : course.status === 'pending_pdek'
+                          ? t('lms.student.coursesPage.viewStatus')
+                          : t('lms.student.coursesPage.continueLearning')}
                       </Link>
                     </div>
                   </div>
@@ -142,7 +155,7 @@ export function StudentCoursesPage() {
           {/* Completed Courses */}
           {completedCourses.length > 0 && (
             <div className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Завершенные курсы</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('lms.student.coursesPage.completedCoursesTitle')}</h2>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {completedCourses.map(course => (
                   <div key={course.id} className="bg-white rounded-lg shadow-md overflow-hidden border-l-4 border-green-500">
@@ -150,13 +163,13 @@ export function StudentCoursesPage() {
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
                           <span className="inline-block px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full mb-2">
-                            {getCategoryName(course.category)}
+                            {getCategoryName(course.category, t)}
                           </span>
                           <h3 className="text-lg font-bold text-gray-900 mb-2">{course.title}</h3>
-                          <p className="text-sm text-gray-600 mb-2">{course.duration} часов</p>
+                          <p className="text-sm text-gray-600 mb-2">{course.duration} {t('lms.student.coursesPage.hours')}</p>
                           <div className="flex items-center text-sm text-green-600 mb-4">
                             <CheckCircle2 className="w-4 h-4 mr-1" />
-                            <span>Завершен</span>
+                            <span>{t('lms.student.status.completed')}</span>
                           </div>
                         </div>
                       </div>
@@ -165,7 +178,7 @@ export function StudentCoursesPage() {
                         to={`/student/course/${course.id}`}
                         className="block w-full text-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
                       >
-                        Просмотреть курс
+                        {t('lms.student.coursesPage.viewCourse')}
                       </Link>
                     </div>
                   </div>
@@ -178,13 +191,13 @@ export function StudentCoursesPage() {
           {activeCourses.length === 0 && completedCourses.length === 0 && (
             <div className="text-center py-12 bg-white rounded-lg shadow-md">
               <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Нет курсов</h3>
-              <p className="text-gray-600 mb-4">У вас пока нет назначенных курсов</p>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">{t('lms.student.coursesPage.noCourses')}</h3>
+              <p className="text-gray-600 mb-4">{t('lms.student.coursesPage.noCoursesDesc')}</p>
               <Link
                 to="/student/dashboard"
                 className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
-                Вернуться в личный кабинет
+                {t('lms.student.coursesPage.backToDashboardButton')}
               </Link>
             </div>
           )}

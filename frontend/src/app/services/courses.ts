@@ -7,6 +7,7 @@ const coursesService = {
     status?: string; 
     category?: string; 
     search?: string;
+    language?: string;
     page?: number;
     page_size?: number;
   }): Promise<PaginatedResponse<Course>> {
@@ -163,11 +164,13 @@ const coursesService = {
       category_id: categoryId || null,
       duration: course.duration || 0,
       status: course.status || 'draft',
+      language: course.language || 'ru',
       passing_score: course.passingScore || course.passing_score,
       max_attempts: course.maxAttempts || course.max_attempts,
       has_timer: course.hasTimer || course.has_timer,
       timer_minutes: course.timerMinutes || course.timer_minutes,
       pdek_commission: course.pdekCommission || course.pdek_commission,
+      final_test: course.final_test_id || course.finalTestId || null,
     };
     
     // Process modules and lessons for nested creation
@@ -246,11 +249,13 @@ const coursesService = {
       category_id: categoryId || null,
       duration: course.duration,
       status: course.status,
+      language: course.language || 'ru',
       passing_score: course.passingScore || course.passing_score,
       max_attempts: course.maxAttempts || course.max_attempts,
       has_timer: course.hasTimer || course.has_timer,
       timer_minutes: course.timerMinutes || course.timer_minutes,
       pdek_commission: course.pdekCommission || course.pdek_commission,
+      final_test: course.final_test_id || course.finalTestId || null,
     };
     
     // Process modules and lessons for nested update
@@ -323,6 +328,18 @@ const coursesService = {
     await apiClient.post(`/courses/${courseId}/enroll/`, { user_ids: userIds });
   },
 
+  async selfEnroll(courseId: string): Promise<{ message: string; enrollment_id: number }> {
+    const data = await apiClient.post<{ message: string; enrollment_id: number }>(
+      `/courses/${courseId}/enroll/`,
+      {}
+    );
+    return data;
+  },
+
+  async revokeEnrollment(courseId: string, userId: string): Promise<void> {
+    await apiClient.post(`/courses/${courseId}/revoke_enrollment/`, { user_id: userId });
+  },
+
   async completeLesson(lessonId: string): Promise<{ progress: number }> {
     const response = await apiClient.post<{ message: string; progress: number }>(`/lessons/${lessonId}/complete/`);
     return { progress: response.progress || 0 };
@@ -343,6 +360,16 @@ const coursesService = {
       // For other errors, re-throw
       throw error;
     }
+  },
+
+  async requestCompletionOTP(courseId: string): Promise<{ message: string; otp_expires_at?: string; otp_code?: string; debug?: boolean; otp_is_new?: boolean }> {
+    return apiClient.post<{ message: string; otp_expires_at?: string; otp_code?: string; debug?: boolean; otp_is_new?: boolean }>(`/courses/${courseId}/request_completion_otp/`);
+  },
+
+  async verifyCompletionOTP(courseId: string, otpCode: string): Promise<{ message: string; protocol_id: number }> {
+    return apiClient.post<{ message: string; protocol_id: number }>(`/courses/${courseId}/verify_completion_otp/`, {
+      otp_code: otpCode
+    });
   },
 };
 

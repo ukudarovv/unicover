@@ -1,27 +1,30 @@
 import { GraduationCap, Shield, BookOpen, Award, Users, CheckCircle2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 
 export function EducationSection() {
+  const { t } = useTranslation();
+  
   const features = [
     {
       icon: Shield,
-      title: 'Аттестат на право выполнения работ',
-      description: 'Официальное разрешение на подготовку специалистов в области промышленной безопасности',
+      title: t('homepage.education.features.certificate.title'),
+      description: t('homepage.education.features.certificate.description'),
     },
     {
       icon: Users,
-      title: 'Опытные преподаватели',
-      description: 'Профессиональный состав с практическим опытом работы на опасных объектах',
+      title: t('homepage.education.features.teachers.title'),
+      description: t('homepage.education.features.teachers.description'),
     },
     {
       icon: BookOpen,
-      title: 'Современные программы',
-      description: 'Актуальные образовательные программы, соответствующие стандартам РК',
+      title: t('homepage.education.features.programs.title'),
+      description: t('homepage.education.features.programs.description'),
     },
     {
       icon: Award,
-      title: 'Официальные документы',
-      description: 'Выдача сертификатов и протоколов установленного образца',
+      title: t('homepage.education.features.documents.title'),
+      description: t('homepage.education.features.documents.description'),
     },
   ];
 
@@ -31,13 +34,13 @@ export function EducationSection() {
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-600 px-4 py-2 rounded-full mb-4">
             <GraduationCap className="w-5 h-5" />
-            <span className="font-medium">Образовательное направление</span>
+            <span className="font-medium">{t('homepage.education.badge')}</span>
           </div>
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Учебный центр UNICOVER
+            {t('homepage.education.title')}
           </h2>
           <p className="text-gray-600 max-w-3xl mx-auto">
-            Подготовка и переподготовка специалистов в сфере промышленной безопасности
+            {t('homepage.education.description')}
           </p>
         </div>
 
@@ -45,31 +48,30 @@ export function EducationSection() {
           {/* Content */}
           <div>
             <h3 className="text-2xl font-bold text-gray-900 mb-6">
-              Промышленная безопасность
+              {t('homepage.education.safety.title')}
             </h3>
             <p className="text-gray-600 mb-6 leading-relaxed">
-              Компания имеет <strong>аттестат на право проведения работ в области промышленной безопасности</strong>, включающий:
+              {t('homepage.education.safety.description')}
             </p>
             
             <div className="space-y-4 mb-8">
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="w-5 h-5 text-blue-600 flex-shrink-0 mt-1" />
                 <p className="text-gray-700">
-                  <strong>Подготовку и переподготовку</strong> специалистов и работников в сфере промышленной безопасности
+                  {t('homepage.education.safety.items.training')}
                 </p>
               </div>
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="w-5 h-5 text-blue-600 flex-shrink-0 mt-1" />
                 <p className="text-gray-700">
-                  <strong>Обучение требованиям безопасности</strong> при эксплуатации опасных производственных объектов
+                  {t('homepage.education.safety.items.safetyRequirements')}
                 </p>
               </div>
             </div>
 
             <div className="bg-blue-50 p-6 rounded-xl border-l-4 border-blue-600">
               <p className="text-gray-800">
-                Мы обеспечиваем высокий уровень компетенций персонала предприятий, реализуя образовательные программы, 
-                соответствующие отраслевым нормам и стандартам Республики Казахстан.
+                {t('homepage.education.safety.commitment')}
               </p>
             </div>
           </div>
@@ -79,7 +81,7 @@ export function EducationSection() {
             <div className="rounded-2xl overflow-hidden shadow-2xl">
               <ImageWithFallback
                 src="https://images.unsplash.com/photo-1505373877841-8d25f7d46678?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb3Jwb3JhdGUlMjBwcmVzZW50YXRpb258ZW58MXx8fHwxNzY2MzI1MDQxfDA&ixlib=rb-4.1.0&q=80&w=1080"
-                alt="Учебный центр"
+                alt={t('homepage.education.imageAlt')}
                 className="w-full h-[400px] object-cover"
               />
             </div>

@@ -1,6 +1,6 @@
 from django.db import models
 from django.conf import settings
-from apps.courses.models import Course
+from apps.courses.models import Course, CourseEnrollment
 from apps.exams.models import TestAttempt
 import random
 import string
@@ -22,6 +22,7 @@ class Protocol(models.Model):
     student = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='protocols', on_delete=models.CASCADE)
     course = models.ForeignKey(Course, related_name='protocols', on_delete=models.CASCADE)
     attempt = models.ForeignKey(TestAttempt, related_name='protocols', on_delete=models.CASCADE, null=True, blank=True)
+    enrollment = models.ForeignKey(CourseEnrollment, related_name='protocols', on_delete=models.CASCADE, null=True, blank=True, help_text='Enrollment for course completion protocols')
     exam_date = models.DateTimeField()
     score = models.FloatField()
     passing_score = models.FloatField()
@@ -95,15 +96,32 @@ class ProtocolSignature(models.Model):
     
     def verify_otp(self, code):
         """Verify OTP code"""
+        import logging
         from django.utils import timezone
-        if not self.otp_code or not self.otp_expires_at:
+        
+        logger = logging.getLogger(__name__)
+        
+        # Normalize code (strip whitespace and convert to string)
+        code = str(code).strip() if code else ''
+        stored_code = str(self.otp_code).strip() if self.otp_code else ''
+        
+        logger.info(f"Verifying OTP for signature {self.id}: provided='{code}', stored='{stored_code}', expires_at={self.otp_expires_at}")
+        
+        if not stored_code or not self.otp_expires_at:
+            logger.warning(f"OTP verification failed: missing otp_code or otp_expires_at for signature {self.id}")
             return False
+        
         if timezone.now() > self.otp_expires_at:
+            logger.warning(f"OTP verification failed: expired. Now: {timezone.now()}, Expires: {self.otp_expires_at} for signature {self.id}")
             return False
-        if self.otp_code != code:
+        
+        if stored_code != code:
+            logger.warning(f"OTP verification failed: mismatch. Provided: '{code}', Stored: '{stored_code}' for signature {self.id}")
             return False
+        
         self.otp_verified = True
         self.signed_at = timezone.now()
         self.save()
+        logger.info(f"OTP verification successful for signature {self.id}")
         return True
 

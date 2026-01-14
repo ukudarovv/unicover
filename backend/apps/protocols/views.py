@@ -21,7 +21,7 @@ from apps.accounts.models import User
 
 class ProtocolViewSet(viewsets.ModelViewSet):
     """Protocol ViewSet"""
-    queryset = Protocol.objects.select_related('student', 'course', 'attempt').prefetch_related('signatures__signer').all()
+    queryset = Protocol.objects.select_related('student', 'course', 'attempt', 'enrollment').prefetch_related('signatures__signer').all()
     serializer_class = ProtocolSerializer
     permission_classes = [IsAdminOrReadOnly]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
@@ -30,10 +30,35 @@ class ProtocolViewSet(viewsets.ModelViewSet):
     ordering_fields = ['created_at', 'exam_date']
     ordering = ['-created_at']
     
+    def get_permissions(self):
+        """Allow PDEK members to request and sign protocols"""
+        # Allow authenticated users to request signature and sign protocols
+        # (role check is done inside the action methods)
+        if self.action in ['request_signature', 'sign']:
+            return [permissions.IsAuthenticated()]
+        # Default permissions for other actions (IsAdminOrReadOnly)
+        return [IsAdminOrReadOnly()]
+    
     def get_serializer_class(self):
         if self.action == 'create':
             return ProtocolCreateSerializer
         return ProtocolSerializer
+    
+    def retrieve(self, request, *args, **kwargs):
+        """Retrieve protocol with full related data"""
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        instance = self.get_object()
+        logger.info(f'Retrieving protocol {instance.id}: student={instance.student}, course={instance.course}, attempt={instance.attempt}')
+        
+        serializer = self.get_serializer(instance)
+        data = serializer.data
+        logger.info(f'Protocol serialized data keys: {list(data.keys())}')
+        logger.info(f'Protocol student data: {data.get("student")}')
+        logger.info(f'Protocol course data: {data.get("course")}')
+        
+        return Response(data)
     
     def create(self, request, *args, **kwargs):
         """Create protocol from test attempt"""
@@ -74,10 +99,14 @@ class ProtocolViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def request_signature(self, request, pk=None):
         """Request OTP for signature"""
+        import logging
+        logger = logging.getLogger(__name__)
+        
         protocol = self.get_object()
+        logger.info(f'Request signature for protocol {protocol.id}: student={protocol.student}, course={protocol.course}')
         
         # Check if user is PDEK member
-        if not request.user.is_pdek_member:
+        if request.user.role not in ['pdek_member', 'pdek_chairman']:
             return Response(
                 {'error': 'Only PDEK members can sign protocols'},
                 status=status.HTTP_403_FORBIDDEN
@@ -89,28 +118,64 @@ class ProtocolViewSet(viewsets.ModelViewSet):
             signer=request.user
         )
         
-        # Generate OTP
+        # Always generate new OTP, even if signature already exists
+        # This allows re-requesting OTP if it expired or was not received
         otp_code = signature.generate_otp()
         
-        # Send SMS (if Twilio configured)
+        # Send SMS via SMSC.kz
+        sms_sent = False
+        sms_error = None
         try:
+            from apps.accounts.sms_service import sms_service
             from django.conf import settings
-            if settings.TWILIO_ACCOUNT_SID and settings.TWILIO_AUTH_TOKEN:
-                from twilio.rest import Client
-                client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
-                client.messages.create(
-                    body=f'Ваш код для подписания протокола {protocol.number}: {otp_code}',
-                    from_=settings.TWILIO_PHONE_NUMBER,
-                    to=request.user.phone
-                )
+            
+            logger.info(f"Attempting to send SMS to {request.user.phone} for protocol {protocol.number}")
+            sms_result = sms_service.send_verification_code(
+                request.user.phone,
+                otp_code,
+                'protocol_sign'
+            )
+            
+            if sms_result['success']:
+                sms_sent = True
+                logger.info(f"SMS sent successfully to {request.user.phone}")
+            else:
+                sms_error = sms_result.get('error', 'Unknown error')
+                logger.error(f"Failed to send SMS via SMSC.kz: {sms_error}")
+                logger.error(f"SMS result: {sms_result}")
         except Exception as e:
-            # Log error but don't fail
-            print(f"Failed to send SMS: {e}")
+            sms_error = str(e)
+            logger.error(f"Exception while sending SMS: {sms_error}", exc_info=True)
         
-        return Response({
-            'message': 'OTP code sent to your phone',
-            'otp_expires_at': signature.otp_expires_at
-        }, status=status.HTTP_200_OK)
+        response_data = {
+            'message': 'OTP code sent to your phone' if sms_sent else 'OTP code generated',
+            'otp_expires_at': signature.otp_expires_at.isoformat() if signature.otp_expires_at else None,
+            'sms_sent': sms_sent,
+        }
+        
+        # Add error info if SMS failed
+        if sms_error:
+            response_data['sms_error'] = sms_error
+            response_data['warning'] = 'SMS sending failed, but OTP code was generated'
+        
+        # В режиме разработки (без SMSC.kz или при ошибке) возвращаем OTP код в ответе для тестирования
+        from django.conf import settings
+        is_smsc_configured = (
+            hasattr(settings, 'SMSC_LOGIN') and 
+            settings.SMSC_LOGIN and 
+            hasattr(settings, 'SMSC_PASSWORD') and 
+            settings.SMSC_PASSWORD
+        )
+        
+        if not is_smsc_configured or not sms_sent:
+            response_data['otp_code'] = otp_code
+            response_data['debug'] = True
+            if not is_smsc_configured:
+                response_data['debug_reason'] = 'SMSC.kz not configured'
+            elif not sms_sent:
+                response_data['debug_reason'] = f'SMS sending failed: {sms_error}'
+        
+        return Response(response_data, status=status.HTTP_200_OK)
     
     @action(detail=True, methods=['post'])
     def sign(self, request, pk=None):
@@ -140,16 +205,53 @@ class ProtocolViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        # Update protocol status
+        # Refresh protocol and signatures from DB to get latest data
+        protocol.refresh_from_db()
+        
+        # Check if all PDEK members have signed
         all_signed = protocol.signatures.filter(otp_verified=True).count()
         total_signatures = protocol.signatures.count()
         
+        # Update protocol status based on signing progress
         if all_signed == total_signatures:
-            if signature.role == 'chairman':
-                protocol.status = 'signed_chairman'
-            else:
-                protocol.status = 'signed_members'
-            protocol.save()
+            # All members signed - protocol is fully signed
+            protocol.status = 'signed_chairman'
+        elif signature.role == 'chairman':
+            protocol.status = 'signed_chairman'
+        elif all_signed > 0:
+            protocol.status = 'signed_members'
+        else:
+            protocol.status = 'pending_pdek'
+        
+        protocol.save()
+        
+        # If all PDEK members signed and protocol is for course completion, create certificate
+        if all_signed == total_signatures and protocol.enrollment:
+            from apps.certificates.models import Certificate
+            from apps.notifications.models import Notification
+            from django.utils import timezone
+            
+            # Check if certificate already exists
+            if not Certificate.objects.filter(protocol=protocol, student=protocol.student, course=protocol.course).exists():
+                # Create certificate
+                certificate = Certificate.objects.create(
+                    student=protocol.student,
+                    course=protocol.course,
+                    protocol=protocol
+                )
+                
+                # Update enrollment status to completed
+                protocol.enrollment.status = 'completed'
+                protocol.enrollment.completed_at = timezone.now()
+                protocol.enrollment.save()
+                
+                # Notify student
+                Notification.objects.create(
+                    user=protocol.student,
+                    type='certificate_issued',
+                    title='Сертификат выдан',
+                    message=f'Ваш сертификат по курсу "{protocol.course.title}" готов. Номер сертификата: {certificate.number}'
+                )
         
         return Response(
             ProtocolSerializer(protocol).data,

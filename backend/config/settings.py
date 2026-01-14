@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django_filters',
     
     # Local apps
+    'apps.core',
     'apps.accounts',
     'apps.courses',
     'apps.tests',
@@ -51,6 +52,9 @@ INSTALLED_APPS = [
     'apps.licenses',
     'apps.vacancies',
     'apps.contacts',
+    'apps.projects',
+    'apps.partners',
+    'apps.telegram_bot',
 ]
 
 MIDDLEWARE = [
@@ -171,12 +175,36 @@ SIMPLE_JWT = {
 # CORS settings
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
+    "http://localhost:5175",
     "http://localhost:3000",
     "http://127.0.0.1:5173",
+    "http://127.0.0.1:5175",
     "http://127.0.0.1:3000",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
+
+# CORS additional settings
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
 
 # Swagger/OpenAPI settings
 SPECTACULAR_SETTINGS = {
@@ -187,10 +215,16 @@ SPECTACULAR_SETTINGS = {
     'SCHEMA_PATH_PREFIX': '/api/',
 }
 
-# SMS Settings (Twilio)
+# SMS Settings (Twilio) - Legacy, kept for backward compatibility
 TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID', '')
 TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN', '')
 TWILIO_PHONE_NUMBER = os.getenv('TWILIO_PHONE_NUMBER', '')
+
+# SMS Settings (SMSC.kz)
+SMSC_LOGIN = os.getenv('SMSC_LOGIN', '')
+SMSC_PASSWORD = os.getenv('SMSC_PASSWORD', '')
+SMSC_SENDER = os.getenv('SMSC_SENDER', 'UNICOVER')
+SMSC_API_URL = os.getenv('SMSC_API_URL', 'https://smsc.kz/sys/send.php')
 
 # Email Settings
 EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
@@ -206,6 +240,13 @@ SERVER_EMAIL = DEFAULT_FROM_EMAIL
 CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', 'redis://localhost:6379/0')
 CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
 
+# Cache Configuration
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}
+
 # Logging
 LOGGING = {
     'version': 1,
@@ -217,6 +258,10 @@ LOGGING = {
     },
     'loggers': {
         'apps.accounts': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+        'apps.protocols': {
             'handlers': ['console'],
             'level': 'INFO',
         },

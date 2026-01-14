@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, Save, Upload, Eye, EyeOff, RefreshCw } from 'lucide-react';
 import { User } from '../../types/lms';
+import { useTranslation } from 'react-i18next';
 
 interface UserEditorProps {
   user?: User;
@@ -9,6 +10,7 @@ interface UserEditorProps {
 }
 
 export function UserEditor({ user, onSave, onCancel }: UserEditorProps) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<Partial<User & { password?: string }>>(user || {
     fullName: '',
     email: '',
@@ -43,17 +45,17 @@ export function UserEditor({ user, onSave, onCancel }: UserEditorProps) {
   }, [user?.id]);
 
   const roles = [
-    { value: 'student', label: 'Студент (Слушатель)' },
-    { value: 'pdek_member', label: 'Член ПДЭК' },
-    { value: 'pdek_chairman', label: 'Председатель ПДЭК' },
-    { value: 'teacher', label: 'Преподаватель' },
-    { value: 'admin', label: 'Администратор' },
+    { value: 'student', label: t('forms.login.studentRole') },
+    { value: 'pdek_member', label: t('forms.login.pdekMemberRole') },
+    { value: 'pdek_chairman', label: t('forms.login.pdekChairmanRole') },
+    { value: 'teacher', label: t('admin.users.teacher') },
+    { value: 'admin', label: t('forms.login.adminRole') },
   ];
 
   const languages = [
-    { value: 'ru', label: 'Русский' },
-    { value: 'kz', label: 'Қазақша' },
-    { value: 'en', label: 'English' },
+    { value: 'ru', label: t('header.russian') },
+    { value: 'kz', label: t('header.kazakh') },
+    { value: 'en', label: t('header.english') },
   ];
 
   // Генерация случайного пароля
@@ -75,12 +77,12 @@ export function UserEditor({ user, onSave, onCancel }: UserEditorProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-30 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-50 overflow-y-auto">
       <div className="bg-white rounded-lg shadow-2xl ring-4 ring-white ring-opacity-50 max-w-3xl w-full my-8">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-2xl font-bold text-gray-900">
-            {user ? 'Редактировать пользователя' : 'Добавить пользователя'}
+            {user ? t('admin.users.editUser') : t('admin.users.addUser')}
           </h2>
           <button onClick={onCancel} className="text-gray-400 hover:text-gray-600">
             <X className="w-6 h-6" />
@@ -91,17 +93,17 @@ export function UserEditor({ user, onSave, onCancel }: UserEditorProps) {
           <div className="space-y-6">
             {/* Personal Info */}
             <div>
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Личные данные</h3>
+              <h3 className="text-lg font-bold text-gray-900 mb-4">{t('admin.users.personalData')}</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    ФИО *
+                    {t('lms.pdek.fullName')} *
                   </label>
                   <input
                     type="text"
                     value={formData.fullName || ''}
                     onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                    placeholder="Иванов Иван Иванович"
+                    placeholder={t('admin.users.fullNamePlaceholder')}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                   />
@@ -123,7 +125,7 @@ export function UserEditor({ user, onSave, onCancel }: UserEditorProps) {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Телефон *
+                    {t('forms.login.phone')} *
                   </label>
                   <input
                     type="tel"
@@ -139,7 +141,7 @@ export function UserEditor({ user, onSave, onCancel }: UserEditorProps) {
                 {!user && (
                   <div className="col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Пароль <span className="text-gray-500 font-normal">(опционально)</span>
+                      {t('forms.login.password')} <span className="text-gray-500 font-normal">({t('common.optional')})</span>
                     </label>
                     <div className="flex gap-2">
                       <div className="flex-1 relative">
@@ -150,7 +152,7 @@ export function UserEditor({ user, onSave, onCancel }: UserEditorProps) {
                             setFormData({ ...formData, password: e.target.value });
                             setGeneratedPassword(null);
                           }}
-                          placeholder="Введите пароль или оставьте пустым для автоматической генерации"
+                          placeholder={t('admin.users.passwordPlaceholder')}
                           className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           minLength={8}
                         />
@@ -166,32 +168,32 @@ export function UserEditor({ user, onSave, onCancel }: UserEditorProps) {
                         type="button"
                         onClick={generatePassword}
                         className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                        title="Сгенерировать случайный пароль"
+                        title={t('admin.users.generatePassword')}
                       >
                         <RefreshCw className="w-4 h-4" />
-                        Сгенерировать
+                        {t('admin.users.generate')}
                       </button>
                     </div>
                     {generatedPassword && (
                       <p className="mt-2 text-sm text-green-600 font-medium">
-                        ✓ Пароль сгенерирован. Сохраните его для передачи пользователю.
+                        ✓ {t('admin.users.passwordGenerated')}
                       </p>
                     )}
                     <p className="mt-1 text-xs text-gray-500">
-                      Если пароль не указан, он будет сгенерирован автоматически. Минимум 8 символов при ручном вводе.
+                      {t('admin.users.passwordHint')}
                     </p>
                   </div>
                 )}
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    ИИН
+                    {t('lms.pdek.iin')}
                   </label>
                   <input
                     type="text"
                     value={formData.iin || ''}
                     onChange={(e) => setFormData({ ...formData, iin: e.target.value })}
-                    placeholder="000000000000"
+                    placeholder={t('admin.users.iinPlaceholder')}
                     maxLength={12}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
@@ -199,13 +201,13 @@ export function UserEditor({ user, onSave, onCancel }: UserEditorProps) {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Город
+                    {t('admin.users.city')}
                   </label>
                   <input
                     type="text"
                     value={formData.city || ''}
                     onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                    placeholder="Город"
+                    placeholder={t('admin.users.cityPlaceholder')}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
@@ -214,17 +216,17 @@ export function UserEditor({ user, onSave, onCancel }: UserEditorProps) {
 
             {/* Work Info */}
             <div>
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Место работы</h3>
+              <h3 className="text-lg font-bold text-gray-900 mb-4">{t('admin.users.workplace')}</h3>
               <div className="grid grid-cols-1 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Организация
+                    {t('forms.register.company')}
                   </label>
                   <input
                     type="text"
                     value={formData.organization || formData.company || ''}
                     onChange={(e) => setFormData({ ...formData, organization: e.target.value, company: e.target.value })}
-                    placeholder="Название организации"
+                    placeholder={t('forms.register.companyPlaceholder')}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
@@ -233,11 +235,11 @@ export function UserEditor({ user, onSave, onCancel }: UserEditorProps) {
 
             {/* System Settings */}
             <div>
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Настройки системы</h3>
+              <h3 className="text-lg font-bold text-gray-900 mb-4">{t('admin.users.systemSettings')}</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Роль *
+                    {t('admin.users.role')} *
                   </label>
                   <select
                     value={formData.role || 'student'}
@@ -252,7 +254,7 @@ export function UserEditor({ user, onSave, onCancel }: UserEditorProps) {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Язык интерфейса
+                    {t('admin.users.interfaceLanguage')}
                   </label>
                   <select
                     value={formData.language || 'ru'}
@@ -273,7 +275,7 @@ export function UserEditor({ user, onSave, onCancel }: UserEditorProps) {
                       onChange={(e) => setFormData({ ...formData, verified: e.target.checked })}
                       className="rounded"
                     />
-                    <span className="text-sm text-gray-700">Аккаунт подтвержден</span>
+                    <span className="text-sm text-gray-700">{t('admin.users.accountVerified')}</span>
                   </label>
                 </div>
 
@@ -285,7 +287,7 @@ export function UserEditor({ user, onSave, onCancel }: UserEditorProps) {
                       onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
                       className="rounded"
                     />
-                    <span className="text-sm text-gray-700">Активен</span>
+                    <span className="text-sm text-gray-700">{t('common.active')}</span>
                   </label>
                 </div>
               </div>
@@ -300,14 +302,14 @@ export function UserEditor({ user, onSave, onCancel }: UserEditorProps) {
             onClick={onCancel}
             className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
           >
-            Отмена
+            {t('common.cancel')}
           </button>
           <button
             onClick={handleSave}
             className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             <Save className="w-4 h-4" />
-            Сохранить
+            {t('common.save')}
           </button>
         </div>
       </div>

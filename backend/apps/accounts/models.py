@@ -1,6 +1,9 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 from django.utils import timezone
+from datetime import timedelta
+import random
+import string
 
 
 class UserManager(BaseUserManager):
@@ -87,4 +90,86 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def is_student(self):
         return self.role == 'student'
+
+
+class SMSVerificationCode(models.Model):
+    """Model for storing SMS verification codes"""
+    
+    PURPOSE_CHOICES = [
+        ('protocol_sign', 'Protocol Signing'),
+        ('registration', 'Registration'),
+        ('password_reset', 'Password Reset'),
+        ('verification', 'General Verification'),
+    ]
+    
+    phone = models.CharField(max_length=20, db_index=True)
+    code = models.CharField(max_length=6)
+    purpose = models.CharField(max_length=20, choices=PURPOSE_CHOICES, default='verification')
+    is_verified = models.BooleanField(default=False)
+    expires_at = models.DateTimeField(db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    verified_at = models.DateTimeField(null=True, blank=True)
+    
+    class Meta:
+        db_table = 'sms_verification_codes'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['phone', 'purpose', 'is_verified']),
+            models.Index(fields=['expires_at']),
+        ]
+    
+    def __str__(self):
+        return f"SMS Code for {self.phone} ({self.purpose}) - {'Verified' if self.is_verified else 'Pending'}"
+    
+    @classmethod
+    def generate_code(cls, phone: str, purpose: str = 'verification') -> 'SMSVerificationCode':
+        """Generate a new verification code"""
+        # Delete expired codes for this phone and purpose
+        cls.objects.filter(
+            phone=phone,
+            purpose=purpose,
+            expires_at__lt=timezone.now()
+        ).delete()
+        
+        # Generate 6-digit code
+        code = ''.join(random.choices(string.digits, k=6))
+        
+        # Create verification code instance
+        verification_code = cls.objects.create(
+            phone=phone,
+            code=code,
+            purpose=purpose,
+            expires_at=timezone.now() + timedelta(minutes=10)
+        )
+        
+        return verification_code
+    
+    def verify(self, code: str) -> bool:
+        """Verify the code"""
+        # Normalize code (strip whitespace)
+        code = str(code).strip()
+        stored_code = str(self.code).strip()
+        
+        # Check if already verified
+        if self.is_verified:
+            return False
+        
+        # Check if expired
+        if timezone.now() > self.expires_at:
+            return False
+        
+        # Check if code matches
+        if stored_code != code:
+            return False
+        
+        # Mark as verified
+        self.is_verified = True
+        self.verified_at = timezone.now()
+        self.save()
+        
+        return True
+    
+    def is_expired(self) -> bool:
+        """Check if code is expired"""
+        return timezone.now() > self.expires_at
 

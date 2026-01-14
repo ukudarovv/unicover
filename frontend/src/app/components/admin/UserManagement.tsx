@@ -9,6 +9,7 @@ import { examsService } from '../../services/exams';
 import { ApiError } from '../../services/api';
 import { TablePagination } from '../ui/TablePagination';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 interface UserManagementProps {
   onCreate: () => void;
@@ -17,6 +18,7 @@ interface UserManagementProps {
 }
 
 export function UserManagement({ onCreate, onEdit, refreshTrigger }: UserManagementProps) {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterRole, setFilterRole] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -68,7 +70,7 @@ export function UserManagement({ onCreate, onEdit, refreshTrigger }: UserManagem
       });
       setError(null);
     } catch (err) {
-      const message = err instanceof ApiError ? err.message : 'Ошибка загрузки пользователей';
+      const message = err instanceof ApiError ? err.message : t('admin.users.loadError');
       setError(message);
       console.error('Failed to fetch users:', err);
       setUsers([]);
@@ -108,11 +110,11 @@ export function UserManagement({ onCreate, onEdit, refreshTrigger }: UserManagem
 
   const getRoleName = (role: string) => {
     const roles: Record<string, string> = {
-      'student': 'Студент',
-      'pdek_member': 'Член ПДЭК',
-      'pdek_chairman': 'Председатель ПДЭК',
-      'teacher': 'Преподаватель',
-      'admin': 'Администратор',
+      'student': t('forms.login.studentRole'),
+      'pdek_member': t('forms.login.pdekMemberRole'),
+      'pdek_chairman': t('forms.login.pdekChairmanRole'),
+      'teacher': t('admin.users.teacher'),
+      'admin': t('forms.login.adminRole'),
     };
     return roles[role] || role;
   };
@@ -134,7 +136,7 @@ export function UserManagement({ onCreate, onEdit, refreshTrigger }: UserManagem
         <div className="bg-white rounded-lg shadow-md p-12">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Загрузка пользователей...</p>
+            <p className="mt-4 text-gray-600">{t('admin.users.loading')}</p>
           </div>
         </div>
       </div>
@@ -145,7 +147,7 @@ export function UserManagement({ onCreate, onEdit, refreshTrigger }: UserManagem
     return (
       <div className="space-y-6">
         <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-          <p className="text-red-800">Ошибка загрузки пользователей: {error}</p>
+          <p className="text-red-800">{t('admin.users.loadError')}: {error}</p>
         </div>
       </div>
     );
@@ -158,7 +160,7 @@ export function UserManagement({ onCreate, onEdit, refreshTrigger }: UserManagem
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 mb-1">Всего пользователей</p>
+              <p className="text-sm text-gray-600 mb-1">{t('admin.users.totalUsers')}</p>
               <p className="text-3xl font-bold text-gray-900">{users.length}</p>
             </div>
             <UsersIcon className="w-12 h-12 text-blue-600 opacity-20" />
@@ -168,7 +170,7 @@ export function UserManagement({ onCreate, onEdit, refreshTrigger }: UserManagem
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 mb-1">Активных студентов</p>
+              <p className="text-sm text-gray-600 mb-1">{t('admin.users.activeStudents')}</p>
               <p className="text-3xl font-bold text-green-600">
                 {users.filter(u => u.role === 'student' && u.verified).length}
               </p>
@@ -180,7 +182,7 @@ export function UserManagement({ onCreate, onEdit, refreshTrigger }: UserManagem
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 mb-1">Членов ПДЭК</p>
+              <p className="text-sm text-gray-600 mb-1">{t('admin.users.pdekMembers')}</p>
               <p className="text-3xl font-bold text-purple-600">
                 {users.filter(u => u.role === 'pdek_member' || u.role === 'pdek_chairman').length}
               </p>
@@ -192,7 +194,7 @@ export function UserManagement({ onCreate, onEdit, refreshTrigger }: UserManagem
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 mb-1">Ожидают проверки</p>
+              <p className="text-sm text-gray-600 mb-1">{t('admin.users.pendingVerification')}</p>
               <p className="text-3xl font-bold text-orange-600">
                 {users.filter(u => !u.verified).length}
               </p>
@@ -207,7 +209,7 @@ export function UserManagement({ onCreate, onEdit, refreshTrigger }: UserManagem
         {/* Header */}
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-900">Управление пользователями</h2>
+            <h2 className="text-xl font-bold text-gray-900">{t('admin.users.management')}</h2>
             <div className="flex gap-3">
               <button 
                 onClick={async () => {
@@ -221,9 +223,9 @@ export function UserManagement({ onCreate, onEdit, refreshTrigger }: UserManagem
                     a.click();
                     window.URL.revokeObjectURL(url);
                     document.body.removeChild(a);
-                    toast.success('Пользователи успешно экспортированы');
+                    toast.success(t('admin.users.exportSuccess'));
                   } catch (error: any) {
-                    const message = error instanceof ApiError ? error.message : 'Ошибка экспорта пользователей';
+                    const message = error instanceof ApiError ? error.message : t('admin.users.exportError');
                     toast.error(message);
                     console.error('Failed to export users:', error);
                   }
@@ -231,11 +233,11 @@ export function UserManagement({ onCreate, onEdit, refreshTrigger }: UserManagem
                 className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 <Download className="w-4 h-4" />
-                Экспорт
+                {t('admin.users.export')}
               </button>
               <label className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
                 <Upload className="w-4 h-4" />
-                Импорт
+                {t('admin.users.import')}
                 <input
                   type="file"
                   accept=".xlsx,.xls"
@@ -245,14 +247,14 @@ export function UserManagement({ onCreate, onEdit, refreshTrigger }: UserManagem
                     if (!file) return;
                     try {
                       const result = await usersService.importUsers(file);
-                      toast.success(`Импортировано пользователей: ${result.imported}`);
+                      toast.success(t('admin.users.importSuccess', { count: result.imported }));
                       if (result.errors && result.errors.length > 0) {
                         console.warn('Import errors:', result.errors);
-                        toast.warning(`Ошибок при импорте: ${result.errors.length}`);
+                        toast.warning(t('admin.users.importErrors', { count: result.errors.length }));
                       }
                       fetchUsers();
                     } catch (error: any) {
-                      const message = error instanceof ApiError ? error.message : 'Ошибка импорта пользователей';
+                      const message = error instanceof ApiError ? error.message : t('admin.users.importError');
                       toast.error(message);
                       console.error('Failed to import users:', error);
                     } finally {
@@ -266,7 +268,7 @@ export function UserManagement({ onCreate, onEdit, refreshTrigger }: UserManagem
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
                 <Plus className="w-4 h-4" />
-                Добавить пользователя
+                {t('admin.users.addUser')}
               </button>
             </div>
           </div>
@@ -279,7 +281,7 @@ export function UserManagement({ onCreate, onEdit, refreshTrigger }: UserManagem
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Поиск по имени, email, телефону, ИИН..."
+                placeholder={t('admin.users.searchPlaceholder')}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
@@ -290,7 +292,7 @@ export function UserManagement({ onCreate, onEdit, refreshTrigger }: UserManagem
               }`}
             >
               <Filter className="w-4 h-4" />
-              Фильтры
+              {t('common.filters')}
             </button>
           </div>
 
@@ -299,33 +301,33 @@ export function UserManagement({ onCreate, onEdit, refreshTrigger }: UserManagem
             <div className="mt-4 p-4 bg-gray-50 rounded-lg">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Роль</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t('admin.users.role')}</label>
                   <select
                     value={filterRole}
                     onChange={(e) => setFilterRole(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
-                    <option value="all">Все роли</option>
-                    <option value="student">Студенты</option>
-                    <option value="pdek_member">Члены ПДЭК</option>
-                    <option value="pdek_chairman">Председатели ПДЭК</option>
-                    <option value="teacher">Преподаватели</option>
-                    <option value="admin">Администраторы</option>
+                    <option value="all">{t('admin.users.allRoles')}</option>
+                    <option value="student">{t('admin.users.students')}</option>
+                    <option value="pdek_member">{t('admin.users.pdekMembersFilter')}</option>
+                    <option value="pdek_chairman">{t('admin.users.pdekChairmen')}</option>
+                    <option value="teacher">{t('admin.users.teachers')}</option>
+                    <option value="admin">{t('admin.users.admins')}</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Статус</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t('common.status')}</label>
                   <select
                     value={filterStatus}
                     onChange={(e) => setFilterStatus(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
-                    <option value="all">Все статусы</option>
-                    <option value="active">Активный</option>
-                    <option value="inactive">Неактивный</option>
-                    <option value="verified">Подтвержденные</option>
-                    <option value="unverified">Неподтвержденные</option>
+                    <option value="all">{t('admin.users.allStatuses')}</option>
+                    <option value="active">{t('common.active')}</option>
+                    <option value="inactive">{t('common.inactive')}</option>
+                    <option value="verified">{t('admin.users.verified')}</option>
+                    <option value="unverified">{t('admin.users.unverified')}</option>
                   </select>
                 </div>
 
@@ -338,7 +340,7 @@ export function UserManagement({ onCreate, onEdit, refreshTrigger }: UserManagem
                     }}
                     className="w-full px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-white transition-colors"
                   >
-                    Сбросить фильтры
+                    {t('admin.users.resetFilters')}
                   </button>
                 </div>
               </div>
@@ -351,7 +353,7 @@ export function UserManagement({ onCreate, onEdit, refreshTrigger }: UserManagem
           <div className="px-6 py-3 bg-blue-50 border-b border-blue-200">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-blue-900">
-                Выбрано: {selectedUsers.size} пользователей
+                {t('admin.users.selected', { count: selectedUsers.size })}
               </span>
               <div className="flex gap-2">
                 <button 
@@ -360,35 +362,35 @@ export function UserManagement({ onCreate, onEdit, refreshTrigger }: UserManagem
                   }}
                   className="px-3 py-1 text-sm bg-white border border-blue-300 text-blue-700 rounded hover:bg-blue-50 transition-colors"
                 >
-                  Назначить на курс
+                  {t('admin.users.assignToCourse')}
                 </button>
                 <button 
                   onClick={() => {
-                    toast.info('Функционал отправки сообщений пока не реализован');
+                    toast.info(t('admin.users.messageFeatureNotImplemented'));
                   }}
                   className="px-3 py-1 text-sm bg-white border border-blue-300 text-blue-700 rounded hover:bg-blue-50 transition-colors"
                 >
-                  Отправить сообщение
+                  {t('admin.users.sendMessage')}
                 </button>
                 <button 
                   onClick={async () => {
-                    if (!window.confirm(`Вы уверены, что хотите удалить ${selectedUsers.size} пользователей?\n\nЭто действие невозможно отменить.`)) {
+                    if (!window.confirm(t('admin.users.deleteConfirm', { count: selectedUsers.size }))) {
                       return;
                     }
                     try {
                       await Promise.all(Array.from(selectedUsers).map(userId => usersService.deleteUser(userId)));
-                      toast.success(`${selectedUsers.size} пользователей успешно удалены`);
+                      toast.success(t('admin.users.deleteSuccess', { count: selectedUsers.size }));
                       setSelectedUsers(new Set());
                       fetchUsers();
                     } catch (error: any) {
-                      const message = error instanceof ApiError ? error.message : 'Ошибка удаления пользователей';
+                      const message = error instanceof ApiError ? error.message : t('admin.users.deleteError');
                       toast.error(message);
                       console.error('Failed to delete users:', error);
                     }
                   }}
                   className="px-3 py-1 text-sm bg-white border border-red-300 text-red-700 rounded hover:bg-red-50 transition-colors"
                 >
-                  Удалить
+                  {t('common.delete')}
                 </button>
               </div>
             </div>
@@ -408,14 +410,14 @@ export function UserManagement({ onCreate, onEdit, refreshTrigger }: UserManagem
                     className="rounded"
                   />
                 </th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Пользователь</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Контакты</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Роль</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Организация</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Курсы</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Прогресс</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Статус</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Действия</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('admin.users.user')}</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('admin.users.contacts')}</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('admin.users.role')}</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('admin.users.organization')}</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('admin.users.courses')}</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('admin.users.progress')}</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('common.status')}</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('common.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -432,10 +434,10 @@ export function UserManagement({ onCreate, onEdit, refreshTrigger }: UserManagem
                   <td className="py-4 px-4">
                     <div className="flex items-center gap-3">
                       <div>
-                        <div className="font-medium text-gray-900">{user.full_name || user.fullName || 'Неизвестно'}</div>
+                        <div className="font-medium text-gray-900">{user.full_name || user.fullName || t('admin.users.unknown')}</div>
                         <div className="text-xs text-gray-500">
-                          {user.iin && `ИИН: ${user.iin}`}
-                          {user.created_at && ` • ${new Date(user.created_at).toLocaleDateString('ru-RU')}`}
+                          {user.iin && `${t('lms.pdek.iin')}: ${user.iin}`}
+                          {user.created_at && ` • ${new Date(user.created_at).toLocaleDateString()}`}
                         </div>
                       </div>
                     </div>
@@ -474,24 +476,24 @@ export function UserManagement({ onCreate, onEdit, refreshTrigger }: UserManagem
                       {user.is_active !== false ? (
                         <span className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded w-fit">
                           <CheckCircle className="w-3 h-3" />
-                          Активен
+                          {t('common.active')}
                         </span>
                       ) : (
                         <span className="flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded w-fit">
                           <XCircle className="w-3 h-3" />
-                          Неактивен
+                          {t('common.inactive')}
                         </span>
                       )}
                       {/* Статус подтверждения */}
                       {user.verified ? (
                         <span className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded w-fit">
                           <CheckCircle className="w-3 h-3" />
-                          Подтвержден
+                          {t('admin.users.verified')}
                         </span>
                       ) : (
                         <span className="flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-600 text-xs font-semibold rounded w-fit">
                           <XCircle className="w-3 h-3" />
-                          Не подтвержден
+                          {t('admin.users.unverified')}
                         </span>
                       )}
                     </div>
@@ -501,32 +503,32 @@ export function UserManagement({ onCreate, onEdit, refreshTrigger }: UserManagem
                       <button 
                         onClick={() => setSelectedUser(user)}
                         className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        title="Просмотр"
+                        title={t('common.view')}
                       >
                         <Eye className="w-4 h-4" />
                       </button>
                       <button 
                         onClick={() => onEdit(user)}
                         className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                        title="Редактировать"
+                        title={t('common.edit')}
                       >
                         <Edit className="w-4 h-4" />
                       </button>
                       <button 
                         onClick={async () => {
-                          const userName = user.full_name || user.fullName || 'пользователя';
-                          if (window.confirm(`Вы уверены, что хотите удалить пользователя "${userName}"?\n\nЭто действие невозможно отменить.`)) {
+                          const userName = user.full_name || user.fullName || t('admin.users.userLower');
+                          if (window.confirm(t('admin.users.deleteUserConfirm', { name: userName }))) {
                             try {
                               await usersService.deleteUser(user.id);
                               // Обновляем список пользователей
                               fetchUsers();
                             } catch (error: any) {
-                              alert(`Ошибка: ${error.message || 'Не удалось удалить пользователя'}`);
+                              alert(`${t('common.error')}: ${error.message || t('admin.users.deleteUserError')}`);
                             }
                           }
                         }}
                         className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Удалить"
+                        title={t('common.delete')}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -540,8 +542,8 @@ export function UserManagement({ onCreate, onEdit, refreshTrigger }: UserManagem
           {users.length === 0 && !loading && (
             <div className="text-center py-12">
               <UsersIcon className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500">Пользователи не найдены</p>
-              <p className="text-sm text-gray-400 mt-1">Попробуйте изменить параметры поиска</p>
+              <p className="text-gray-500">{t('admin.users.noUsersFound')}</p>
+              <p className="text-sm text-gray-400 mt-1">{t('admin.users.tryChangingSearch')}</p>
             </div>
           )}
         </div>
@@ -567,6 +569,19 @@ export function UserManagement({ onCreate, onEdit, refreshTrigger }: UserManagem
             onEdit(selectedUser);
             setSelectedUser(null);
           }}
+          onDelete={async () => {
+            const userName = selectedUser.full_name || selectedUser.fullName || t('admin.users.userLower');
+            if (window.confirm(t('admin.users.deleteUserConfirmFull', { name: userName }))) {
+              try {
+                await usersService.deleteUser(selectedUser.id);
+                toast.success(t('admin.users.userDeletedSuccess'));
+                setSelectedUser(null);
+                fetchUsers();
+              } catch (error: any) {
+                toast.error(`${t('common.error')}: ${error.message || t('admin.users.deleteUserError')}`);
+              }
+            }
+          }}
         />
       )}
 
@@ -581,11 +596,11 @@ export function UserManagement({ onCreate, onEdit, refreshTrigger }: UserManagem
           }}
           onAssign={async (userIds: string[], courseIds: string[], deadline?: string) => {
             if (!userIds || userIds.length === 0) {
-              toast.error('Не выбраны пользователи для назначения курсов');
+              toast.error(t('admin.users.noUsersSelected'));
               return;
             }
             if (!courseIds || courseIds.length === 0) {
-              toast.error('Не выбраны курсы для назначения');
+              toast.error(t('admin.users.noCoursesSelected'));
               return;
             }
             try {
@@ -601,15 +616,15 @@ export function UserManagement({ onCreate, onEdit, refreshTrigger }: UserManagem
                 }
               }
               if (successCount > 0) {
-                toast.success(`Назначено курсов: ${successCount} для ${userIds.length} пользователей${errorCount > 0 ? ` (ошибок: ${errorCount})` : ''}`);
+                toast.success(t('admin.users.coursesAssigned', { courses: successCount, users: userIds.length, errors: errorCount > 0 ? ` (${t('common.error')}: ${errorCount})` : '' }));
               } else {
-                toast.error('Не удалось назначить курсы. Проверьте логи для деталей.');
+                toast.error(t('admin.users.assignCoursesError'));
               }
               setUserToAssignCourses(null);
               setSelectedUsers(new Set());
               fetchUsers();
             } catch (error: any) {
-              const message = error instanceof ApiError ? error.message : 'Ошибка назначения курсов';
+              const message = error instanceof ApiError ? error.message : t('admin.users.assignCoursesError');
               toast.error(message);
               console.error('Failed to assign courses:', error);
             }
@@ -625,9 +640,11 @@ interface UserDetailModalProps {
   user: any;
   onClose: () => void;
   onEdit: () => void;
+  onDelete?: () => void;
 }
 
-function UserDetailModal({ user, onClose, onEdit }: UserDetailModalProps) {
+function UserDetailModal({ user, onClose, onEdit, onDelete }: UserDetailModalProps) {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'info' | 'courses' | 'activity'>('info');
   const [showAssignCourses, setShowAssignCourses] = useState(false);
   const [enrollments, setEnrollments] = useState<any[]>([]);
@@ -638,13 +655,13 @@ function UserDetailModal({ user, onClose, onEdit }: UserDetailModalProps) {
   // Функция для получения текста статуса
   const getStatusText = (status: string): string => {
     const statusMap: Record<string, string> = {
-      'assigned': 'Назначен',
-      'in_progress': 'В процессе',
-      'exam_available': 'Экзамен доступен',
-      'exam_passed': 'Экзамен пройден',
-      'completed': 'Завершен',
-      'failed': 'Не сдан',
-      'annulled': 'Аннулирован',
+      'assigned': t('lms.student.status.assigned'),
+      'in_progress': t('lms.student.status.inProgress'),
+      'exam_available': t('lms.student.status.examAvailable'),
+      'exam_passed': t('lms.student.status.examPassed'),
+      'completed': t('lms.student.status.completed'),
+      'failed': t('admin.users.failed'),
+      'annulled': t('admin.users.annulled'),
     };
     return statusMap[status] || status;
   };
@@ -709,11 +726,11 @@ function UserDetailModal({ user, onClose, onEdit }: UserDetailModalProps) {
 
   const handleAssignCourses = async (userIds: string[], courseIds: string[], deadline?: string) => {
     if (!userIds || userIds.length === 0) {
-      toast.error('Не выбраны пользователи для назначения курсов');
+      toast.error(t('admin.users.noUsersSelected'));
       return;
     }
     if (!courseIds || courseIds.length === 0) {
-      toast.error('Не выбраны курсы для назначения');
+      toast.error(t('admin.users.noCoursesSelected'));
       return;
     }
     try {
@@ -729,9 +746,9 @@ function UserDetailModal({ user, onClose, onEdit }: UserDetailModalProps) {
         }
       }
       if (successCount > 0) {
-        toast.success(`Назначено курсов: ${successCount} для пользователя ${user.full_name || user.fullName || 'пользователя'}${errorCount > 0 ? ` (ошибок: ${errorCount})` : ''}`);
+        toast.success(t('admin.users.coursesAssignedToUser', { courses: successCount, user: user.full_name || user.fullName || t('admin.users.userLower'), errors: errorCount > 0 ? ` (${t('common.error')}: ${errorCount})` : '' }));
       } else {
-        toast.error('Не удалось назначить курсы. Проверьте логи для деталей.');
+        toast.error(t('admin.users.assignCoursesError'));
         return;
       }
       setShowAssignCourses(false);
@@ -763,14 +780,14 @@ function UserDetailModal({ user, onClose, onEdit }: UserDetailModalProps) {
         console.error('Failed to refresh enrollments:', err);
       }
     } catch (error: any) {
-      const message = error instanceof ApiError ? error.message : 'Не удалось назначить курсы';
+      const message = error instanceof ApiError ? error.message : t('admin.users.assignCoursesError');
       toast.error(message);
       console.error('Failed to assign courses:', error);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-30 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg shadow-2xl ring-4 ring-white ring-opacity-50 max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="p-6 border-b border-gray-200">
@@ -787,8 +804,8 @@ function UserDetailModal({ user, onClose, onEdit }: UserDetailModalProps) {
                 })()}
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">{user.full_name || user.fullName || 'Неизвестно'}</h2>
-                <p className="text-sm text-gray-600">{user.email || 'Нет email'}</p>
+                <h2 className="text-2xl font-bold text-gray-900">{user.full_name || user.fullName || t('admin.users.unknown')}</h2>
+                <p className="text-sm text-gray-600">{user.email || t('admin.users.noEmail')}</p>
               </div>
             </div>
             <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
@@ -806,7 +823,7 @@ function UserDetailModal({ user, onClose, onEdit }: UserDetailModalProps) {
                   : 'border-transparent text-gray-600 hover:text-gray-900'
               }`}
             >
-              Информация
+              {t('admin.users.info')}
             </button>
             <button
               onClick={() => setActiveTab('courses')}
@@ -816,7 +833,7 @@ function UserDetailModal({ user, onClose, onEdit }: UserDetailModalProps) {
                   : 'border-transparent text-gray-600 hover:text-gray-900'
               }`}
             >
-              Курсы ({enrollments.length})
+              {t('admin.users.courses')} ({enrollments.length})
             </button>
             <button
               onClick={() => setActiveTab('activity')}
@@ -826,7 +843,7 @@ function UserDetailModal({ user, onClose, onEdit }: UserDetailModalProps) {
                   : 'border-transparent text-gray-600 hover:text-gray-900'
               }`}
             >
-              Активность
+              {t('admin.users.activity')}
             </button>
           </div>
         </div>
@@ -837,14 +854,14 @@ function UserDetailModal({ user, onClose, onEdit }: UserDetailModalProps) {
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-6">
                 <div>
-                  <h3 className="font-bold text-gray-900 mb-4">Личные данные</h3>
+                  <h3 className="font-bold text-gray-900 mb-4">{t('admin.users.personalData')}</h3>
                   <dl className="space-y-3">
                     <div>
-                      <dt className="text-sm text-gray-600">ИИН</dt>
+                      <dt className="text-sm text-gray-600">{t('lms.pdek.iin')}</dt>
                       <dd className="text-sm font-medium text-gray-900">{user.iin}</dd>
                     </div>
                     <div>
-                      <dt className="text-sm text-gray-600">Телефон</dt>
+                      <dt className="text-sm text-gray-600">{t('forms.login.phone')}</dt>
                       <dd className="text-sm font-medium text-gray-900">{user.phone}</dd>
                     </div>
                     <div>
@@ -855,14 +872,14 @@ function UserDetailModal({ user, onClose, onEdit }: UserDetailModalProps) {
                 </div>
 
                 <div>
-                  <h3 className="font-bold text-gray-900 mb-4">Работа</h3>
+                  <h3 className="font-bold text-gray-900 mb-4">{t('admin.users.workplace')}</h3>
                   <dl className="space-y-3">
                     <div>
-                      <dt className="text-sm text-gray-600">Организация</dt>
+                      <dt className="text-sm text-gray-600">{t('admin.users.organization')}</dt>
                       <dd className="text-sm font-medium text-gray-900">{user.organization || user.company || '—'}</dd>
                     </div>
                     <div>
-                      <dt className="text-sm text-gray-600">Город</dt>
+                      <dt className="text-sm text-gray-600">{t('admin.users.city')}</dt>
                       <dd className="text-sm font-medium text-gray-900">{user.city || '—'}</dd>
                     </div>
                   </dl>
@@ -870,26 +887,26 @@ function UserDetailModal({ user, onClose, onEdit }: UserDetailModalProps) {
               </div>
 
               <div>
-                <h3 className="font-bold text-gray-900 mb-4">Статистика обучения</h3>
+                <h3 className="font-bold text-gray-900 mb-4">{t('admin.users.learningStats')}</h3>
                 {loading ? (
                   <div className="text-center py-8">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                    <p className="mt-2 text-sm text-gray-600">Загрузка статистики...</p>
+                    <p className="mt-2 text-sm text-gray-600">{t('admin.users.loadingStats')}</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-4 gap-4">
                     <div className="bg-blue-50 rounded-lg p-4">
-                      <p className="text-sm text-blue-600 mb-1">Курсов назначено</p>
+                      <p className="text-sm text-blue-600 mb-1">{t('admin.users.coursesAssigned')}</p>
                       <p className="text-2xl font-bold text-blue-700">{enrollments.length}</p>
                     </div>
                     <div className="bg-green-50 rounded-lg p-4">
-                      <p className="text-sm text-green-600 mb-1">Завершено</p>
+                      <p className="text-sm text-green-600 mb-1">{t('admin.users.completed')}</p>
                       <p className="text-2xl font-bold text-green-700">
                         {enrollments.filter(e => e.status === 'completed' || e.status === 'exam_passed').length}
                       </p>
                     </div>
                     <div className="bg-purple-50 rounded-lg p-4">
-                      <p className="text-sm text-purple-600 mb-1">Средний балл</p>
+                      <p className="text-sm text-purple-600 mb-1">{t('admin.users.averageScore')}</p>
                       <p className="text-2xl font-bold text-purple-700">
                         {enrollments.length > 0
                           ? Math.round(enrollments.reduce((sum, e) => {
@@ -901,7 +918,7 @@ function UserDetailModal({ user, onClose, onEdit }: UserDetailModalProps) {
                       </p>
                     </div>
                     <div className="bg-orange-50 rounded-lg p-4">
-                      <p className="text-sm text-orange-600 mb-1">Сертификатов</p>
+                      <p className="text-sm text-orange-600 mb-1">{t('admin.users.certificates')}</p>
                       <p className="text-2xl font-bold text-orange-700">{certificates.length}</p>
                     </div>
                   </div>
@@ -912,34 +929,79 @@ function UserDetailModal({ user, onClose, onEdit }: UserDetailModalProps) {
 
           {activeTab === 'courses' && (
             <div className="space-y-4">
-              <h3 className="font-bold text-gray-900">Назначенные курсы</h3>
+              <h3 className="font-bold text-gray-900">{t('admin.users.assignedCourses')}</h3>
               {loading ? (
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                  <p className="mt-2 text-sm text-gray-600">Загрузка курсов...</p>
+                  <p className="mt-2 text-sm text-gray-600">{t('admin.users.loadingCourses')}</p>
                 </div>
               ) : enrollments.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
                   <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                  <p>Нет назначенных курсов</p>
+                  <p>{t('admin.users.noAssignedCourses')}</p>
                 </div>
               ) : (
                 enrollments.map((enrollment) => {
                   const course = enrollment.course || {};
                   const progress = enrollment.progress || 0;
                   const status = enrollment.status || 'assigned';
+                  const student = enrollment.student || enrollment.user || enrollment;
+                  const userId = student?.id || enrollment.user?.id || enrollment.user || user.id;
                   
                   return (
                     <div key={enrollment.id || course.id} className="border border-gray-200 rounded-lg p-4">
                       <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-medium text-gray-900">{course.title || 'Неизвестный курс'}</h4>
+                        <h4 className="font-medium text-gray-900">{course.title || t('admin.users.unknownCourse')}</h4>
+                        <div className="flex items-center gap-2">
                         <span className={`px-2 py-1 text-xs font-semibold rounded ${
                           status === 'completed' || status === 'exam_passed'
                             ? 'bg-green-100 text-green-700' 
                             : 'bg-blue-100 text-blue-700'
                         }`}>
-                          {status === 'completed' || status === 'exam_passed' ? 'Завершен' : getStatusText(status)}
+                          {status === 'completed' || status === 'exam_passed' ? t('lms.student.status.completed') : getStatusText(status)}
                         </span>
+                          <button
+                            onClick={async () => {
+                              const courseTitle = course.title || t('admin.users.courseLower');
+                              if (window.confirm(t('admin.users.revokeCourseConfirm', { course: courseTitle, user: user.full_name || user.fullName || t('admin.users.userLower') }))) {
+                                try {
+                                  await coursesService.revokeEnrollment(course.id, userId);
+                                  toast.success(t('admin.users.courseRevoked'));
+                                  // Обновляем список курсов
+                                  const coursesResponse = await coursesService.getCourses({ page_size: 1000 });
+                                  const allCourses = coursesResponse.results;
+                                  const allEnrollments: any[] = [];
+                                  
+                                  for (const c of allCourses) {
+                                    try {
+                                      const courseStudents = await coursesService.getCourseStudents(c.id);
+                                      const userEnrollment = courseStudents.find((e: any) => {
+                                        const s = e.student || e;
+                                        return (s.id || s) === user.id;
+                                      });
+                                      if (userEnrollment) {
+                                        allEnrollments.push({
+                                          ...userEnrollment,
+                                          course: c,
+                                        });
+                                      }
+                                    } catch (err) {
+                                      // Игнорируем ошибки для отдельных курсов
+                                    }
+                                  }
+                                  
+                                  setEnrollments(allEnrollments);
+                                } catch (error: any) {
+                                  toast.error(`${t('common.error')}: ${error.message || t('admin.users.revokeCourseError')}`);
+                                }
+                              }
+                            }}
+                            className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
+                            title={t('admin.users.revokeCourse')}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
                         <div 
@@ -950,10 +1012,10 @@ function UserDetailModal({ user, onClose, onEdit }: UserDetailModalProps) {
                         />
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">{progress}% завершено</span>
+                        <span className="text-gray-600">{progress}% {t('admin.users.completedLower')}</span>
                         {enrollment.enrolled_at && (
                           <span className="text-gray-500">
-                            Зачислен: {new Date(enrollment.enrolled_at).toLocaleDateString('ru-RU')}
+                            {t('admin.users.enrolled')}: {new Date(enrollment.enrolled_at).toLocaleDateString()}
                           </span>
                         )}
                       </div>
@@ -966,17 +1028,17 @@ function UserDetailModal({ user, onClose, onEdit }: UserDetailModalProps) {
 
           {activeTab === 'activity' && (
             <div className="space-y-4">
-              <h3 className="font-bold text-gray-900">История активности</h3>
+              <h3 className="font-bold text-gray-900">{t('admin.users.activityHistory')}</h3>
               {loading ? (
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                  <p className="mt-2 text-sm text-gray-600">Загрузка активности...</p>
+                  <p className="mt-2 text-sm text-gray-600">{t('admin.users.loadingActivity')}</p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {attempts.length === 0 && certificates.length === 0 && enrollments.length === 0 ? (
                     <div className="text-center py-8 text-gray-500">
-                      <p>Нет данных об активности</p>
+                      <p>{t('admin.users.noActivityData')}</p>
                     </div>
                   ) : (
                     <>
@@ -985,14 +1047,14 @@ function UserDetailModal({ user, onClose, onEdit }: UserDetailModalProps) {
                         <div key={cert.id} className="flex items-start gap-3 pb-3 border-b border-gray-100 last:border-0">
                           <div className="w-2 h-2 bg-green-600 rounded-full mt-2" />
                           <div className="flex-1">
-                            <p className="text-sm font-medium text-gray-900">Получил сертификат</p>
+                            <p className="text-sm font-medium text-gray-900">{t('admin.users.receivedCertificate')}</p>
                             <p className="text-sm text-gray-600">
-                              {cert.course?.title || cert.courseName || 'Курс'}
+                              {cert.course?.title || cert.courseName || t('admin.users.courseLower')}
                             </p>
                           </div>
                           {cert.issued_at && (
                             <span className="text-xs text-gray-500">
-                              {new Date(cert.issued_at).toLocaleDateString('ru-RU')}
+                              {new Date(cert.issued_at).toLocaleDateString()}
                             </span>
                           )}
                         </div>
@@ -1005,14 +1067,14 @@ function UserDetailModal({ user, onClose, onEdit }: UserDetailModalProps) {
                           <div key={enrollment.id} className="flex items-start gap-3 pb-3 border-b border-gray-100 last:border-0">
                             <div className="w-2 h-2 bg-purple-600 rounded-full mt-2" />
                             <div className="flex-1">
-                              <p className="text-sm font-medium text-gray-900">Завершил курс</p>
+                              <p className="text-sm font-medium text-gray-900">{t('admin.users.completedCourse')}</p>
                               <p className="text-sm text-gray-600">
-                                {(enrollment.course || {}).title || 'Курс'}
+                                {(enrollment.course || {}).title || t('admin.users.courseLower')}
                               </p>
                             </div>
                             {enrollment.completed_at && (
                               <span className="text-xs text-gray-500">
-                                {new Date(enrollment.completed_at).toLocaleDateString('ru-RU')}
+                                {new Date(enrollment.completed_at).toLocaleDateString()}
                               </span>
                             )}
                           </div>
@@ -1033,20 +1095,29 @@ function UserDetailModal({ user, onClose, onEdit }: UserDetailModalProps) {
               className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
             >
               <BookOpen className="w-4 h-4" />
-              Назначить курсы
+              {t('admin.users.assignCourses')}
             </button>
             <div className="flex items-center gap-3">
+              {onDelete && (
+                <button
+                  onClick={onDelete}
+                  className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  {t('common.delete')}
+                </button>
+              )}
               <button
                 onClick={onClose}
                 className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                Закрыть
+                {t('common.close')}
               </button>
               <button
                 onClick={onEdit}
                 className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
-                Редактировать
+                {t('common.edit')}
               </button>
             </div>
           </div>

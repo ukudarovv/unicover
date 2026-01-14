@@ -25,10 +25,11 @@ export function CoursePage() {
         setLoading(true);
         setError(null);
         // Используем getCourseWithProgress для получения курса с прогрессом студента
+        // Если студент не зачислен, backend автоматически создаст enrollment
         const data = await coursesService.getCourseWithProgress(courseId);
         setCourse(data);
       } catch (err: any) {
-        // Если курс не найден или студент не зачислен, пробуем загрузить обычный курс
+        // Если курс не найден, пробуем загрузить обычный курс
         if (err.status === 404) {
           try {
             const data = await coursesService.getCourse(courseId);
@@ -83,9 +84,33 @@ export function CoursePage() {
     }
   };
 
-  const handleCourseComplete = () => {
-    toast.success('Курс завершен!');
-    navigate('/student/dashboard');
+  const handleCourseComplete = async () => {
+    // Перезагружаем курс для обновления статуса
+    if (courseId) {
+      try {
+        console.log('Refreshing course after completion...');
+        // Добавляем небольшую задержку, чтобы бэкенд успел обновить статус
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const updatedCourse = await coursesService.getCourseWithProgress(courseId);
+        console.log('Updated course data:', updatedCourse);
+        console.log('Enrollment status:', updatedCourse?.enrollment_status || updatedCourse?.status);
+        console.log('Full course object:', JSON.stringify(updatedCourse, null, 2));
+        setCourse(updatedCourse);
+        
+        const enrollmentStatus = updatedCourse?.enrollment_status || updatedCourse?.status;
+        if (enrollmentStatus === 'pending_pdek') {
+          toast.success('Курс отправлен на проверку PDEK. Вы получите уведомление после проверки.');
+        } else if (enrollmentStatus === 'completed') {
+          toast.success('Курс завершен! Сертификат выдан.');
+        } else {
+          console.warn('Unexpected enrollment status after completion:', enrollmentStatus);
+          console.warn('Course object keys:', Object.keys(updatedCourse || {}));
+        }
+      } catch (error: any) {
+        console.error('Failed to refresh course:', error);
+        toast.error('Ошибка при обновлении данных курса');
+      }
+    }
   };
 
   if (loading) {

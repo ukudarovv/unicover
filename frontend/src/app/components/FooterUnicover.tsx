@@ -1,27 +1,30 @@
 import { Facebook, Instagram, Youtube, MapPin, Phone, Mail, Building2, GraduationCap } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export function FooterUnicover() {
+  const { t } = useTranslation();
   const currentYear = new Date().getFullYear();
 
   const constructionLinks = [
-    { name: 'О компании', href: '/construction/about', isLink: true },
-    { name: 'Лицензии', href: '/construction/licenses', isLink: true },
-    { name: 'Выполненные работы', href: '/construction', isLink: true },
-    { name: 'Партнеры', href: '#partners', isLink: false },
+    { name: t('construction.about'), href: '/construction/about', isLink: true },
+    { name: t('construction.licenses'), href: '/construction/licenses', isLink: true },
+    { name: t('construction.completedWorks'), href: '/projects', isLink: true },
+    { name: t('construction.partners'), href: '#partners', isLink: false },
   ];
 
   const educationLinks = [
-    { name: 'О центре', href: '#education-about' },
-    { name: 'Программы обучения', href: '#courses' },
-    { name: 'Онлайн обучение', href: '#elearning' },
-    { name: 'Личный кабинет', href: '#login' },
+    { name: t('education.about'), href: '#education-about' },
+    { name: t('education.programs'), href: '#courses' },
+    { name: t('education.online'), href: '#elearning' },
+    { name: t('education.certificateVerification'), href: '/verify', isLink: true },
+    { name: t('education.cabinet'), href: '#login' },
   ];
 
   const quickLinks = [
-    { name: 'Главная', href: '#home' },
-    { name: 'О компании', href: '#about' },
-    { name: 'Контакты', href: '#contacts' },
+    { name: t('common.home'), href: '#home' },
+    { name: t('common.about'), href: '#about' },
+    { name: t('common.contacts'), href: '#contacts' },
   ];
 
   const socialLinks = [
@@ -36,17 +39,15 @@ export function FooterUnicover() {
         <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
           {/* Company Info */}
           <div className="lg:col-span-2">
-            <div className="flex items-center gap-2 mb-6">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl flex items-center justify-center">
-                <span className="text-white font-bold text-sm">UC</span>
-              </div>
-              <div>
-                <div className="font-bold text-white">UNICOVER</div>
-                <div className="text-xs text-gray-400">ТОО "UNICOVER"</div>
-              </div>
+            <div className="flex items-center mb-6">
+              <img 
+                src="/logo.jpg" 
+                alt="UNICOVER Logo" 
+                className="h-10 w-auto object-contain"
+              />
             </div>
             <p className="text-sm mb-6">
-              Многопрофильная инженерная и проектно-строительная компания. Полный комплекс услуг в сфере промышленной безопасности, изысканий, проектирования и строительства.
+              {t('footer.companyDescription')}
             </p>
             <div className="flex gap-4">
               {socialLinks.map((social, index) => {
@@ -69,7 +70,7 @@ export function FooterUnicover() {
           <div>
             <div className="flex items-center gap-2 mb-4">
               <Building2 className="w-5 h-5 text-blue-400" />
-              <h3 className="font-bold text-white">Строительство</h3>
+              <h3 className="font-bold text-white">{t('footer.construction')}</h3>
             </div>
             <ul className="space-y-3">
               {constructionLinks.map((link, index) => (
@@ -92,14 +93,20 @@ export function FooterUnicover() {
           <div>
             <div className="flex items-center gap-2 mb-4">
               <GraduationCap className="w-5 h-5 text-blue-400" />
-              <h3 className="font-bold text-white">Учебный центр</h3>
+              <h3 className="font-bold text-white">{t('footer.education')}</h3>
             </div>
             <ul className="space-y-3">
               {educationLinks.map((link, index) => (
                 <li key={index}>
-                  <a href={link.href} className="text-sm hover:text-blue-400 transition-colors">
-                    {link.name}
-                  </a>
+                  {link.isLink ? (
+                    <Link to={link.href} className="text-sm hover:text-blue-400 transition-colors">
+                      {link.name}
+                    </Link>
+                  ) : (
+                    <a href={link.href} className="text-sm hover:text-blue-400 transition-colors">
+                      {link.name}
+                    </a>
+                  )}
                 </li>
               ))}
             </ul>
@@ -107,11 +114,11 @@ export function FooterUnicover() {
 
           {/* Contact Info */}
           <div>
-            <h3 className="font-bold text-white mb-4">Контакты</h3>
+            <h3 className="font-bold text-white mb-4">{t('footer.contacts')}</h3>
             <ul className="space-y-3">
               <li className="flex items-start gap-3 text-sm">
                 <MapPin className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
-                <span>г.Атырау, ул. Студенческий 25, БЦ Bayterek Plaza, 5 этаж</span>
+                <span>{t('contacts.addressValue')}</span>
               </li>
               <li className="flex items-start gap-3 text-sm">
                 <Phone className="w-5 h-5 text-blue-400 flex-shrink-0" />
@@ -138,7 +145,7 @@ export function FooterUnicover() {
         <div className="pt-8 border-t border-gray-800">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-gray-400">
-              © {currentYear} ТОО «UNICOVER». БИН 100240007639. Все права защищены.
+              {t('footer.copyright', { year: currentYear })}
             </p>
             <div className="flex gap-6 text-sm">
               {quickLinks.map((link, index) => (

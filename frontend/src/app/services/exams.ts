@@ -1,5 +1,5 @@
 import { apiClient } from './api';
-import { TestAttempt } from '../types/lms';
+import { TestAttempt, ExtraAttemptRequest } from '../types/lms';
 
 const examsService = {
   async startTestAttempt(testId: string): Promise<TestAttempt> {
@@ -74,6 +74,54 @@ const examsService = {
 
   async saveAnswer(attemptId: number, answerData: { question: string; selected_options?: string[]; answer_text?: string }): Promise<void> {
     return apiClient.post(`/exams/${attemptId}/save/`, { answers: { [answerData.question]: answerData.selected_options || answerData.answer_text } });
+  },
+
+  async saveAllAnswers(attemptId: number, answers: Record<string, any>): Promise<void> {
+    return apiClient.post(`/exams/${attemptId}/save/`, { answers });
+  },
+
+  // Extra Attempt Requests
+  async createExtraAttemptRequest(testId: string, reason: string): Promise<ExtraAttemptRequest> {
+    return apiClient.post<ExtraAttemptRequest>('/exams/extra-attempts/', {
+      test_id: Number(testId),
+      reason,
+    });
+  },
+
+  async getExtraAttemptRequests(params?: { status?: string }): Promise<ExtraAttemptRequest[]> {
+    const queryParams = new URLSearchParams();
+    if (params?.status) {
+      queryParams.append('status', params.status);
+    }
+    const queryString = queryParams.toString();
+    const url = `/exams/extra-attempts/${queryString ? '?' + queryString : ''}`;
+    const data = await apiClient.get<any>(url);
+    // Backend может возвращать массив или объект с results
+    if (Array.isArray(data)) {
+      return data;
+    }
+    if (data && Array.isArray(data.results)) {
+      return data.results;
+    }
+    return [];
+  },
+
+  async getExtraAttemptRequest(id: string): Promise<ExtraAttemptRequest> {
+    return apiClient.get<ExtraAttemptRequest>(`/exams/extra-attempts/${id}/`);
+  },
+
+  async approveExtraAttemptRequest(id: string, adminResponse?: string): Promise<ExtraAttemptRequest> {
+    const data: any = {};
+    if (adminResponse) {
+      data.admin_response = adminResponse;
+    }
+    return apiClient.post<ExtraAttemptRequest>(`/exams/extra-attempts/${id}/approve/`, data);
+  },
+
+  async rejectExtraAttemptRequest(id: string, adminResponse: string): Promise<ExtraAttemptRequest> {
+    return apiClient.post<ExtraAttemptRequest>(`/exams/extra-attempts/${id}/reject/`, {
+      admin_response: adminResponse,
+    });
   },
 };
 

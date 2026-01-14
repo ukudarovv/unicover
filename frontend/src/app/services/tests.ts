@@ -27,21 +27,47 @@ function convertQuestionToBackendFormat(question: Question): any {
       { text: question.correctAnswer || '', is_correct: true }
     ];
   } else if (question.type === 'single_choice' || question.type === 'multiple_choice') {
-    // Для single_choice и multiple_choice options - массив строк
-    // correctAnswer - строка или массив строк
-    const optionsArray = Array.isArray(question.options) 
-      ? question.options.filter((opt): opt is string => typeof opt === 'string')
-      : [];
+    // Для single_choice и multiple_choice options могут быть массивом строк или объектов
+    // correctAnswer - строка или массив строк (текст или id)
+    let optionsArray: Array<{ id?: string; text: string } | string> = [];
+    
+    if (Array.isArray(question.options)) {
+      // Проверяем, это массив строк или объектов
+      if (question.options.length > 0 && typeof question.options[0] === 'object' && question.options[0] !== null) {
+        // Это массив объектов с id и text
+        optionsArray = question.options as Array<{ id?: string; text: string }>;
+      } else {
+        // Это массив строк (старый формат для совместимости с редактором)
+        optionsArray = question.options.filter((opt): opt is string => typeof opt === 'string');
+      }
+    }
     
     const correctAnswers = Array.isArray(question.correctAnswer) 
       ? question.correctAnswer 
       : question.correctAnswer ? [question.correctAnswer] : [];
     
-    backendQuestion.options = optionsArray.map((opt: string, index: number) => ({
-      text: opt,
-      is_correct: correctAnswers.includes(opt),
-      id: `opt-${index}`
-    }));
+    // Преобразуем в формат backend: массив объектов {id, text, is_correct}
+    backendQuestion.options = optionsArray.map((opt: any, index: number) => {
+      // Если opt - объект, используем его поля
+      if (typeof opt === 'object' && opt !== null) {
+        const optText = opt.text || '';
+        const optId = opt.id || String(opt.id) || '';
+        // Проверяем, является ли этот вариант правильным ответом
+        const isCorrect = correctAnswers.includes(optText) || correctAnswers.includes(optId) || (opt.is_correct === true);
+        return {
+          text: optText,
+          is_correct: isCorrect,
+          id: optId || undefined
+        };
+      } else {
+        // Если opt - строка, используем её как текст
+        return {
+          text: opt,
+          is_correct: correctAnswers.includes(opt),
+          id: undefined // ID будет сгенерирован на backend
+        };
+      }
+    });
   } else {
     // Для других типов вопросов (matching, ordering) - пустой массив options
     backendQuestion.options = [];
@@ -73,13 +99,19 @@ function convertQuestionFromBackendFormat(question: any): Question {
     frontendQuestion.correctAnswer = correctOption?.text || '';
     frontendQuestion.options = undefined;
   } else if (question.type === 'single_choice' || question.type === 'multiple_choice') {
-    // Для single_choice и multiple_choice извлекаем options и correctAnswer
-    frontendQuestion.options = question.options?.map((opt: any) => opt.text) || [];
+    // Сохраняем опции как объекты с id и text (не преобразуем в строки)
+    frontendQuestion.options = question.options?.map((opt: any) => ({
+      id: opt.id ? String(opt.id) : '',
+      text: opt.text || '',
+      is_correct: opt.is_correct || false
+    })) || [];
+    
+    // Для correctAnswer используем id опций (для совместимости с редактором)
     const correctOptions = question.options?.filter((opt: any) => opt.is_correct) || [];
     if (question.type === 'single_choice') {
-      frontendQuestion.correctAnswer = correctOptions[0]?.text || '';
+      frontendQuestion.correctAnswer = correctOptions[0]?.id ? String(correctOptions[0].id) : '';
     } else {
-      frontendQuestion.correctAnswer = correctOptions.map((opt: any) => opt.text);
+      frontendQuestion.correctAnswer = correctOptions.map((opt: any) => opt.id ? String(opt.id) : '').filter(Boolean);
     }
   } else {
     // Для других типов вопросов (matching, ordering)

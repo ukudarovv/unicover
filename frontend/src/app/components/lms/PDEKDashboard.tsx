@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { FileText, CheckCircle, Clock, AlertTriangle, Phone } from 'lucide-react';
 import { Protocol } from '../../types/lms';
 import { SMSVerification } from './SMSVerification';
@@ -8,11 +9,13 @@ import { useUser } from '../../contexts/UserContext';
 import { toast } from 'sonner';
 
 export function PDEKDashboard() {
+  const { t, i18n } = useTranslation();
   const { user: currentUser } = useUser();
   const [selectedProtocol, setSelectedProtocol] = useState<Protocol | null>(null);
   const [showSMSModal, setShowSMSModal] = useState(false);
   const [protocolToSign, setProtocolToSign] = useState<Protocol | null>(null);
   const [loading, setLoading] = useState(false);
+  const [currentOTPCode, setCurrentOTPCode] = useState<string | null>(null);
 
   const isChairman = currentUser?.role === 'pdek_chairman';
   
@@ -25,20 +28,64 @@ export function PDEKDashboard() {
   );
 
   const signedProtocols = protocols.filter(p => {
-    if (!currentUser) return false;
-    const userSignature = p.signatures?.find(s => s.signer?.id === currentUser.id || s.userId === currentUser.id);
-    return userSignature?.otp_verified || userSignature?.otpVerified;
+    if (!currentUser || !currentUser.id) {
+      return false;
+    }
+    
+    const currentUserId = String(currentUser.id);
+    
+    // Проверяем, есть ли подпись текущего пользователя с otp_verified = true
+    const userSignature = p.signatures?.find(s => {
+      const signatureUserId = s.signer?.id ? String(s.signer.id) : s.userId ? String(s.userId) : null;
+      return signatureUserId === currentUserId;
+    });
+    
+    // Проверяем оба варианта названия поля (otp_verified и otpVerified)
+    const isVerified = userSignature && (userSignature.otp_verified === true || userSignature.otpVerified === true);
+    
+    if (isVerified) {
+      console.log('Found signed protocol:', p.number, 'by user:', currentUserId, 'signature:', userSignature);
+    }
+    
+    return !!isVerified;
+  });
+  
+  console.log('Protocols summary:', {
+    total: protocols.length,
+    pending: pendingProtocols.length,
+    signed: signedProtocols.length,
+    currentUserId: currentUser?.id,
+    protocols: protocols.map(p => ({
+      number: p.number,
+      signaturesCount: p.signatures?.length || 0,
+      signatures: p.signatures?.map(s => ({
+        userId: s.userId,
+        signerId: s.signer?.id,
+        otp_verified: s.otp_verified,
+        otpVerified: s.otpVerified,
+      })),
+    })),
   });
 
   const handleSignRequest = async (protocol: Protocol) => {
     try {
       setLoading(true);
-      await protocolsService.requestSignature(protocol.id);
+      const response = await protocolsService.requestSignature(protocol.id);
       setProtocolToSign(protocol);
       setShowSMSModal(true);
-      toast.success('OTP код отправлен на ваш телефон');
+      
+      // В режиме разработки показываем OTP код в консоли и в toast (если он есть в ответе)
+      if ((response as any).otp_code) {
+        const otpCode = (response as any).otp_code;
+        console.log('DEBUG: OTP code for testing:', otpCode);
+        setCurrentOTPCode(otpCode); // Сохраняем код для отображения в модальном окне
+        toast.info(t('lms.pdek.testCode', { code: otpCode }), { duration: 15000 });
+      } else {
+        setCurrentOTPCode(null);
+      toast.success(t('lms.pdek.otpSent'));
+      }
     } catch (error: any) {
-      toast.error(error.message || 'Ошибка при запросе подписи');
+      toast.error(error.message || t('lms.pdek.signRequestError'));
     } finally {
       setLoading(false);
     }
@@ -49,13 +96,19 @@ export function PDEKDashboard() {
 
     try {
       setLoading(true);
-      await protocolsService.signProtocol(protocolToSign.id, otp);
-      toast.success('Протокол успешно подписан');
+      const updatedProtocol = await protocolsService.signProtocol(protocolToSign.id, otp);
+      console.log('Protocol signed, updated protocol:', updatedProtocol);
+      console.log('Updated protocol signatures:', updatedProtocol.signatures);
+      setCurrentOTPCode(null); // Очищаем OTP код после успешной верификации
+      toast.success(t('lms.pdek.signSuccess'));
       setShowSMSModal(false);
       setProtocolToSign(null);
-      refetch(); // Обновляем список протоколов
+      // Обновляем список протоколов после небольшой задержки, чтобы бэкенд успел обновить данные
+      setTimeout(() => {
+        refetch(); // Обновляем список протоколов
+      }, 500);
     } catch (error: any) {
-      toast.error(error.message || 'Ошибка при подписании протокола');
+      toast.error(error.message || t('lms.pdek.signError'));
     } finally {
       setLoading(false);
     }
@@ -67,10 +120,10 @@ export function PDEKDashboard() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            {isChairman ? 'Председатель ПДЭК' : 'Член комиссии ПДЭК'}
+            {isChairman ? t('lms.pdek.chairman') : t('lms.pdek.member')}
           </h1>
           <p className="text-gray-600">
-            {currentUser.fullName || 'Комиссия по проверке и допуску к экзаменационным квалификациям'}
+            {t('lms.pdek.commissionDescription')}
           </p>
         </div>
 
@@ -83,7 +136,7 @@ export function PDEKDashboard() {
               </div>
               <span className="text-2xl font-bold text-orange-600">{pendingProtocols.length}</span>
             </div>
-            <h3 className="text-sm font-medium text-gray-600">Ожидают подписи</h3>
+            <h3 className="text-sm font-medium text-gray-600">{t('lms.pdek.pendingSignatures')}</h3>
           </div>
 
           <div className="bg-white rounded-lg shadow-md p-6">
@@ -93,7 +146,7 @@ export function PDEKDashboard() {
               </div>
               <span className="text-2xl font-bold text-green-600">{signedProtocols.length}</span>
             </div>
-            <h3 className="text-sm font-medium text-gray-600">Подписано мной</h3>
+            <h3 className="text-sm font-medium text-gray-600">{t('lms.pdek.signedByMe')}</h3>
           </div>
 
           <div className="bg-white rounded-lg shadow-md p-6">
@@ -105,14 +158,14 @@ export function PDEKDashboard() {
                 {pendingProtocols.length + signedProtocols.length}
               </span>
             </div>
-            <h3 className="text-sm font-medium text-gray-600">Всего протоколов</h3>
+            <h3 className="text-sm font-medium text-gray-600">{t('lms.pdek.totalProtocols')}</h3>
           </div>
         </div>
 
         {/* Pending Protocols */}
         {pendingProtocols.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Протоколы на подпись</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('lms.pdek.protocolsToSign')}</h2>
             <div className="space-y-4">
               {pendingProtocols.map(protocol => (
                 <div key={protocol.id} className="bg-white rounded-lg shadow-md border-l-4 border-orange-500">
@@ -120,34 +173,34 @@ export function PDEKDashboard() {
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-lg font-bold text-gray-900">Протокол №{protocol.number}</h3>
+                          <h3 className="text-lg font-bold text-gray-900">{t('lms.pdek.protocolNumber', { number: protocol.number })}</h3>
                           <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                             protocol.status === 'pending_pdek' 
                               ? 'bg-orange-100 text-orange-800'
                               : 'bg-blue-100 text-blue-800'
                           }`}>
-                            {protocol.status === 'pending_pdek' ? 'Ожидает подписи' : 'Подписан членами'}
+                            {protocol.status === 'pending_pdek' ? t('lms.pdek.pendingSignature') : t('lms.pdek.signedByMembers')}
                           </span>
                         </div>
                         <p className="text-gray-600 mb-2">{protocol.courseName}</p>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                           <div>
-                            <span className="text-gray-500">Слушатель:</span>
+                            <span className="text-gray-500">{t('lms.pdek.student')}</span>
                             <p className="font-medium text-gray-900">{protocol.userName}</p>
                           </div>
                           <div>
-                            <span className="text-gray-500">ИИН:</span>
+                            <span className="text-gray-500">{t('lms.pdek.iin')}</span>
                             <p className="font-medium text-gray-900">{protocol.userIIN}</p>
                           </div>
                           <div>
-                            <span className="text-gray-500">Дата экзамена:</span>
+                            <span className="text-gray-500">{t('lms.pdek.examDate')}</span>
                             <p className="font-medium text-gray-900">
                               {new Date(protocol.examDate).toLocaleDateString('ru-RU')}
                             </p>
                           </div>
                           <div>
-                            <span className="text-gray-500">Результат:</span>
-                            <p className="font-medium text-green-600">{protocol.score}% (сдал)</p>
+                            <span className="text-gray-500">{t('lms.pdek.result')}</span>
+                            <p className="font-medium text-green-600">{Number(protocol.score || 0).toFixed(2)}% ({t('lms.pdek.passed')})</p>
                           </div>
                         </div>
                       </div>
@@ -155,10 +208,10 @@ export function PDEKDashboard() {
 
                     {/* Signatures Status */}
                     <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                      <h4 className="text-sm font-semibold text-gray-700 mb-3">Статус подписей:</h4>
+                      <h4 className="text-sm font-semibold text-gray-700 mb-3">{t('lms.pdek.signatureStatus')}</h4>
                       <div className="space-y-2">
-                        {protocol.signatures.map(sig => (
-                          <div key={sig.userId} className="flex items-center justify-between">
+                        {protocol.signatures.map((sig, index) => (
+                          <div key={sig.userId || sig.id || `sig-${index}`} className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               {sig.otpVerified ? (
                                 <CheckCircle className="w-4 h-4 text-green-600" />
@@ -166,12 +219,12 @@ export function PDEKDashboard() {
                                 <Clock className="w-4 h-4 text-gray-400" />
                               )}
                               <span className="text-sm">
-                                {sig.userName} ({sig.role === 'chairman' ? 'Председатель' : 'Член комиссии'})
+                                {sig.userName} ({sig.role === 'chairman' ? t('lms.pdek.chairmanRole') : t('lms.pdek.memberRole')})
                               </span>
                             </div>
                             {sig.otpVerified && sig.signedAt && (
                               <span className="text-xs text-gray-500">
-                                {new Date(sig.signedAt).toLocaleString('ru-RU')}
+                                {new Date(sig.signedAt).toLocaleString(i18n.language)}
                               </span>
                             )}
                           </div>
@@ -181,18 +234,31 @@ export function PDEKDashboard() {
 
                     {/* Actions */}
                     <div className="flex gap-3">
-                      <button
-                        onClick={() => setSelectedProtocol(protocol)}
-                        className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                      >
-                        Подробнее
-                      </button>
+                    <button
+                      onClick={async () => {
+                        // Загружаем полные данные протокола при открытии модального окна
+                        try {
+                          console.log('Loading protocol details for:', protocol.id, 'current protocol data:', protocol);
+                          const fullProtocol = await protocolsService.getProtocol(protocol.id);
+                          console.log('Full protocol received:', fullProtocol);
+                          // Данные уже адаптированы в getProtocol, используем их напрямую
+                          setSelectedProtocol(fullProtocol);
+                        } catch (error) {
+                          console.error('Failed to load protocol details:', error);
+                          // Fallback к протоколу из списка
+                          setSelectedProtocol(protocol);
+                        }
+                      }}
+                      className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      {t('lms.pdek.details')}
+                    </button>
                       <button
                         onClick={() => handleSignRequest(protocol)}
                         className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
                       >
                         <Phone className="w-4 h-4" />
-                        Подписать (SMS)
+                        {t('lms.pdek.signSms')}
                       </button>
                     </div>
                   </div>
@@ -205,26 +271,39 @@ export function PDEKDashboard() {
         {/* Signed Protocols */}
         {signedProtocols.length > 0 && (
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Подписанные протоколы</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('lms.pdek.signedProtocols')}</h2>
             <div className="space-y-4">
               {signedProtocols.map(protocol => (
                 <div key={protocol.id} className="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-lg font-bold text-gray-900">Протокол №{protocol.number}</h3>
+                        <h3 className="text-lg font-bold text-gray-900">{t('lms.pdek.protocolNumber', { number: protocol.number })}</h3>
                         <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">
-                          Подписан
+                          {t('lms.pdek.signedStatus')}
                         </span>
                       </div>
                       <p className="text-gray-600 mb-2">{protocol.courseName}</p>
                       <p className="text-sm text-gray-500">{protocol.userName}</p>
                     </div>
                     <button
-                      onClick={() => setSelectedProtocol(protocol)}
+                      onClick={async () => {
+                        // Загружаем полные данные протокола при открытии модального окна
+                        try {
+                          console.log('Loading protocol details for:', protocol.id, 'current protocol data:', protocol);
+                          const fullProtocol = await protocolsService.getProtocol(protocol.id);
+                          console.log('Full protocol received:', fullProtocol);
+                          // Данные уже адаптированы в getProtocol, используем их напрямую
+                          setSelectedProtocol(fullProtocol);
+                        } catch (error) {
+                          console.error('Failed to load protocol details:', error);
+                          // Fallback к протоколу из списка
+                          setSelectedProtocol(protocol);
+                        }
+                      }}
                       className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                     >
-                      Просмотр
+                      {t('lms.pdek.viewProtocol')}
                     </button>
                   </div>
                 </div>
@@ -237,19 +316,25 @@ export function PDEKDashboard() {
         {pendingProtocols.length === 0 && signedProtocols.length === 0 && (
           <div className="bg-white rounded-lg shadow-md p-12 text-center">
             <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Нет протоколов</h3>
-            <p className="text-gray-600">Протоколы для подписи появятся здесь после сдачи экзаменов</p>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">{t('lms.pdek.noProtocols')}</h3>
+            <p className="text-gray-600">{t('lms.pdek.noProtocolsDescription')}</p>
           </div>
         )}
       </div>
 
       {/* Protocol Details Modal */}
-      {selectedProtocol && (
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-30 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      {selectedProtocol && (() => {
+        console.log('Rendering protocol modal with data:', selectedProtocol);
+        console.log('Protocol student data:', selectedProtocol.userName, selectedProtocol.userIIN, selectedProtocol.userPhone);
+        console.log('Protocol course data:', selectedProtocol.courseName);
+        console.log('Protocol exam date:', selectedProtocol.examDate);
+        console.log('Protocol passing score:', selectedProtocol.passingScore);
+        return (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg shadow-2xl ring-4 ring-white ring-opacity-50 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-900">Протокол №{selectedProtocol.number}</h2>
+                <h2 className="text-2xl font-bold text-gray-900">{t('lms.pdek.protocolNumber', { number: selectedProtocol.number })}</h2>
                 <button
                   onClick={() => setSelectedProtocol(null)}
                   className="text-gray-400 hover:text-gray-600"
@@ -262,66 +347,70 @@ export function PDEKDashboard() {
             <div className="p-6 space-y-6">
               {/* Student Info */}
               <div>
-                <h3 className="font-bold text-gray-900 mb-3">Информация о слушателе</h3>
+                <h3 className="font-bold text-gray-900 mb-3">{t('lms.pdek.studentInfo')}</h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="text-gray-500">ФИО:</span>
-                    <p className="font-medium">{selectedProtocol.userName}</p>
+                    <span className="text-gray-500">{t('lms.pdek.fullName')}:</span>
+                    <p className="font-medium">{selectedProtocol.userName || t('lms.pdek.notSpecified')}</p>
                   </div>
                   <div>
-                    <span className="text-gray-500">ИИН:</span>
-                    <p className="font-medium">{selectedProtocol.userIIN}</p>
+                    <span className="text-gray-500">{t('lms.pdek.iin')}:</span>
+                    <p className="font-medium">{selectedProtocol.userIIN || t('lms.pdek.notSpecified')}</p>
                   </div>
                   <div>
-                    <span className="text-gray-500">Телефон:</span>
-                    <p className="font-medium">{selectedProtocol.userPhone}</p>
+                    <span className="text-gray-500">{t('lms.pdek.phone')}:</span>
+                    <p className="font-medium">{selectedProtocol.userPhone || t('lms.pdek.notSpecified')}</p>
                   </div>
                 </div>
               </div>
 
               {/* Course Info */}
               <div>
-                <h3 className="font-bold text-gray-900 mb-3">Информация об экзамене</h3>
+                <h3 className="font-bold text-gray-900 mb-3">{t('lms.pdek.examInfo')}</h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="text-gray-500">Курс:</span>
-                    <p className="font-medium">{selectedProtocol.courseName}</p>
+                    <span className="text-gray-500">{t('lms.pdek.course')}:</span>
+                    <p className="font-medium">{selectedProtocol.courseName || t('lms.pdek.notSpecified')}</p>
                   </div>
                   <div>
-                    <span className="text-gray-500">Дата экзамена:</span>
+                    <span className="text-gray-500">{t('lms.pdek.examDate')}:</span>
                     <p className="font-medium">
-                      {new Date(selectedProtocol.examDate).toLocaleString('ru-RU')}
+                      {selectedProtocol.examDate && !isNaN(new Date(selectedProtocol.examDate).getTime())
+                        ? new Date(selectedProtocol.examDate).toLocaleString(i18n.language)
+                        : t('lms.pdek.notSpecified')}
                     </p>
                   </div>
                   <div>
-                    <span className="text-gray-500">Балл:</span>
-                    <p className="font-medium text-green-600">{selectedProtocol.score}%</p>
+                    <span className="text-gray-500">{t('lms.pdek.score')}:</span>
+                    <p className="font-medium text-green-600">{Number(selectedProtocol.score || 0).toFixed(2)}%</p>
                   </div>
                   <div>
-                    <span className="text-gray-500">Проходной балл:</span>
-                    <p className="font-medium">{selectedProtocol.passingScore}%</p>
+                    <span className="text-gray-500">{t('lms.pdek.passingScore')}:</span>
+                    <p className="font-medium">
+                      {selectedProtocol.passingScore != null && selectedProtocol.passingScore !== undefined
+                        ? `${selectedProtocol.passingScore}%`
+                        : t('lms.pdek.notSpecified')}
+                    </p>
                   </div>
                   <div>
-                    <span className="text-gray-500">Результат:</span>
-                    <p className="font-medium text-green-600">Сдал</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">ID попытки:</span>
-                    <p className="font-medium font-mono text-xs">{selectedProtocol.attemptId}</p>
+                    <span className="text-gray-500">{t('lms.pdek.result')}:</span>
+                    <p className="font-medium text-green-600">
+                      {selectedProtocol.result === 'passed' ? t('lms.pdek.passed') : selectedProtocol.result === 'failed' ? t('lms.pdek.failed') : t('lms.pdek.notSpecified')}
+                    </p>
                   </div>
                 </div>
               </div>
 
               {/* Signatures */}
               <div>
-                <h3 className="font-bold text-gray-900 mb-3">Подписи комиссии ПДЭК</h3>
+                <h3 className="font-bold text-gray-900 mb-3">{t('lms.pdek.pdekSignatures')}</h3>
                 <div className="space-y-3">
-                  {selectedProtocol.signatures.map(sig => (
-                    <div key={sig.userId} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  {selectedProtocol.signatures.map((sig, index) => (
+                    <div key={sig.userId || sig.id || `sig-${index}`} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                       <div>
                         <p className="font-medium">{sig.userName}</p>
                         <p className="text-sm text-gray-600">
-                          {sig.role === 'chairman' ? 'Председатель комиссии' : 'Член комиссии'}
+                          {sig.role === 'chairman' ? t('lms.pdek.chairmanRole') : t('lms.pdek.memberRole')}
                         </p>
                         <p className="text-xs text-gray-500 mt-1">{sig.phone}</p>
                       </div>
@@ -330,13 +419,13 @@ export function PDEKDashboard() {
                           <>
                             <CheckCircle className="w-6 h-6 text-green-600 ml-auto mb-1" />
                             <p className="text-xs text-gray-500">
-                              {new Date(sig.signedAt).toLocaleString('ru-RU')}
+                              {new Date(sig.signedAt).toLocaleString(i18n.language)}
                             </p>
                           </>
                         ) : (
                           <>
                             <Clock className="w-6 h-6 text-gray-400 ml-auto mb-1" />
-                            <p className="text-xs text-gray-500">Ожидает подписи</p>
+                            <p className="text-xs text-gray-500">{t('lms.pdek.awaitingSignatureStatus')}</p>
                           </>
                         )}
                       </div>
@@ -351,7 +440,7 @@ export function PDEKDashboard() {
                 onClick={() => setSelectedProtocol(null)}
                 className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                Закрыть
+                {t('common.close')}
               </button>
               <button
                 onClick={() => {
@@ -361,24 +450,40 @@ export function PDEKDashboard() {
                 className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
                 <Phone className="w-4 h-4" />
-                Подписать
+                {t('lms.pdek.signSms')}
               </button>
             </div>
           </div>
         </div>
-      )}
+        );
+      })()}
 
       {/* SMS Verification Modal */}
       {showSMSModal && protocolToSign && (
         <SMSVerification
-          phone={currentUser.phone}
+          phone={currentUser?.phone || ''}
           onVerified={handleSMSVerified}
           onCancel={() => {
             setShowSMSModal(false);
             setProtocolToSign(null);
+            setCurrentOTPCode(null);
           }}
-          title={`Подписание протокола №${protocolToSign.number}`}
-          description="Для подтверждения вашей подписи введите код из SMS"
+          title={t('lms.pdek.protocolNumber', { number: protocolToSign.number })}
+          description={t('lms.pdek.otpDescription')}
+          otpCode={currentOTPCode || undefined}
+          purpose="protocol_sign"
+          onResend={async () => {
+            if (protocolToSign) {
+              const response = await protocolsService.requestSignature(protocolToSign.id);
+              if ((response as any).otp_code) {
+                setCurrentOTPCode((response as any).otp_code);
+                toast.info(t('lms.pdek.testCode', { code: (response as any).otp_code }), { duration: 15000 });
+              } else {
+                setCurrentOTPCode(null);
+                toast.success(t('lms.pdek.otpSent'));
+              }
+            }
+          }}
         />
       )}
     </div>

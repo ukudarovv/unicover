@@ -4,11 +4,14 @@ from rest_framework.response import Response
 from django.utils import timezone
 from django.db.models import Count, Q
 
-from .models import TestAttempt
+from .models import TestAttempt, ExtraAttemptRequest
 from .serializers import (
     TestAttemptSerializer,
     TestAttemptCreateSerializer,
     TestAttemptSaveSerializer,
+    ExtraAttemptRequestSerializer,
+    ExtraAttemptRequestCreateSerializer,
+    ExtraAttemptRequestProcessSerializer,
 )
 from apps.tests.models import Test
 from apps.accounts.permissions import IsAdminOrReadOnly
@@ -43,15 +46,24 @@ class TestAttemptViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND
             )
         
-        # Check max attempts
+        # Check max attempts (including approved extra attempts)
         user_attempts = TestAttempt.objects.filter(
             user=request.user,
             test=test
         ).count()
         
-        if user_attempts >= test.max_attempts:
+        # Count approved extra attempt requests
+        approved_extra_attempts = ExtraAttemptRequest.objects.filter(
+            user=request.user,
+            test=test,
+            status='approved'
+        ).count()
+        
+        max_allowed = test.max_attempts + approved_extra_attempts
+        
+        if user_attempts >= max_allowed:
             return Response(
-                {'error': f'Maximum attempts ({test.max_attempts}) reached'},
+                {'error': f'Maximum attempts ({max_allowed}) reached'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
@@ -90,8 +102,10 @@ class TestAttemptViewSet(viewsets.ModelViewSet):
         serializer = TestAttemptSaveSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
-        # Update answers
-        attempt.answers = serializer.validated_data['answers']
+        # Update answers - объединяем с существующими ответами
+        if not attempt.answers:
+            attempt.answers = {}
+        attempt.answers.update(serializer.validated_data['answers'])
         attempt.save()
         
         return Response(
@@ -192,4 +206,178 @@ class TestAttemptViewSet(viewsets.ModelViewSet):
         else:
             ip = request.META.get('REMOTE_ADDR')
         return ip
+
+
+class ExtraAttemptRequestViewSet(viewsets.ModelViewSet):
+    """Extra attempt request ViewSet"""
+    queryset = ExtraAttemptRequest.objects.select_related('user', 'test', 'processed_by').all()
+    serializer_class = ExtraAttemptRequestSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        """Filter requests by user unless admin"""
+        queryset = super().get_queryset()
+        if not self.request.user.is_admin:
+            queryset = queryset.filter(user=self.request.user)
+        else:
+            # Admin can filter by status
+            status_filter = self.request.query_params.get('status')
+            if status_filter:
+                queryset = queryset.filter(status=status_filter)
+        return queryset
+    
+    def get_serializer_class(self):
+        """Return appropriate serializer class"""
+        if self.action == 'create':
+            return ExtraAttemptRequestCreateSerializer
+        elif self.action in ['approve', 'reject']:
+            return ExtraAttemptRequestProcessSerializer
+        return ExtraAttemptRequestSerializer
+    
+    def create(self, request):
+        """Create a new extra attempt request"""
+        serializer = ExtraAttemptRequestCreateSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(
+                {'error': 'Неверные данные запроса', 'details': serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        test_id = serializer.validated_data['test_id']
+        reason = serializer.validated_data['reason']
+        
+        try:
+            test = Test.objects.get(id=test_id)
+        except Test.DoesNotExist:
+            return Response(
+                {'error': 'Тест не найден'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Check if max attempts actually reached
+        user_attempts = TestAttempt.objects.filter(
+            user=request.user,
+            test=test
+        ).count()
+        
+        approved_extra_attempts = ExtraAttemptRequest.objects.filter(
+            user=request.user,
+            test=test,
+            status='approved'
+        ).count()
+        
+        max_allowed = test.max_attempts + approved_extra_attempts
+        
+        if user_attempts < max_allowed:
+            return Response(
+                {'error': f'У вас еще есть доступные попытки ({user_attempts} из {max_allowed} использовано)'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Create request
+        extra_request = ExtraAttemptRequest.objects.create(
+            user=request.user,
+            test=test,
+            reason=reason,
+            status='pending'
+        )
+        
+        # Create notification for admin
+        from apps.notifications.models import Notification
+        from apps.accounts.models import User
+        admins = User.objects.filter(role='admin', is_active=True)
+        for admin in admins:
+            Notification.objects.create(
+                user=admin,
+                type='extra_attempt_request',
+                title='Новый запрос на дополнительные попытки',
+                message=f'Студент {request.user.full_name or request.user.phone} запросил дополнительные попытки для теста "{test.title}"'
+            )
+        
+        return Response(
+            ExtraAttemptRequestSerializer(extra_request).data,
+            status=status.HTTP_201_CREATED
+        )
+    
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
+    def approve(self, request, pk=None):
+        """Approve extra attempt request (admin only)"""
+        if not request.user.is_admin:
+            return Response(
+                {'error': 'Permission denied'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        extra_request = self.get_object()
+        
+        if extra_request.status != 'pending':
+            return Response(
+                {'error': f'Request is already {extra_request.get_status_display()}'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Approve request
+        extra_request.status = 'approved'
+        extra_request.processed_by = request.user
+        extra_request.processed_at = timezone.now()
+        if request.data.get('admin_response'):
+            extra_request.admin_response = request.data['admin_response']
+        extra_request.save()
+        
+        # Create notification for student
+        from apps.notifications.models import Notification
+        Notification.objects.create(
+            user=extra_request.user,
+            type='extra_attempt_approved',
+            title='Запрос на дополнительные попытки одобрен',
+            message=f'Ваш запрос на дополнительные попытки для теста "{extra_request.test.title}" был одобрен.'
+        )
+        
+        return Response(
+            ExtraAttemptRequestSerializer(extra_request).data,
+            status=status.HTTP_200_OK
+        )
+    
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
+    def reject(self, request, pk=None):
+        """Reject extra attempt request (admin only)"""
+        if not request.user.is_admin:
+            return Response(
+                {'error': 'Permission denied'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        extra_request = self.get_object()
+        
+        if extra_request.status != 'pending':
+            return Response(
+                {'error': f'Request is already {extra_request.get_status_display()}'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        serializer = ExtraAttemptRequestProcessSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        # Reject request
+        extra_request.status = 'rejected'
+        extra_request.processed_by = request.user
+        extra_request.processed_at = timezone.now()
+        extra_request.admin_response = serializer.validated_data.get('admin_response', '')
+        extra_request.save()
+        
+        # Create notification for student
+        from apps.notifications.models import Notification
+        Notification.objects.create(
+            user=extra_request.user,
+            type='extra_attempt_rejected',
+            title='Запрос на дополнительные попытки отклонен',
+            message=f'Ваш запрос на дополнительные попытки для теста "{extra_request.test.title}" был отклонен.' + (
+                f' Причина: {extra_request.admin_response}' if extra_request.admin_response else ''
+            )
+        )
+        
+        return Response(
+            ExtraAttemptRequestSerializer(extra_request).data,
+            status=status.HTTP_200_OK
+        )
 

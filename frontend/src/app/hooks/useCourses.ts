@@ -7,6 +7,7 @@ export function useCourses(params?: {
   status?: string; 
   category?: string; 
   search?: string;
+  language?: string;
   page?: number;
   page_size?: number;
 }) {
@@ -39,7 +40,7 @@ export function useCourses(params?: {
     } finally {
       setLoading(false);
     }
-  }, [params?.status, params?.category, params?.search, params?.page, params?.page_size]);
+  }, [params?.status, params?.category, params?.search, params?.language, params?.page, params?.page_size]);
 
   useEffect(() => {
     fetchCourses();

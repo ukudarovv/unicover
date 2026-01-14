@@ -4,11 +4,14 @@ import { ConstructionPage } from './pages/ConstructionPage';
 import { ConstructionAboutPage } from './pages/ConstructionAboutPage';
 import { ConstructionLicensesPage } from './pages/ConstructionLicensesPage';
 import { VacanciesPage } from './pages/VacanciesPage';
+import { VacancyDetailPage } from './pages/VacancyDetailPage';
 import { EducationPage } from './pages/EducationPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { ContactsPage } from './pages/ContactsPage';
+import { ProjectsPage } from './pages/ProjectsPage';
+import { ProjectDetailPage } from './pages/ProjectDetailPage';
 import { StudentDashboardPage } from './pages/StudentDashboardPage';
 import { StudentCoursesPage } from './pages/StudentCoursesPage';
 import { StudentHistoryPage } from './pages/StudentHistoryPage';
@@ -19,6 +22,11 @@ import { TestPage } from './pages/TestPage';
 import { CoursePage } from './pages/CoursePage';
 import { DocumentsPage } from './pages/DocumentsPage';
 import { AdminDashboardPage } from './pages/AdminDashboardPage';
+import { AdminCertificatesPage } from './pages/AdminCertificatesPage';
+import { EditTestPage } from './pages/EditTestPage';
+import { CreateTestPage } from './pages/CreateTestPage';
+import { EditCoursePage } from './pages/EditCoursePage';
+import { VerifyCertificatePage } from './pages/VerifyCertificatePage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 export default function App() {
@@ -31,10 +39,14 @@ export default function App() {
         <Route path="/construction/about" element={<ConstructionAboutPage />} />
         <Route path="/construction/licenses" element={<ConstructionLicensesPage />} />
         <Route path="/construction/vacancies" element={<VacanciesPage />} />
+        <Route path="/construction/vacancies/:id" element={<VacancyDetailPage />} />
         <Route path="/education" element={<EducationPage />} />
+        <Route path="/projects" element={<ProjectsPage />} />
+        <Route path="/projects/:id" element={<ProjectDetailPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/contacts" element={<ContactsPage />} />
+        <Route path="/verify/:certificateNumber?" element={<VerifyCertificatePage />} />
         
         {/* Protected Routes */}
         <Route path="/dashboard" element={
@@ -96,6 +108,26 @@ export default function App() {
         <Route path="/admin/dashboard" element={
           <ProtectedRoute requiredRole="admin">
             <AdminDashboardPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/certificates" element={
+          <ProtectedRoute requiredRole="admin">
+            <AdminCertificatesPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/tests/new" element={
+          <ProtectedRoute requiredRole="admin">
+            <CreateTestPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/tests/:testId/edit" element={
+          <ProtectedRoute requiredRole="admin">
+            <EditTestPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/courses/:courseId/edit" element={
+          <ProtectedRoute requiredRole="admin">
+            <EditCoursePage />
           </ProtectedRoute>
         } />
       </Routes>

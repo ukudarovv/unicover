@@ -11,15 +11,22 @@ from io import BytesIO
 from django.http import HttpResponse
 from django.db.models import Q
 
-from .models import User
+from .models import User, SMSVerificationCode
 from .serializers import (
     UserSerializer,
     UserCreateSerializer,
     UserUpdateSerializer,
     LoginSerializer,
     TokenSerializer,
+    SendSMSVerificationSerializer,
+    VerifySMSSerializer,
 )
 from .permissions import IsAdminOrReadOnly, IsAdmin
+from .sms_service import sms_service
+from django.conf import settings
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class LoginView(APIView):
@@ -209,4 +216,125 @@ class UserViewSet(viewsets.ModelViewSet):
             }, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SendSMSVerificationView(APIView):
+    """Send SMS verification code"""
+    permission_classes = [permissions.AllowAny]
+    
+    def post(self, request):
+        """Send SMS verification code"""
+        serializer = SendSMSVerificationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        phone = serializer.validated_data['phone']
+        purpose = serializer.validated_data['purpose']
+        
+        # Normalize phone number
+        normalized_phone = ''.join(filter(str.isdigit, str(phone)))
+        if normalized_phone.startswith('8'):
+            normalized_phone = '7' + normalized_phone[1:]
+        if not normalized_phone.startswith('7'):
+            normalized_phone = '7' + normalized_phone
+        
+        try:
+            # Generate verification code
+            verification_code = SMSVerificationCode.generate_code(normalized_phone, purpose)
+            
+            # Send SMS via SMSC.kz
+            sms_result = sms_service.send_verification_code(
+                normalized_phone,
+                verification_code.code,
+                purpose
+            )
+            
+            if not sms_result['success']:
+                logger.error(f"Failed to send SMS to {normalized_phone}: {sms_result.get('error')}")
+                return Response(
+                    {
+                        'error': sms_result.get('error', 'Failed to send SMS'),
+                        'message': sms_result.get('message', 'SMS sending failed')
+                    },
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+            
+            response_data = {
+                'message': 'SMS verification code sent successfully',
+                'expires_at': verification_code.expires_at.isoformat(),
+            }
+            
+            # In development mode (when SMSC credentials not configured), return OTP code
+            is_smsc_configured = (
+                hasattr(settings, 'SMSC_LOGIN') and 
+                settings.SMSC_LOGIN and 
+                hasattr(settings, 'SMSC_PASSWORD') and 
+                settings.SMSC_PASSWORD
+            )
+            
+            if not is_smsc_configured:
+                response_data['otp_code'] = verification_code.code
+                response_data['debug'] = True
+            
+            return Response(response_data, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            logger.error(f"Error sending SMS verification code: {str(e)}")
+            return Response(
+                {'error': 'Failed to send verification code', 'detail': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class VerifySMSView(APIView):
+    """Verify SMS code"""
+    permission_classes = [permissions.AllowAny]
+    
+    def post(self, request):
+        """Verify SMS code"""
+        serializer = VerifySMSSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        phone = serializer.validated_data['phone']
+        code = serializer.validated_data['code']
+        purpose = serializer.validated_data['purpose']
+        
+        # Normalize phone number
+        normalized_phone = ''.join(filter(str.isdigit, str(phone)))
+        if normalized_phone.startswith('8'):
+            normalized_phone = '7' + normalized_phone[1:]
+        if not normalized_phone.startswith('7'):
+            normalized_phone = '7' + normalized_phone
+        
+        try:
+            # Find the most recent unverified code for this phone and purpose
+            verification_code = SMSVerificationCode.objects.filter(
+                phone=normalized_phone,
+                purpose=purpose,
+                is_verified=False
+            ).order_by('-created_at').first()
+            
+            if not verification_code:
+                return Response(
+                    {'verified': False, 'error': 'Verification code not found or already used'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Verify the code
+            if verification_code.verify(code):
+                return Response(
+                    {'verified': True, 'message': 'Code verified successfully'},
+                    status=status.HTTP_200_OK
+                )
+            else:
+                return Response(
+                    {'verified': False, 'error': 'Invalid or expired code'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+                
+        except Exception as e:
+            logger.error(f"Error verifying SMS code: {str(e)}")
+            return Response(
+                {'verified': False, 'error': 'Verification failed', 'detail': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 

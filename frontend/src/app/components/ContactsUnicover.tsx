@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { MapPin, Phone, Mail, Clock, Building2, CheckCircle, AlertCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { GoogleMap } from './GoogleMap';
 import { contactsService, ContactMessageCreate } from '../services/contacts';
 import { toast } from 'sonner';
 
 export function ContactsUnicover() {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<ContactMessageCreate>({
     name: '',
     company: '',
@@ -38,7 +40,7 @@ export function ContactsUnicover() {
       }
 
       await contactsService.createMessage(dataToSend);
-      toast.success('Ваше сообщение успешно отправлено! Мы свяжемся с вами в ближайшее время.');
+      toast.success(t('homepage.contacts.form.successMessage'));
       setSubmitted(true);
       
       // Очищаем форму
@@ -56,7 +58,7 @@ export function ContactsUnicover() {
         setSubmitted(false);
       }, 3000);
     } catch (error: any) {
-      toast.error(error.message || 'Ошибка при отправке сообщения. Попробуйте еще раз.');
+      toast.error(error.message || t('homepage.contacts.form.errorMessage'));
       console.error('Failed to send contact message:', error);
     } finally {
       setLoading(false);
@@ -68,13 +70,13 @@ export function ContactsUnicover() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <div className="inline-block bg-blue-100 text-blue-600 px-4 py-2 rounded-full mb-4">
-            Контакты
+            {t('homepage.contacts.badge')}
           </div>
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Свяжитесь с нами
+            {t('homepage.contacts.title')}
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Мы готовы ответить на ваши вопросы и обсудить возможности сотрудничества
+            {t('homepage.contacts.description')}
           </p>
         </div>
 
@@ -82,15 +84,15 @@ export function ContactsUnicover() {
           {/* Contact Info */}
           <div>
             <div className="grid sm:grid-cols-2 gap-6 mb-8">
-              {contactInfo.map((item, index) => {
+              {getContactInfo(t).map((item, index) => {
                 const Icon = item.icon;
                 return (
                   <div key={index} className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                     <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center mb-4">
                       <Icon className="w-6 h-6" />
                     </div>
-                    <h3 className="font-bold text-gray-900 mb-2">{item.title}</h3>
-                    <p className="text-gray-600 whitespace-pre-line text-sm">{item.content}</p>
+                    <h3 className="font-bold text-gray-900 mb-2">{t(item.titleKey)}</h3>
+                    <p className="text-gray-600 whitespace-pre-line text-sm">{t(item.contentKey, item.contentParams)}</p>
                   </div>
                 );
               })}
@@ -98,7 +100,7 @@ export function ContactsUnicover() {
 
             {/* Google Maps */}
             <GoogleMap 
-              address="г. Атырау, ул. Студенческий 25, БЦ Bayterek Plaza"
+              address={t('homepage.contacts.info.address.content')}
               latitude={47.1}
               longitude={51.9}
               height="256px"
@@ -106,31 +108,31 @@ export function ContactsUnicover() {
 
             {/* Company Details */}
             <div className="mt-6 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-              <h3 className="font-bold text-gray-900 mb-4">Реквизиты компании</h3>
+              <h3 className="font-bold text-gray-900 mb-4">{t('homepage.contacts.companyDetails.title')}</h3>
               <div className="space-y-2 text-sm text-gray-600">
-                <p><strong>Полное название:</strong> ТОО "UNICOVER"</p>
-                <p><strong>БИН:</strong> 100240007639</p>
-                <p><strong>Юридический адрес:</strong> г. Атырау, ул. Студенческий 25, БЦ Bayterek Plaza, 5 этаж</p>
-                <p><strong>Email:</strong> info@unicover.kz</p>
+                <p><strong>{t('homepage.contacts.companyDetails.fullName')}:</strong> {t('homepage.contacts.companyDetails.fullNameValue')}</p>
+                <p><strong>{t('homepage.contacts.companyDetails.bin')}:</strong> {t('homepage.contacts.companyDetails.binValue')}</p>
+                <p><strong>{t('homepage.contacts.companyDetails.legalAddress')}:</strong> {t('homepage.contacts.companyDetails.legalAddressValue')}</p>
+                <p><strong>{t('homepage.contacts.companyDetails.email')}:</strong> {t('homepage.contacts.companyDetails.emailValue')}</p>
               </div>
             </div>
           </div>
 
           {/* Contact Form */}
           <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200">
-            <h3 className="text-2xl font-bold text-gray-900 mb-6">Отправить запрос</h3>
+            <h3 className="text-2xl font-bold text-gray-900 mb-6">{t('homepage.contacts.form.title')}</h3>
             
             {submitted ? (
               <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
                 <CheckCircle className="w-12 h-12 text-green-600 mx-auto mb-4" />
-                <h4 className="text-lg font-semibold text-green-900 mb-2">Спасибо за ваше сообщение!</h4>
-                <p className="text-green-700">Мы свяжемся с вами в ближайшее время.</p>
+                <h4 className="text-lg font-semibold text-green-900 mb-2">{t('homepage.contacts.form.thankYou')}</h4>
+                <p className="text-green-700">{t('homepage.contacts.form.contactSoon')}</p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                   <label htmlFor="contact-name" className="block text-sm font-medium text-gray-700 mb-2">
-                    Ваше имя *
+                    {t('homepage.contacts.form.name')} *
                   </label>
                   <input
                     type="text"
@@ -139,14 +141,14 @@ export function ContactsUnicover() {
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
-                    placeholder="Введите ваше имя"
+                    placeholder={t('homepage.contacts.form.namePlaceholder')}
                     disabled={loading}
                   />
                 </div>
 
                 <div>
                   <label htmlFor="contact-company" className="block text-sm font-medium text-gray-700 mb-2">
-                    Компания
+                    {t('homepage.contacts.form.company')}
                   </label>
                   <input
                     type="text"
@@ -154,7 +156,7 @@ export function ContactsUnicover() {
                     value={formData.company || ''}
                     onChange={(e) => setFormData({ ...formData, company: e.target.value })}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
-                    placeholder="Название вашей компании"
+                    placeholder={t('homepage.contacts.form.companyPlaceholder')}
                     disabled={loading}
                   />
                 </div>
@@ -162,7 +164,7 @@ export function ContactsUnicover() {
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="contact-email" className="block text-sm font-medium text-gray-700 mb-2">
-                      Email *
+                      {t('homepage.contacts.form.email')} *
                     </label>
                     <input
                       type="email"
@@ -171,14 +173,14 @@ export function ContactsUnicover() {
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
-                      placeholder="your@email.com"
+                      placeholder={t('homepage.contacts.form.emailPlaceholder')}
                       disabled={loading}
                     />
                   </div>
 
                   <div>
                     <label htmlFor="contact-phone" className="block text-sm font-medium text-gray-700 mb-2">
-                      Телефон *
+                      {t('homepage.contacts.form.phone')} *
                     </label>
                     <input
                       type="tel"
@@ -187,7 +189,7 @@ export function ContactsUnicover() {
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
-                      placeholder="+7 (___) ___-____"
+                      placeholder={t('homepage.contacts.form.phonePlaceholder')}
                       disabled={loading}
                     />
                   </div>
@@ -195,7 +197,7 @@ export function ContactsUnicover() {
 
                 <div>
                   <label htmlFor="contact-direction" className="block text-sm font-medium text-gray-700 mb-2">
-                    Интересующее направление
+                    {t('homepage.contacts.form.direction')}
                   </label>
                   <select
                     id="contact-direction"
@@ -204,18 +206,18 @@ export function ContactsUnicover() {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
                     disabled={loading}
                   >
-                    <option value="">Выберите направление</option>
-                    <option value="construction">Строительство и проектирование</option>
-                    <option value="engineering">Инженерные изыскания</option>
-                    <option value="education">Обучение</option>
-                    <option value="safety">Промышленная безопасность</option>
-                    <option value="other">Другое</option>
+                    <option value="">{t('homepage.contacts.form.directionPlaceholder')}</option>
+                    <option value="construction">{t('homepage.contacts.form.directions.construction')}</option>
+                    <option value="engineering">{t('homepage.contacts.form.directions.engineering')}</option>
+                    <option value="education">{t('homepage.contacts.form.directions.education')}</option>
+                    <option value="safety">{t('homepage.contacts.form.directions.safety')}</option>
+                    <option value="other">{t('homepage.contacts.form.directions.other')}</option>
                   </select>
                 </div>
 
                 <div>
                   <label htmlFor="contact-message" className="block text-sm font-medium text-gray-700 mb-2">
-                    Сообщение *
+                    {t('homepage.contacts.form.message')} *
                   </label>
                   <textarea
                     id="contact-message"
@@ -224,7 +226,7 @@ export function ContactsUnicover() {
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all resize-none"
-                    placeholder="Опишите ваш запрос подробнее..."
+                    placeholder={t('homepage.contacts.form.messagePlaceholder')}
                     disabled={loading}
                   />
                 </div>
@@ -234,11 +236,11 @@ export function ContactsUnicover() {
                   disabled={loading}
                   className="w-full bg-blue-600 text-white px-8 py-4 rounded-lg font-medium hover:bg-blue-700 transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading ? 'Отправка...' : 'Отправить запрос'}
+                  {loading ? t('homepage.contacts.form.sending') : t('homepage.contacts.form.submit')}
                 </button>
 
                 <p className="text-sm text-gray-500 text-center">
-                  * Обязательные поля для заполнения
+                  * {t('homepage.contacts.form.requiredFields')}
                 </p>
               </form>
             )}
@@ -249,30 +251,37 @@ export function ContactsUnicover() {
   );
 }
 
-const contactInfo = [
-  {
-    icon: Building2,
-    title: 'БИН',
-    content: '100240007639',
-  },
-  {
-    icon: MapPin,
-    title: 'Адрес',
-    content: 'г.Атырау, ул. Студенческий 25\nБЦ Bayterek Plaza, 5 этаж',
-  },
-  {
-    icon: Phone,
-    title: 'Телефоны',
-    content: '+7 (7122) 20-80-92\n+7 708 420-80-92',
-  },
-  {
-    icon: Mail,
-    title: 'Email',
-    content: 'info@unicover.kz',
-  },
-  {
-    icon: Clock,
-    title: 'Режим работы',
-    content: 'Пн-Пт: 9:00 - 18:00\nСб-Вс: Выходной',
-  },
-];
+function getContactInfo(t: (key: string) => string) {
+  return [
+    {
+      icon: Building2,
+      titleKey: 'homepage.contacts.info.bin.title',
+      contentKey: 'homepage.contacts.info.bin.content',
+      contentParams: {},
+    },
+    {
+      icon: MapPin,
+      titleKey: 'homepage.contacts.info.address.title',
+      contentKey: 'homepage.contacts.info.address.content',
+      contentParams: {},
+    },
+    {
+      icon: Phone,
+      titleKey: 'homepage.contacts.info.phone.title',
+      contentKey: 'homepage.contacts.info.phone.content',
+      contentParams: {},
+    },
+    {
+      icon: Mail,
+      titleKey: 'homepage.contacts.info.email.title',
+      contentKey: 'homepage.contacts.info.email.content',
+      contentParams: {},
+    },
+    {
+      icon: Clock,
+      titleKey: 'homepage.contacts.info.workingHours.title',
+      contentKey: 'homepage.contacts.info.workingHours.content',
+      contentParams: {},
+    },
+  ];
+}

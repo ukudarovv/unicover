@@ -1,4 +1,4 @@
-from rest_framework import status
+from rest_framework import status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import viewsets
@@ -15,13 +15,26 @@ from .serializers import NotificationSerializer
 class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
     """Notification ViewSet"""
     serializer_class = NotificationSerializer
-    permission_classes = [IsAdmin]
+    permission_classes = [permissions.IsAuthenticated]
     
     def get_queryset(self):
         """Get notifications for current user"""
+        queryset = Notification.objects.filter(user=self.request.user)
+        
+        # Apply read filter if provided
+        read_filter = self.request.query_params.get('read')
+        if read_filter is not None:
+            read_value = read_filter.lower() == 'true'
+            queryset = queryset.filter(read=read_value)
+        
+        # Admins can see all notifications
         if self.request.user.is_admin:
-            return Notification.objects.all()
-        return Notification.objects.filter(user=self.request.user)
+            queryset = Notification.objects.all()
+            if read_filter is not None:
+                read_value = read_filter.lower() == 'true'
+                queryset = queryset.filter(read=read_value)
+        
+        return queryset
 
 
 class BulkEmailViewSet(viewsets.ViewSet):

@@ -16,6 +16,7 @@ export type CourseStatus =
   | 'in_progress'
   | 'exam_available'
   | 'exam_passed'
+  | 'pending_pdek'
   | 'completed'
   | 'failed'
   | 'annulled';
@@ -93,13 +94,17 @@ export interface User {
 export interface Course {
   id: string;
   title: string;
-  title_kz?: string; // Backend format
+  title_kz?: string; // Backend format (legacy, for backward compatibility)
   titleKz?: string; // Frontend format (for compatibility)
-  title_en?: string; // Backend format
+  title_en?: string; // Backend format (legacy, for backward compatibility)
   titleEn?: string; // Frontend format (for compatibility)
   category?: CourseCategory | Category | { id: string; name: string }; // Может быть строкой, объектом Category или объектом с id и name
   categoryId?: string; // ID категории для записи
   description: string;
+  description_kz?: string; // Backend format (legacy, for backward compatibility)
+  descriptionEn?: string; // Frontend format (for compatibility)
+  description_en?: string; // Backend format (legacy, for backward compatibility)
+  language: 'ru' | 'kz' | 'en';
   duration: number; // в часах
   format: 'online' | 'offline' | 'blended';
   passing_score?: number; // Backend format
@@ -116,6 +121,8 @@ export interface Course {
   status: CourseStatus;
   progress?: number; // процент (для enrollment)
   enrollment_status?: CourseStatus; // Статус enrollment (для with_progress endpoint)
+  final_test_id?: number; // ID финального теста
+  finalTestId?: number; // Frontend format (for compatibility)
   created_at?: string;
   updated_at?: string;
 }
@@ -123,7 +130,16 @@ export interface Course {
 export interface Module {
   id: string;
   title: string;
+  title_kz?: string; // Backend format (legacy, for backward compatibility)
+  titleKz?: string; // Frontend format (for compatibility)
+  title_en?: string; // Backend format (legacy, for backward compatibility)
+  titleEn?: string; // Frontend format (for compatibility)
   description?: string;
+  description_kz?: string; // Backend format (legacy, for backward compatibility)
+  descriptionKz?: string; // Frontend format (for compatibility)
+  description_en?: string; // Backend format (legacy, for backward compatibility)
+  descriptionEn?: string; // Frontend format (for compatibility)
+  language: 'ru' | 'kz' | 'en';
   order: number;
   lessons: Lesson[];
   completed: boolean;
@@ -133,9 +149,22 @@ export interface Lesson {
   id: string;
   moduleId?: string; // Опционально, так как может приходить из API без этого поля
   title: string;
+  title_kz?: string; // Backend format (legacy, for backward compatibility)
+  titleKz?: string; // Frontend format (for compatibility)
+  title_en?: string; // Backend format (legacy, for backward compatibility)
+  titleEn?: string; // Frontend format (for compatibility)
   description?: string;
+  description_kz?: string; // Backend format (legacy, for backward compatibility)
+  descriptionKz?: string; // Frontend format (for compatibility)
+  description_en?: string; // Backend format (legacy, for backward compatibility)
+  descriptionEn?: string; // Frontend format (for compatibility)
   type: 'text' | 'video' | 'pdf' | 'quiz';
   content?: string;
+  content_kz?: string; // Backend format (legacy, for backward compatibility)
+  contentKz?: string; // Frontend format (for compatibility)
+  content_en?: string; // Backend format (legacy, for backward compatibility)
+  contentEn?: string; // Frontend format (for compatibility)
+  language: 'ru' | 'kz' | 'en';
   videoUrl?: string;
   video_url?: string; // Backend format
   thumbnailUrl?: string;
@@ -165,6 +194,11 @@ export interface Test {
   course?: string | { id: string; title: string }; // Backend может вернуть ID или объект
   courseId?: string; // Frontend format
   title: string;
+  title_kz?: string; // Backend format (legacy, for backward compatibility)
+  titleKz?: string; // Frontend format (for compatibility)
+  title_en?: string; // Backend format (legacy, for backward compatibility)
+  titleEn?: string; // Frontend format (for compatibility)
+  language: 'ru' | 'kz' | 'en';
   passing_score?: number; // Backend format
   passingScore?: number; // Frontend format (for compatibility)
   time_limit?: number; // Backend format
@@ -186,10 +220,26 @@ export interface Question {
   id: string;
   type: QuestionType;
   text: string;
+  text_kz?: string; // Backend format (legacy, for backward compatibility)
+  textKz?: string; // Frontend format (for compatibility)
+  text_en?: string; // Backend format (legacy, for backward compatibility)
+  textEn?: string; // Frontend format (for compatibility)
+  language: 'ru' | 'kz' | 'en';;
   options?: Array<{ id: string; text: string; is_correct?: boolean }> | string[]; // Backend возвращает объекты
   correctAnswer?: string | string[]; // Frontend format (computed)
   order: number;
   weight: number;
+}
+
+export interface AnswerDetail {
+  question_id: number;
+  question_text: string;
+  question_type: string;
+  user_answer: any;
+  user_answer_display: string;
+  correct_answers: any[];
+  correct_answer_display: string;
+  is_correct: boolean;
 }
 
 export interface TestAttempt {
@@ -204,6 +254,27 @@ export interface TestAttempt {
   completedAt?: Date | string; // Frontend format
   score?: number;
   passed?: boolean;
+  answers?: Record<string, any>;
+  answer_details?: AnswerDetail[];
+  answerDetails?: AnswerDetail[]; // Frontend format
+}
+
+export interface ExtraAttemptRequest {
+  id: string;
+  user?: any; // Backend может вернуть объект пользователя
+  userId?: string;
+  test?: Test | string; // Backend может вернуть объект или ID
+  testId?: string;
+  reason: string;
+  status: 'pending' | 'approved' | 'rejected';
+  admin_response?: string;
+  processed_by?: any; // Backend может вернуть объект администратора
+  processed_by_id?: string;
+  processed_at?: string; // ISO string
+  createdAt?: string; // Frontend format
+  created_at?: string; // Backend format
+  updatedAt?: string; // Frontend format
+  updated_at?: string; // Backend format
   answers?: Record<string, any> | Answer[]; // Backend возвращает Record, frontend может использовать Answer[]
   ip_address?: string; // Backend format
   ipAddress?: string; // Frontend format
@@ -256,6 +327,16 @@ export interface Signature {
   otpVerified?: boolean; // Frontend format (for compatibility)
 }
 
+export interface CertificateTemplate {
+  id: string;
+  name: string;
+  description?: string;
+  file?: string; // URL to template file
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface Certificate {
   id: string;
   number: string;
@@ -267,6 +348,15 @@ export interface Certificate {
   courseName?: string; // Frontend format (computed)
   protocol?: { id: string }; // Backend format
   protocolId?: string; // Frontend format (computed)
+  template?: CertificateTemplate; // Backend format
+  templateId?: string; // Frontend format (computed)
+  file?: string; // URL to uploaded certificate file (Backend format)
+  fileUrl?: string; // Frontend format (for compatibility)
+  uploaded_by?: { id: string; full_name: string }; // Backend format
+  uploadedById?: string; // Frontend format (computed)
+  uploadedBy?: string; // Frontend format (computed)
+  uploaded_at?: string; // Backend format
+  uploadedAt?: Date | string; // Frontend format
   issued_at?: string; // Backend format
   issuedAt?: Date | string; // Frontend format
   valid_until?: string; // Backend format
@@ -275,6 +365,17 @@ export interface Certificate {
   qrCode?: string; // Frontend format (for compatibility)
   pdf_url?: string; // Backend format
   pdfUrl?: string; // Frontend format (for compatibility)
+}
+
+export interface PendingCertificate {
+  enrollment_id: string;
+  student: User;
+  course: Course;
+  completed_at?: string;
+  certificate_id?: string;
+  certificate_number?: string;
+  has_certificate_record: boolean;
+  needs_upload: boolean;
 }
 
 export interface PDEKCommission {

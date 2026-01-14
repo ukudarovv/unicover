@@ -14,28 +14,1438 @@
     "search": "Іздеу",
     "loading": "Жүктелуде...",
     "error": "Қате",
-    "success": "Сәтті"
+    "success": "Сәтті",
+    "construction": "Құрылыс",
+    "education": "Оқу орталығы",
+    "yes": "Иә",
+    "no": "Жоқ",
+    "all": "Барлығы",
+    "active": "Белсенді",
+    "inactive": "Белсенді емес",
+    "filters": "Сүзгілер",
+    "status": "Мәртебе",
+    "actions": "Әрекеттер",
+    "view": "Көру",
+    "close": "Жабу",
+    "back": "Артқа",
+    "next": "Келесі",
+    "previous": "Алдыңғы",
+    "submit": "Жіберу",
+    "confirm": "Растау",
+    "saving": "Сақталуда...",
+    "upload": "Жүктеу",
+    "download": "Жүктеп алу",
+    "select": "Таңдау",
+    "required": "Міндетті",
+    "optional": "Міндетті емес"
+  },
+  "navigation": {
+    "menu": "Меню",
+    "personalCabinet": "Жеке кабинет",
+    "dashboard": "Басқару панелі",
+    "courses": "Курстар",
+    "tests": "Тесттер",
+    "documents": "Құжаттар",
+    "history": "Тарих",
+    "support": "Қолдау",
+    "partners": "Серіктестер",
+    "projects": "Жобалар",
+    "vacancies": "Бос орындар",
+    "certificateVerification": "Сертификаттың шынайылығын тексеру"
+  },
+  "partners": {
+    "title": "Біздің серіктестер",
+    "heading": "Серіктестер мен клиенттер",
+    "description": "Біз Қазақстанның жетекші компанияларының сенімімен мақтанамыз",
+    "management": "Серіктестерді басқару",
+    "managementDescription": "Серіктестерді құру және өңдеу",
+    "addPartner": "Серіктес қосу",
+    "editPartner": "Серіктесті өңдеу",
+    "createPartner": "Серіктес құру",
+    "companyName": "Компания атауы",
+    "companyNamePlaceholder": "Компания атауын енгізіңіз",
+    "logo": "Логотип",
+    "uploadLogo": "Логотипті жүктеу",
+    "changeLogo": "Логотипті өзгерту",
+    "fileSelected": "Файл таңдалды",
+    "logoRecommendation": "Ұсынылатын өлшем: 200x200px. Форматтар: JPG, PNG, WEBP",
+    "website": "Веб-сайт",
+    "websitePlaceholder": "https://example.com",
+    "order": "Көрсету реті",
+    "orderHint": "Кішірек сан = тізімде жоғары",
+    "isActive": "Белсенді (сайтта көрсетіледі)",
+    "searchPlaceholder": "Атау немесе веб-сайт бойынша іздеу...",
+    "noPartners": "Серіктестер жоқ",
+    "noPartnersFiltered": "Көрсетілген сүзгілер бойынша серіктестер табылмады",
+    "noPartnersCreate": "Бірінші серіктесті \"Серіктес қосу\" батырмасын басу арқылы құрыңыз",
+    "deleteConfirm": "Бұл серіктесті жоюға сенімдісіз бе?",
+    "deleteSuccess": "Серіктес сәтті жойылды",
+    "deleteError": "Серіктесті жою қатесі",
+    "loadError": "Серіктестерді жүктеу қатесі",
+    "saveError": "Серіктесті сақтау қатесі",
+    "saveSuccess": "Серіктес сәтті сақталды",
+    "createSuccess": "Серіктес сәтті құрылды",
+    "updateSuccess": "Серіктес сәтті жаңартылды",
+    "nameRequired": "Компания атауын енгізіңіз",
+    "logoRequired": "Компания логотипін жүктеңіз",
+    "table": {
+      "logo": "Логотип",
+      "name": "Атауы",
+      "website": "Веб-сайт",
+      "order": "Рет",
+      "status": "Мәртебе",
+      "noLogo": "Логотип жоқ"
+    }
+  },
+  "projects": {
+    "badge": "Портфолио",
+    "title": "Орындалған жұмыстар",
+    "description": "Жобалау және құрылыс саласында сәтті жүзеге асырылған жобалардың мысалдары",
+    "searchPlaceholder": "Атау немесе сипаттама бойынша іздеу...",
+    "allCategories": "Барлық категориялар",
+    "loading": "Жобалар жүктелуде...",
+    "loadError": "Жобаларды жүктеу мүмкін болмады",
+    "notFound": "Жобалар табылмады"
   },
   "construction": {
     "title": "Құрылыс бағыты",
     "about": "Компания туралы",
     "licenses": "Лицензиялар",
     "projects": "Жобалар мен жұмыстар",
+    "completedWorks": "Орындалған жұмыстар",
     "partners": "Серіктестер"
+  },
+  "constructionAbout": {
+    "hero": {
+      "badge": "Құрылыс бағыты",
+      "title": "Компания туралы",
+      "description": "«Unicover» ЖШС өнеркәсіптік қауіпсіздік, зерттеулер, жобалау және құрылыс саласындағы қызметтердің толық кешенін көрсететін көппрофильді инженерлік және жобалау-құрылыс компаниясы."
+    },
+    "breadcrumbs": {
+      "home": "Басты",
+      "construction": "Құрылыс",
+      "about": "Компания туралы"
+    },
+    "about": {
+      "title": "Біздің қызметіміз",
+      "paragraph1": "«Unicover» ЖШС инженерлік зерттеулерден объектіні пайдалануға беруге дейінгі жұмыстардың толық циклін орындауға маманданған. Біз әртүрлі өнеркәсіп салаларында және азаматтық құрылыста жұмыс істейміз.",
+      "paragraph2": "Компанияда зерттеулер, жобалау және құрылыс саласындағы жұмыстарды орындау құқығын растайтын барлық қажетті лицензиялар мен сертификаттар бар. Біздің мамандар әртүрлі күрделіліктегі объектілермен жұмыс істеуде үлкен тәжірибеге ие.",
+      "paragraph3": "Біз орындалатын жұмыстардың жоғары сапасын, Қазақстан Республикасының барлық нормативтік талаптары мен стандарттарын сақтауды, сондай-ақ әр жобаға жеке тәсілді кепілдейміз."
+    },
+    "services": {
+      "title": "Қызмет бағыттары",
+      "subtitle": "Жобалау және құрылыс саласындағы қызметтердің толық спектрі",
+      "surveying": {
+        "title": "Инженерлік зерттеулер",
+        "items": {
+          "geological": "Инженерлік-геологиялық зерттеулер",
+          "hydrogeological": "Инженерлік-гидрогеологиялық жұмыстар",
+          "geodetic": "Инженерлік-геодезиялық зерттеулер",
+          "equipment": "Жоғары дәлдікті жабдық"
+        }
+      },
+      "design": {
+        "title": "Жобалау",
+        "items": {
+          "technological": "Өндірістік объектілерді технологиялық жобалау",
+          "architectural": "Сәулеттік жобалау (I-III жауапкершілік деңгейлері)",
+          "urban": "Қала құрылысын жобалау және жоспарлау",
+          "engineering": "Инженерлік жүйелер мен желілерді жобалау",
+          "reconstruction": "Қайта құру және капиталды жөндеу"
+        }
+      },
+      "construction": {
+        "title": "Құрылыс-монтаждау жұмыстары",
+        "items": {
+          "category": "ҚМЖ III санаты",
+          "buildings": "Әртүрлі мақсаттағы объектілерді құру",
+          "installation": "Жабдықты орнату",
+          "modernization": "Қайта құру және жаңғырту",
+          "standards": "ҚР СНиП және стандарттарын сақтау"
+        }
+      }
+    },
+    "advantages": {
+      "title": "Біздің артықшылықтарымыз",
+      "experience": {
+        "title": "Тәжірибе және кәсібилік",
+        "description": "Жобалау және құрылыс саласындағы көпжылдық жұмыс тәжірибесі"
+      },
+      "licenses": {
+        "title": "Лицензиялар мен сертификаттар",
+        "description": "Мемлекеттік лицензиялар мен салалық аттестаттардың толық жинағы"
+      },
+      "team": {
+        "title": "Білікті команда",
+        "description": "Көп тәжірибесі бар жоғары білікті мамандар"
+      }
+    },
+    "cta": {
+      "title": "Жобаны бастауға дайынсыз ба?",
+      "description": "Жобаңызды талқылау үшін бізбен байланысыңыз. Біздің мамандар сіздің барлық сұрақтарыңызға жауап беруге және оңтайлы шешім ұсынуға дайын.",
+      "contact": "Бізбен байланысыңыз",
+      "projects": "Біздің жобалар"
+    }
+  },
+  "licenses": {
+    "title": "Лицензиялар",
+    "badge": "Лицензиялар және сертификаттар",
+    "description": "«Unicover» ЖШС әртүрлі салаларда жұмыстарды орындау құқығын растайтын мемлекеттік лицензиялар мен салалық аттестаттардың толық жиынтығына ие.",
+    "loading": "Лицензиялар жүктелуде...",
+    "notFound": "Лицензиялар табылмады",
+    "categories": {
+      "all": "Барлығы",
+      "surveying": "Зерттеулер және жобалау",
+      "construction": "Құрылыс"
+    },
+    "card": {
+      "number": "Нөмірі:",
+      "issued": "Берілген:",
+      "validUntil": "Жарамдылық мерзімі:",
+      "download": "Құжатты жүктеп алу",
+      "fileUnavailable": "Файл қолжетімсіз"
+    },
+    "info": {
+      "title": "Лицензиялар туралы",
+      "description1": "Барлық лицензиялар Қазақстан Республикасының уәкілетті органдарымен берілген және «Unicover» ЖШС-ке сәйкес жұмыс түрлерін орындау құқығын растайды. Лицензиялар үнемі жаңартылып, қажетті қайта ресімдеу процедураларынан өтеді.",
+      "description2": "Лицензиялар туралы қосымша ақпарат алу немесе құжаттардың көшірмелерін сұрау үшін, бізбен байланысыңыз",
+      "contactLink": "кері байланыс формасы"
+    },
+    "errors": {
+      "loadError": "Лицензияларды жүктеу қатесі",
+      "downloadError": "Файлды жүктеп алу қатесі",
+      "fileUnavailable": "Файлды жүктеп алу мүмкін емес"
+    },
+    "success": {
+      "downloadSuccess": "Файл сәтті жүктеп алынды"
+    },
+    "breadcrumbs": {
+      "licenses": "Лицензиялар"
+    }
   },
   "education": {
     "title": "Оқу орталығы",
     "about": "Орталық туралы",
     "programs": "Оқу бағдарламалары",
     "online": "Онлайн оқыту",
-    "cabinet": "Жеке кабинет"
+    "cabinet": "Жеке кабинет",
+    "certificateVerification": "Сертификаттың шынайылығын тексеру",
+    "pageTitle": "UNICOVER оқу орталығы",
+    "pageDescription": "Өнеркәсіптік қауіпсіздік, еңбекті қорғау және басқа бағыттар бойынша сертификаттар мен куәліктер берумен кәсіби оқыту.",
+    "courses": {
+      "loading": "Курстар жүктелуде...",
+      "badge": "Білім беру бағдарламалары",
+      "title": "Оқу бағдарламалары",
+      "subtitle": "Мамандарды дайындау және біліктілігін арттыру үшін курстардың кең ауқымы",
+      "languageFilter": "Курстар тілі:",
+      "auto": "Автоматты",
+      "russian": "Русский",
+      "kazakh": "Қазақша",
+      "english": "English",
+      "categoryFilter": "Категориялар бойынша сүзгі:",
+      "allCourses": "Барлық курстар",
+      "unknownCategory": "Белгісіз категория",
+      "courseModules": "Курс модульдері:",
+      "defaultDescription": "Курс сипаттамасы",
+      "goToCourse": "Курсқа өту",
+      "enroll": "Курсқа жазылу",
+      "noCoursesInCategory": "Бұл категориядағы курстар жақында пайда болады",
+      "loginRequired": "Курсқа жазылу үшін жүйеге кіру керек",
+      "studentsOnly": "Бұл функция тек студенттерге қолжетімді"
+    },
+    "online": {
+      "title": "Онлайн оқыту",
+      "subtitle": "Курстарға, тестілеуге және сертификаттар алуға қол жеткізуімен қашықтықтан оқытудың заманауи платформасы",
+      "features": {
+        "remoteAccess": {
+          "title": "Қашықтықтан қол жеткізу",
+          "description": "Әлемнің кез келген жерінен қолайлы уақытта оқыңыз"
+        },
+        "videoLectures": {
+          "title": "Бейне-лекциялар",
+          "description": "Сарапшылардан сапалы оқу материалдары"
+        },
+        "onlineTesting": {
+          "title": "Онлайн-тестілеу",
+          "description": "Тест жүйесі арқылы білімді тексеру"
+        },
+        "certificates": {
+          "title": "Сертификаттар",
+          "description": "Тапсырғаннан кейін құжаттарды автоматты түрде беру"
+        },
+        "flexibleSchedule": {
+          "title": "Икемді кесте",
+          "description": "Кестеге байланыссыз өз темпіңізде оқыту"
+        },
+        "learningHistory": {
+          "title": "Оқу тарихы",
+          "description": "Өткен курстар мен материалдарға қол жеткізу"
+        }
+      }
+    }
   },
   "contacts": {
+    "badge": "Байланыстар",
     "title": "Бізбен байланысыңыз",
+    "description": "Біз сіздің сұрақтарыңызға жауап беруге және ынтымақтастық мүмкіндіктерін талқылауға дайынбыз",
+    "mapAddress": "Атырау қ., Студенттік көшесі 25, БЦ Bayterek Plaza",
+    "info": {
+      "bin": "БСН",
+      "binValue": "100240007639",
+      "address": "Мекен-жай",
+      "addressValue": "Атырау қ., Студенттік көшесі 25\nБЦ Bayterek Plaza, 5 қабат",
+      "phone": "Телефондар",
+      "phoneValue": "+7 (7122) 20-80-92\n+7 708 420-80-92",
+      "email": "Электрондық пошта",
+      "emailValue": "info@unicover.kz",
+      "workingHours": "Жұмыс режимі",
+      "workingHoursValue": "Дүйсенбі-Жұма: 9:00 - 18:00\nСенбі-Жексенбі: Демалыс"
+    },
+    "companyDetails": {
+      "title": "Компания реквизиттері",
+      "fullName": "Толық атауы",
+      "fullNameValue": "«UNICOVER» ЖШС",
+      "bin": "БСН",
+      "binValue": "100240007639",
+      "legalAddress": "Заңды мекен-жайы",
+      "legalAddressValue": "Атырау қ., Студенттік көшесі 25, БЦ Bayterek Plaza, 5 қабат",
+      "email": "Электрондық пошта",
+      "emailValue": "info@unicover.kz"
+    },
+    "form": {
+      "title": "Сұрау жіберу",
+      "name": "Атыңыз",
+      "namePlaceholder": "Атыңызды енгізіңіз",
+      "company": "Компания",
+      "companyPlaceholder": "Компания атауы",
+      "email": "Электрондық пошта",
+      "emailPlaceholder": "your@email.com",
+      "phone": "Телефон",
+      "phonePlaceholder": "+7 (___) ___-____",
+      "direction": "Қызығушылық бағыты",
+      "directionPlaceholder": "Бағытты таңдаңыз",
+      "directions": {
+        "construction": "Құрылыс және жобалау",
+        "engineering": "Инженерлік зерттеулер",
+        "education": "Оқыту",
+        "safety": "Өнеркәсіптік қауіпсіздік",
+        "other": "Басқа"
+      },
+      "message": "Хабарлама",
+      "messagePlaceholder": "Сұрауыңызды толығырақ сипаттаңыз...",
+      "submit": "Сұрау жіберу",
+      "submitting": "Жіберілуде...",
+      "requiredFields": "Міндетті толтыру өрістері",
+      "thankYou": "Хабарламаңыз үшін рахмет!",
+      "weWillContactYou": "Біз сізбен жақын арада байланысамыз.",
+      "successMessage": "Хабарламаңыз сәтті жіберілді! Біз сізбен жақын арада байланысамыз.",
+      "errorMessage": "Хабарламаны жіберу кезінде қате орын алды. Қайталап көріңіз."
+    },
     "address": "Мекен-жай",
+    "addressValue": "Атырау қ., Студенттік көшесі 25, БЦ Bayterek Plaza, 5 қабат",
     "phone": "Телефондар",
     "email": "Электрондық пошта",
     "workingHours": "Жұмыс режимі"
+  },
+  "footer": {
+    "companyDescription": "Көппрофильді инженерлік және жобалау-құрылыс компаниясы. Өнеркәсіптік қауіпсіздік, зерттеулер, жобалау және құрылыс саласындағы қызметтердің толық кешені.",
+    "copyright": "© {{year}} «UNICOVER» ЖШС. БСН 100240007639. Барлық құқықтар қорғалған.",
+    "construction": "Құрылыс",
+    "education": "Оқу орталығы",
+    "contacts": "Байланыстар"
+  },
+  "header": {
+    "russian": "Русский",
+    "kazakh": "Қазақша",
+    "english": "English",
+    "personalCabinet": "Жеке кабинет"
+  },
+  "admin": {
+    "partners": {
+      "title": "Серіктестер"
+    },
+    "projects": {
+      "title": "Жобалар"
+    },
+    "users": {
+      "title": "Пайдаланушылар",
+      "addUser": "Пайдаланушы қосу",
+      "editUser": "Пайдаланушыны өңдеу",
+      "personalData": "Жеке деректер",
+      "fullNamePlaceholder": "Иванов Иван Иванович",
+      "passwordPlaceholder": "Құпия сөзді енгізіңіз немесе автоматты генерация үшін бос қалдырыңыз",
+      "generatePassword": "Кездейсоқ құпия сөзді генерациялау",
+      "generate": "Генерациялау",
+      "passwordGenerated": "Құпия сөз генерацияланды. Оны пайдаланушыға беру үшін сақтаңыз.",
+      "passwordHint": "Құпия сөз көрсетілмесе, ол автоматты түрде генерацияланады. Қолмен енгізу кезінде минимум 8 таңба.",
+      "iinPlaceholder": "000000000000",
+      "city": "Қала",
+      "cityPlaceholder": "Қала",
+      "workplace": "Жұмыс орны",
+      "systemSettings": "Жүйе параметрлері",
+      "role": "Рөл",
+      "interfaceLanguage": "Интерфейс тілі",
+      "accountVerified": "Есептік жазба расталды",
+      "teacher": "Оқытушы",
+      "loading": "Пайдаланушылар жүктелуде...",
+      "loadError": "Пайдаланушыларды жүктеу қатесі",
+      "totalUsers": "Барлық пайдаланушылар",
+      "activeStudents": "Белсенді студенттер",
+      "pdekMembers": "ПДЭК мүшелері",
+      "pendingVerification": "Тексеруді күтуде",
+      "management": "Пайдаланушыларды басқару",
+      "export": "Экспорт",
+      "import": "Импорт",
+      "exportSuccess": "Пайдаланушылар сәтті экспортталды",
+      "exportError": "Пайдаланушыларды экспорттау қатесі",
+      "importSuccess": "Импортталған пайдаланушылар: {{count}}",
+      "importErrors": "Импорттау қателері: {{count}}",
+      "importError": "Пайдаланушыларды импорттау қатесі",
+      "searchPlaceholder": "Аты, email, телефон, ЖСН бойынша іздеу...",
+      "role": "Рөл",
+      "allRoles": "Барлық рөлдер",
+      "students": "Студенттер",
+      "pdekMembersFilter": "ПДЭК мүшелері",
+      "pdekChairmen": "ПДЭК төрағалары",
+      "teachers": "Оқытушылар",
+      "admins": "Әкімшілер",
+      "allStatuses": "Барлық мәртебелер",
+      "verified": "Расталды",
+      "unverified": "Расталмаған",
+      "resetFilters": "Фильтрлерді қалпына келтіру",
+      "selected": "Таңдалған: {{count}} пайдаланушы",
+      "assignToCourse": "Курсқа тағайындау",
+      "messageFeatureNotImplemented": "Хабарлама жіберу функциясы әлі жүзеге асырылмаған",
+      "sendMessage": "Хабарлама жіберу",
+      "deleteConfirm": "Сіз {{count}} пайдаланушыны жойғыңыз келе ме?\n\nБұл әрекетті болдырмау мүмкін емес.",
+      "deleteSuccess": "{{count}} пайдаланушы сәтті жойылды",
+      "deleteError": "Пайдаланушыларды жою қатесі",
+      "user": "Пайдаланушы",
+      "contacts": "Байланыстар",
+      "organization": "Ұйым",
+      "courses": "Курстар",
+      "progress": "Прогресс",
+      "unknown": "Белгісіз",
+      "noUsersFound": "Пайдаланушылар табылмады",
+      "tryChangingSearch": "Іздеу параметрлерін өзгертуге тырысыңыз",
+      "deleteUserConfirm": "Сіз \"{{name}}\" пайдаланушысын жойғыңыз келе ме?\n\nБұл әрекетті болдырмау мүмкін емес.",
+      "deleteUserError": "Пайдаланушыны жою мүмкін болмады",
+      "userDeletedSuccess": "Пайдаланушы сәтті жойылды",
+      "noUsersSelected": "Курстарды тағайындау үшін пайдаланушылар таңдалмаған",
+      "noCoursesSelected": "Тағайындау үшін курстар таңдалмаған",
+      "coursesAssigned": "Тағайындалған курстар: {{courses}} {{users}} пайдаланушыға{{errors}}",
+      "assignCoursesError": "Курстарды тағайындау мүмкін болмады. Детальдар үшін журналдарды тексеріңіз.",
+      "failed": "Тапсырылмады",
+      "annulled": "Күшін жойған",
+      "info": "Ақпарат",
+      "activity": "Белсенділік",
+      "noEmail": "Email жоқ",
+      "learningStats": "Оқу статистикасы",
+      "loadingStats": "Статистика жүктелуде...",
+      "coursesAssignedStat": "Тағайындалған курстар",
+      "completed": "Аяқталды",
+      "averageScore": "Орташа балл",
+      "certificates": "Сертификаттар",
+      "assignedCourses": "Тағайындалған курстар",
+      "loadingCourses": "Курстар жүктелуде...",
+      "noAssignedCourses": "Тағайындалған курстар жоқ",
+      "unknownCourse": "Белгісіз курс",
+      "courseLower": "курс",
+      "userLower": "пайдаланушы",
+      "revokeCourseConfirm": "Сіз \"{{course}}\" курсын \"{{user}}\" пайдаланушысынан кері алуға сенімдісіз бе?\n\nКурсты өту туралы барлық деректер толығымен жойылады, соның ішінде:\n- Сабақтар бойынша прогресс\n- Тест әрекеттері\n- Қосымша әрекеттерге сұраулар\n- Верификация деректері\n\nБұл әрекетті болдырмау мүмкін емес.",
+      "revokeCourse": "Курсты кері алу",
+      "revokeCourseError": "Курсты кері алу мүмкін болмады",
+      "courseRevoked": "Курс сәтті кері алынды",
+      "completedLower": "аяқталды",
+      "enrolled": "Қабылданды",
+      "activityHistory": "Белсенділік тарихы",
+      "loadingActivity": "Белсенділік жүктелуде...",
+      "noActivityData": "Белсенділік деректері жоқ",
+      "receivedCertificate": "Сертификат алды",
+      "completedCourse": "Курсты аяқтады",
+      "assignCourses": "Курстарды тағайындау",
+      "coursesAssignedToUser": "Тағайындалған курстар: {{courses}} {{user}} пайдаланушыға{{errors}}"
+    },
+    "courses": {
+      "title": "Курстар",
+      "editCourse": "Курсты өңдеу",
+      "createCourse": "Курс құру",
+      "basicInfo": "Негізгі ақпарат",
+      "courseTitle": "Курс атауы",
+      "courseTitlePlaceholder": "Курс атауын енгізіңіз",
+      "courseDescriptionPlaceholder": "Курстың қысқаша сипаттамасы",
+      "category": "Категория",
+      "selectCategory": "Категорияны таңдаңыз",
+      "loadingCategories": "Категориялар жүктелуде...",
+      "duration": "Ұзақтығы (сағат)",
+      "courseStatus": "Курс мәртебесі",
+      "inDevelopment": "Әзірлеуде",
+      "draft": "Жоба",
+      "published": "Жарияланған",
+      "finalTest": "Қорытынды тест",
+      "noFinalTest": "Қорытынды тест жоқ",
+      "loadingTests": "Тесттер жүктелуде...",
+      "modulesAndLessons": "Модульдер мен сабақтар",
+      "addModule": "Модуль қосу",
+      "newModule": "Жаңа модуль",
+      "moduleTitlePlaceholder": "Модуль атауы",
+      "moduleDescriptionPlaceholder": "Модуль сипаттамасы",
+      "expand": "Кеңейту",
+      "lessons": "Сабақтар",
+      "addLesson": "Сабақ қосу",
+      "noTitle": "Атауы жоқ",
+      "minutes": "мин",
+      "required": "Міндетті",
+      "noLessons": "Сабақтар жоқ. Бастау үшін \"Сабақ қосу\" батырмасын басыңыз.",
+      "noModules": "Модульдер жоқ. Бастау үшін \"Модуль қосу\" батырмасын басыңыз.",
+      "saveCourse": "Курсты сақтау",
+      "createLesson": "Сабақ құру",
+      "editLesson": "Сабақты өңдеу",
+      "lessonTitle": "Сабақ атауы",
+      "lessonTitlePlaceholder": "Сабақ атауын енгізіңіз",
+      "enterLessonTitle": "Сабақ атауын енгізіңіз",
+      "lessonDescription": "Сабақ сипаттамасы",
+      "lessonDescriptionPlaceholder": "Сабақта оқытылатын нәрсенің қысқаша сипаттамасы",
+      "lessonType": "Сабақ түрі",
+      "durationMinutes": "Ұзақтығы (минут)",
+      "requiredLesson": "Курсты өту үшін міндетті сабақ",
+      "lessonContent": "Сабақ мазмұны",
+      "textContent": "Мәтіндік мазмұн",
+      "textContentPlaceholder": "Сабақ мәтінін енгізіңіз. Пішімдеуді пайдалануға болады...",
+      "markdownTip": "Кеңес: Үлкен мәтіндер үшін Markdown редакторын пайдалануға болады",
+      "videoUrl": "Бейне URL",
+      "videoUrlPlaceholder": "https://www.youtube.com/watch?v=... немесе https://vimeo.com/...",
+      "videoSupported": "Қолдау көрсетіледі: YouTube, Vimeo, өз сервері",
+      "videoThumbnail": "Бейне миниатюрасы (URL)",
+      "allowDownload": "Жүктеуді рұқсат ету",
+      "trackProgress": "Көруді бақылау",
+      "pdfUrl": "PDF құжатының URL",
+      "uploadPdf": "PDF файлын жүктеу",
+      "selectFile": "Файлды таңдау",
+      "orEnterUrl": "немесе жоғарыда URL енгізіңіз",
+      "allowDownloadPdf": "PDF жүктеуді рұқсат ету",
+      "selectTest": "Тестті таңдаңыз",
+      "selectTestOption": "Тестті таңдаңыз",
+      "testsCreatedInAdmin": "Тесттер админ-панельдің \"Тесттер\" бөлімінде құрылады",
+      "maxAttempts": "Максималды әрекеттер",
+      "saveLesson": "Сабақты сақтау",
+      "lessonTypes": {
+        "text": "Мәтін",
+        "video": "Бейне",
+        "pdf": "PDF",
+        "quiz": "Тест"
+      }
+    },
+    "tests": {
+      "title": "Тесттер"
+    },
+    "licenses": {
+      "title": "Лицензиялар"
+    },
+    "vacancies": {
+      "title": "Бос орындар"
+    },
+    "contacts": {
+      "title": "Кері байланыс"
+    },
+    "overview": {
+      "title": "Шолу"
+    },
+    "categories": {
+      "title": "Жоба категориялары"
+    },
+    "extraAttempts": {
+      "title": "Қосымша әрекеттер"
+    },
+    "dashboard": {
+      "title": "Әкімші панелі",
+      "subtitle": "UNICOVER оқу платформасын басқару",
+      "navigation": {
+        "overview": "Шолу",
+        "courses": "Курстар",
+        "users": "Пайдаланушылар",
+        "tests": "Тесттер",
+        "reports": "Есептер",
+        "certificates": "Сертификаттар",
+        "categories": "Категориялар",
+        "licenses": "Лицензиялар",
+        "vacancies": "Бос орындар",
+        "vacancyApplications": "Бос орындарға өтінімдер",
+        "vacancyStatistics": "Бос орындар статистикасы"
+      },
+      "overview": {
+        "loadingStats": "Статистика жүктелуде...",
+        "loadStatsError": "Статистиканы жүктеу қатесі",
+        "totalStudents": "Барлық студенттер",
+        "activeStudents": "Белсенді",
+        "activeCourses": "Белсенді курстар",
+        "completedCourses": "Аяқталды",
+        "testsToday": "Бүгінгі тесттер",
+        "successRate": "Табыстылық",
+        "totalCertificates": "Берілген сертификаттар",
+        "thisMonth": "Ай ішінде",
+        "recentActivity": "Соңғы белсенділік",
+        "activityWillBeDisplayed": "Белсенділік мұнда көрсетіледі",
+        "dataLoadingFromSystem": "Деректер жүйеден жүктелуде",
+        "createCourse": "Курс құру",
+        "createCourseDesc": "Жаңа оқу курсын қосу",
+        "addStudent": "Студент қосу",
+        "addStudentDesc": "Жаңа тыңдаушыны тіркеу",
+        "createTest": "Тест құру",
+        "createTestDesc": "Емтихан тестін қосу"
+      },
+      "courses": {
+        "management": "Курстарды басқару",
+        "loading": "Курстар жүктелуде...",
+        "loadError": "Курстарды жүктеу қатесі",
+        "tryAgain": "Қайталап көріңіз",
+        "searchPlaceholder": "Курстарды іздеу...",
+        "filters": "Сүзгілер",
+        "allCategories": "Барлық категориялар",
+        "allStatuses": "Барлық мәртебелер",
+        "resetFilters": "Сүзгілерді қалпына келтіру",
+        "courseTitle": "Курс атауы",
+        "category": "Категория",
+        "students": "Студенттер",
+        "status": "Мәртебе",
+        "actions": "Әрекеттер",
+        "edit": "Өңдеу",
+        "studentsLabel": "Студенттер",
+        "delete": "Жою",
+        "noCourses": "Курстар жоқ. \"Курс құру\" батырмасын басу арқылы бірінші курсты құрыңыз",
+        "coursesNotFound": "Курстар табылмады",
+        "deleteConfirm": "Сіз \"{{title}}\" курсын жойғыңыз келе ме?\n\nБұл әрекетті болдырмау мүмкін емес.",
+        "deleteSuccess": "Курс сәтті жойылды",
+        "deleteError": "Қате",
+        "deleteFailed": "Курсты жою мүмкін болмады",
+        "courseStudents": {
+          "title": "Курс студенттері",
+          "totalStudents": "Барлық студенттер",
+          "completed": "Курсты аяқтады",
+          "inProgress": "Процесте",
+          "averageScore": "Орташа балл",
+          "loading": "Студенттер жүктелуде...",
+          "loadError": "Қате",
+          "close": "Жабу",
+          "searchPlaceholder": "Аты, email, компания бойынша іздеу...",
+          "student": "Студент",
+          "contacts": "Байланыстар",
+          "company": "Компания",
+          "progress": "Прогресс",
+          "score": "Баға",
+          "status": "Мәртебе",
+          "actions": "Әрекеттер",
+          "enrolled": "Қабылданды",
+          "revoke": "Кері алу",
+          "revokeTitle": "Курсты кері алу",
+          "revokeConfirm": "Сіз \"{{courseTitle}}\" курсын \"{{studentName}}\" студентінен кері алуға сенімдісіз бе?\n\nКурсты өту туралы барлық деректер толығымен жойылады, соның ішінде:\n- Сабақтар бойынша прогресс\n- Тест әрекеттері\n- Қосымша әрекеттерге сұраулар\n- Верификация деректері\n\nБұл әрекетті болдырмау мүмкін емес.",
+          "revokeSuccess": "Курс сәтті кері алынды",
+          "revokeError": "Қате",
+          "revokeFailed": "Курсты кері алу мүмкін болмады",
+          "revoked": "Курс кері алынды",
+          "studentsNotFound": "Студенттер табылмады",
+          "tryChangingSearch": "Іздеу параметрлерін өзгертуге тырысыңыз",
+          "addStudents": "Студенттерді қосу",
+          "exportList": "Тізімді экспорттау",
+          "addSuccess": "Студенттер сәтті қосылды",
+          "addError": "Қате",
+          "addFailed": "Студенттерді қосу мүмкін болмады",
+          "unknown": "Белгісіз"
+        }
+      },
+      "tests": {
+        "constructor": "Тест құрастырушы",
+        "management": "Емтихан тесттерін және сұрақ банкін басқару",
+        "loading": "Тесттер жүктелуде...",
+        "searchPlaceholder": "Тесттерді іздеу...",
+        "title": "Атауы",
+        "questions": "Сұрақтар",
+        "actions": "Әрекеттер",
+        "edit": "Өңдеу",
+        "delete": "Жою",
+        "noTests": "Тесттер жоқ. \"Тест құру\" батырмасын басу арқылы бірінші тестті құрыңыз",
+        "testsNotFound": "Тесттер табылмады",
+        "deleteConfirm": "Сіз \"{{title}}\" тестін жойғыңыз келе ме?\n\nБұл әрекетті болдырмау мүмкін емес.",
+        "deleteSuccess": "Тест сәтті жойылды",
+        "deleteError": "Қате",
+        "deleteFailed": "Тестті жою мүмкін болмады"
+      },
+      "reports": {
+        "loading": "Есептер жүктелуде...",
+        "overallPerformance": "Жалпы табыстылық",
+        "percentPassed": "Тапсырылған тесттердің пайызы",
+        "averageScore": "Орташа балл",
+        "byAllAttempts": "Барлық әрекеттер бойынша",
+        "completedCourses": "Аяқталған курстар",
+        "totalCompleted": "Барлығы аяқталды",
+        "activeStudents": "Белсенді студенттер",
+        "ofTotal": "{{total}} барлығынан",
+        "enrollmentTrend": "Тіркелу динамикасы",
+        "testResultsDistribution": "Тест нәтижелерінің таралуы",
+        "noData": "Көрсету үшін деректер жоқ",
+        "students": "Студенттер",
+        "coursesPopularity": "Курстардың танымалдығы",
+        "export": "Экспорт",
+        "studentsCount": "Студенттер",
+        "topStudents": "Ең үздік студенттер",
+        "place": "Орын",
+        "fullName": "Аты-жөні",
+        "completedCourses": "Аяқталған курстар",
+        "averageScore": "Орташа балл",
+        "certificates": "Сертификаттар",
+        "noStudentsData": "Студенттер туралы деректер жоқ",
+        "exportReports": "Есептерді экспорттау",
+        "summaryReport": "Жинақталған есеп",
+        "pdfExcel": "PDF / Excel",
+        "testResults": "Тест нәтижелері",
+        "excel": "Excel",
+        "issuedCertificates": "Берілген сертификаттар"
+      },
+      "categories": {
+        "management": "Категорияларды басқару",
+        "loading": "Категориялар жүктелуде...",
+        "loadError": "Категорияларды жүктеу қатесі",
+        "tryAgain": "Қайталап көріңіз",
+        "searchPlaceholder": "Категорияларды іздеу...",
+        "name": "Атауы",
+        "nameKz": "Атауы (ҚЗ)",
+        "nameEn": "Атауы (EN)",
+        "order": "Рет",
+        "courses": "Курстар",
+        "status": "Мәртебе",
+        "actions": "Әрекеттер",
+        "edit": "Өңдеу",
+        "delete": "Жою",
+        "noCategories": "Категориялар жоқ. \"Категория құру\" батырмасын басу арқылы бірінші категорияны құрыңыз",
+        "categoriesNotFound": "Категориялар табылмады",
+        "active": "Белсенді",
+        "inactive": "Белсенді емес",
+        "editor": {
+          "edit": "Категорияны өңдеу",
+          "create": "Категория құру",
+          "nameRu": "Атауы (RU) *",
+          "namePlaceholder": "Категория атауын енгізіңіз",
+          "nameKz": "Атауы (KZ)",
+          "nameKzPlaceholder": "Қазақ тіліндегі атауы",
+          "nameEn": "Атауы (EN)",
+          "nameEnPlaceholder": "Ағылшын тіліндегі атауы",
+          "description": "Сипаттама",
+          "descriptionPlaceholder": "Категория сипаттамасы",
+          "displayOrder": "Көрсету реті",
+          "active": "Белсенді",
+          "cancel": "Болдырмау",
+          "save": "Сақтау",
+          "nameRequired": "Категория атауын енгізіңіз"
+        },
+        "deleteConfirm": "Сіз бұл категорияны жойғыңыз келе ме?\n\nБұл әрекетті болдырмау мүмкін емес.",
+        "updateSuccess": "Категория сәтті жаңартылды",
+        "createSuccess": "Категория сәтті құрылды",
+        "deleteSuccess": "Категория сәтті жойылды",
+        "saveError": "Категорияны сақтау қатесі",
+        "deleteError": "Категорияны жою қатесі"
+      },
+      "status": {
+        "inDevelopment": "Әзірлеуде",
+        "draft": "Жоба",
+        "published": "Жарияланған",
+        "assigned": "Тағайындалды",
+        "inProgress": "Процесте",
+        "examAvailable": "Емтихан қолжетімді",
+        "examPassed": "Емтихан өтті",
+        "completed": "Аяқталды",
+        "failed": "Тапсырылмады",
+        "annulled": "Күшін жойған"
+      },
+      "messages": {
+        "testUpdateSuccess": "Тест сәтті жаңартылды",
+        "testCreateSuccess": "Тест сәтті құрылды",
+        "testLoadError": "Тестті жүктеу қатесі",
+        "testSaveError": "Тестті сақтау қатесі",
+        "licenseUpdateSuccess": "Лицензия сәтті жаңартылды",
+        "licenseCreateSuccess": "Лицензия сәтті құрылды",
+        "licenseSaveError": "Лицензияны сақтау қатесі",
+        "userUpdateSuccess": "Пайдаланушы сәтті жаңартылды",
+        "userCreateSuccess": "Пайдаланушы сәтті құрылды",
+        "userSaveError": "Пайдаланушыны сақтау қатесі",
+        "userCreated": "Пайдаланушы \"{{name}}\" сәтті құрылды!",
+        "passwordCopy": "Құпия сөз: {{password}}\n\nПайдаланушыға беру үшін құпия сөзді көшіріңіз.",
+        "vacancyUpdateSuccess": "Бос орын сәтті жаңартылды",
+        "vacancyCreateSuccess": "Бос орын сәтті құрылды",
+        "vacancySaveError": "Бос орынды сақтау қатесі",
+        "projectLoadError": "Жобаны жүктеу қатесі",
+        "projectTitleRequired": "Жоба атауын енгізіңіз",
+        "projectTitleRequiredError": "Жоба атауы міндетті",
+        "projectUpdateSuccess": "Жоба сәтті жаңартылды",
+        "projectCreateSuccess": "Жоба сәтті құрылды",
+        "projectSaveError": "Жобаны сақтау қатесі",
+        "unknownError": "Белгісіз қате"
+      }
+    }
+  },
+  "lms": {
+    "student": {
+      "dashboard": "Студент жеке кабинеті",
+      "dashboardWelcome": "Қош келдіңіз! Мұнда сіз оқуыңызды басқара аласыз",
+      "activeCourses": "Белсенді курстар",
+      "completedCourses": "Аяқталған курстар",
+      "certificates": "Сертификаттар",
+      "goToCourses": "Курстарға өту →",
+      "viewHistory": "Тарихты көру →",
+      "viewDocuments": "Құжаттарды көру →",
+      "unreadNotifications": "Сізде {{count}} оқылмаған хабарландыру бар",
+      "unreadNotifications_one": "Сізде {{count}} оқылмаған хабарландыру бар",
+      "unreadNotifications_few": "Сізде {{count}} оқылмаған хабарландыру бар",
+      "unreadNotifications_many": "Сізде {{count}} оқылмаған хабарландыру бар",
+      "courses": "Менің курстарым",
+      "tests": "Тесттер",
+      "documents": "Құжаттар",
+      "history": "Оқу тарихы",
+      "noActiveCourses": "Сізде әлі белсенді курстар жоқ",
+      "noActiveCoursesDesc": "Курстар администратор тағайындағаннан кейін мұнда пайда болады",
+      "noCompletedCourses": "Сізде әлі аяқталған курстар жоқ",
+      "noCompletedCoursesDesc": "Аяқталған курстар мұнда көрсетіледі",
+      "viewCourse": "Курсқа өту",
+      "continue": "Жалғастыру",
+      "allCourses": "Барлық курстар",
+      "progress": "Прогресс",
+      "documentsDesc": "Сертификаттар, протоколдар және справкалар",
+      "historyDesc": "Аяқталған курстар және нәтижелер",
+      "supportDesc": "Сұрақ қою немесе көмек алу",
+      "status": {
+        "inProgress": "Оқу процесінде",
+        "completed": "Аяқталды",
+        "pendingPdek": "Тексеруді күтуде",
+        "assigned": "Тағайындалды",
+        "examAvailable": "Емтихан қолжетімді",
+        "examPassed": "Емтихан өтті",
+        "failed": "Емтихан өтпеді"
+      },
+      "coursesPage": {
+        "title": "Менің курстарым",
+        "subtitle": "Курстарыңызды және оқуды басқару",
+        "backToDashboard": "← Жеке кабинетке оралу",
+        "loading": "Курстар жүктелуде...",
+        "loadError": "Жүктеу қатесі",
+        "backToDashboardButton": "Жеке кабинетке оралу",
+        "activeCoursesTitle": "Белсенді курстар",
+        "completedCoursesTitle": "Аяқталған курстар",
+        "hours": "сағат",
+        "goToExam": "Емтиханға өту",
+        "viewStatus": "Мәртебені көру",
+        "continueLearning": "Оқуды жалғастыру",
+        "viewCourse": "Курсты көру",
+        "noCourses": "Курстар жоқ",
+        "noCoursesDesc": "Сізде әлі тағайындалған курстар жоқ",
+        "categories": {
+          "industrial_safety": "Өнеркәсіптік қауіпсіздік",
+          "fire_safety": "Өрт қауіпсіздігі",
+          "electrical_safety": "Электр қауіпсіздігі",
+          "labor_protection": "Еңбекті қорғау",
+          "professions": "Жұмысшы кәсіптер"
+        }
+      },
+      "historyPage": {
+        "title": "Оқу тарихы",
+        "subtitle": "Аяқталған курстар және жетістіктер",
+        "backToDashboard": "← Жеке кабинетке оралу",
+        "loading": "Тарих жүктелуде...",
+        "loadError": "Жүктеу қатесі",
+        "backToDashboardButton": "Жеке кабинетке оралу",
+        "courseCompleted": "Курс аяқталды",
+        "progress100": "Прогресс: 100%",
+        "viewCourse": "Курсты көру",
+        "certificates": "Сертификаттар",
+        "noHistory": "Тарих бос",
+        "noHistoryDesc": "Сізде әлі аяқталған курстар жоқ",
+        "goToCourses": "Курстарға өту",
+        "categories": {
+          "industrial_safety": "Өнеркәсіптік қауіпсіздік",
+          "fire_safety": "Өрт қауіпсіздігі",
+          "electrical_safety": "Электр қауіпсіздігі",
+          "labor_protection": "Еңбекті қорғау",
+          "professions": "Жұмысшы кәсіптер"
+        }
+      },
+      "testsPage": {
+        "title": "Қолжетімді тесттер",
+        "subtitle": "Тапсыру үшін тестті таңдаңыз",
+        "backToDashboard": "← Жеке кабинетке оралу",
+        "loading": "Тесттер жүктелуде...",
+        "loadError": "Жүктеу қатесі",
+        "backToDashboardButton": "Жеке кабинетке оралу",
+        "questions": "Сұрақтар",
+        "time": "Уақыт",
+        "minutes": "мин",
+        "passingScore": "Өту баллы",
+        "attempts": "Әрекеттер",
+        "attemptsRemaining": "ішінен",
+        "startTesting": "Тестілеуді бастау",
+        "noTests": "Қолжетімді тесттер жоқ",
+        "noTestsDesc": "Қазіргі уақытта тапсыруға тесттер жоқ"
+      }
+    },
+    "coursePlayer": {
+      "finalTest": "Соңғы тест",
+      "finalTestDesc": "Барлық сабақтар аяқталды. Курсты аяқтау үшін соңғы тестті тапсыру керек.",
+      "continueTest": "Тестті жалғастыру",
+      "takeFinalTest": "Соңғы тестті тапсыру",
+      "loading": "Жүктелуде...",
+      "pendingReview": "Тексеру және қол қоюды күтуде",
+      "pendingReviewDesc": "Курс аяқталды және ПДЭК комиссиясына тексеруге жіберілді. Тексеру және протоколға қол қойғаннан кейін сіз сертификат аласыз.",
+      "pendingReviewStatus": "Протоколға қол қоюды күтуде",
+      "courseCompleted": "Курс аяқталды",
+      "courseCompletedDesc": "Құттықтаймыз! Курс сәтті аяқталды, протоколға қол қойылды. Сертификат \"Құжаттар\" бөлімінде қолжетімді.",
+      "readyToComplete": "Аяқтауға дайын",
+      "readyToCompleteDesc": "Барлық сабақтар {{finalTest}}аяқталды. Курсты аяқтау үшін төмендегі батырманы басыңыз.",
+      "readyToCompleteDescWithTest": "және соңғы тест ",
+      "completeCourse": "Курсты аяқтау",
+      "testNotLinked": "Тест осы сабаққа байланысты емес",
+      "noQuestions": "Тестте сұрақтар жоқ",
+      "maxAttemptsReached": "Максималды әрекет санына жетілді ({{max}})",
+      "continueTestTitle": "Тестті жалғастыру",
+      "continue": "Жалғастыру",
+      "startTest": "Тестті бастау",
+      "loadingTest": "Тест жүктелуде...",
+      "testCode": "Тестілеу коды: {{code}}",
+      "smsSent": "SMS коды сіздің телефоныңызға жіберілді",
+      "smsRequestError": "SMS кодын сұрау қатесі",
+      "courseCompletedSuccess": "Курс сәтті аяқталды және ПДЭК тексеруіне жіберілді",
+      "smsVerifyError": "SMS кодын тексеру қатесі",
+      "smsVerificationTitle": "SMS арқылы растау",
+      "smsVerificationDescription": "SMS-тен растау кодын енгізіңіз",
+      "smsVerificationCodeSent": "Код {{phone}} нөміріне жіберілді",
+      "smsVerificationTestCode": "Тестілеу коды (дамыту режимі):",
+      "smsVerificationEnterCode": "Бұл коды төмендегі өріске енгізіңіз",
+      "smsVerificationCodeValid": "Код жарамды: {{time}}",
+      "smsVerificationResend": "Кодты қайта жіберу",
+      "smsVerificationVerifying": "Тексеруде...",
+      "smsVerificationVerify": "Растау",
+      "smsVerificationSecurityNotice": "Растау коды 2 минут ішінде жарамды. Кодты үшінші тұлғаларға хабарламаңыз.",
+      "smsVerificationCodeError": "Код 6 саннан тұруы керек",
+      "testContinueSuccess": "Тестті жалғастыру",
+      "testCompleteError": "Тестті аяқтау қатесі",
+      "testLoadError": "Тестті жүктеу қатесі",
+      "attemptLoadError": "Әрекетті жүктеу қатесі",
+      "resultsLoadError": "Нәтижелерді жүктеу қатесі",
+      "finalTestCompleteError": "Соңғы тестті аяқтау қатесі",
+      "testResultTitle": "Тест нәтижелері",
+      "testResultPassed": "Тест сәтті өтті!",
+      "testResultPassedDesc": "Тестті сәтті тапсырғаныңызбен құттықтаймыз",
+      "testResultFailed": "Тест өтпеді",
+      "testResultFailedDesc": "Өкінішке орай, сіз өту баллына жете алмадыңыз",
+      "testResultScore": "Сіздің нәтижеңіз",
+      "testResultPassingScore": "Өту баллы",
+      "testResultTimeSpent": "Өткен уақыт",
+      "testProgress": "Орындау прогрессі",
+      "testResultLessonCompleted": "Сабақ автоматты түрде аяқталған деп белгіленеді. Курсты оқуды жалғастыра аласыз.",
+      "testResultRemainingAttempts": "Сізде {{count}} {{attempts}} қалды. Келесі әрекетке дейін сабақ материалын қайталауға кеңес береміз.",
+      "testResultNoAttempts": "Барлық әрекеттер пайдаланылды. Қосымша әрекеттер алу үшін әкімшіге хабарласыңыз.",
+      "testResultAttempt": "әрекет",
+      "testResultAttempts2": "әрекет",
+      "testResultAttempts5": "әрекет",
+      "testResultRetake": "Тестті қайта тапсыру",
+      "testResultBackToCourse": "Курсқа оралу",
+      "testResultDetails": "Толық нәтижелер ({{correct}} {{total}} дұрыс)",
+      "testResultYourAnswer": "Сіздің жауабыңыз",
+      "testResultNotAnswered": "Жауап берілмеді",
+      "testResultCorrectAnswer": "Дұрыс жауап"
+    },
+    "documents": {
+      "title": "Менің құжаттарым",
+      "subtitle": "Сертификаттар, протоколдар және оқу справкалары",
+      "certificates": "Сертификаттар",
+      "protocols": "Протоколдар",
+      "searchPlaceholder": "Курс атауы немесе құжат нөмірі бойынша іздеу...",
+      "noCertificates": "Сертификаттар жоқ",
+      "noCertificatesSearch": "Ештеңе табылмады",
+      "noCertificatesDesc": "Сертификат алу үшін курсты аяқтап, емтихан тапсырыңыз",
+      "noCertificatesSearchDesc": "Іздеу сұрауын өзгертіп көріңіз",
+      "noProtocols": "Протоколдар жоқ",
+      "noProtocolsSearch": "Ештеңе табылмады",
+      "noProtocolsDesc": "Тесттер тапсырылғаннан кейін емтихан протоколдары мұнда пайда болады",
+      "noProtocolsSearchDesc": "Іздеу сұрауын өзгертіп көріңіз",
+      "downloadSuccess": "Сертификат жүктеп алынды",
+      "downloadError": "Сертификатты жүктеу қатесі",
+      "protocolDownloadSuccess": "Протокол жүктеп алынды",
+      "protocolDownloadError": "Протоколды жүктеу қатесі",
+      "loadError": "Құжаттарды жүктеу қатесі",
+      "certificateNumber": "Сертификат №{{number}}",
+      "issued": "Берілді: {{date}}",
+      "validUntil": "Жарамдылығы: {{date}}",
+      "valid": "Жарамды",
+      "expired": "Жарамдылығы өткен",
+      "downloadPdf": "PDF жүктеу",
+      "template": "Үлгі:",
+      "openFile": "Файлды ашу",
+      "download": "Жүктеу",
+      "qrCode": "QR-код: {{code}}",
+      "verifyAuthenticity": "Шынайылығын тексеру",
+      "protocolNumber": "Протокол №{{number}}",
+      "examDate": "Емтихан күні:",
+      "result": "Нәтиже:",
+      "passed": "Өтті",
+      "failed": "Өтпеді",
+      "passingScore": "Өту баллы:",
+      "signatures": "Қол қоюлар:",
+      "signaturesTitle": "ПДЭК комиссиясының қол қоюлары:",
+      "chairman": "Төраға",
+      "member": "Мүше",
+      "rejectionReason": "Қабылданбау себебі:",
+      "viewProtocol": "Протоколды көру",
+      "status": {
+        "approved": "Бекітілді",
+        "pendingChairman": "Төрағаны күтуде",
+        "pendingPdek": "ПДЭК бекітуінде",
+        "rejected": "Қабылданбады",
+        "created": "Құрылды"
+      }
+    },
+    "pdek": {
+      "dashboard": "ПДЭК панелі",
+      "pending": "Қол қоюға",
+      "signed": "Мен қол қойған",
+      "chairman": "ПДЭК төрағасы",
+      "member": "ПДЭК комиссиясының мүшесі",
+      "commissionName": "Емтихандық біліктіліктерді тексеру және рұқсат беру комиссиясы",
+      "commissionDescription": "Емтихандық біліктіліктерді тексеру және рұқсат беру комиссиясы",
+      "pendingSignatures": "Қол қоюды күтуде",
+      "signedByMe": "Мен қол қойған",
+      "totalProtocols": "Барлық протоколдар",
+      "protocolsToSign": "Қол қоюға протоколдар",
+      "signedProtocols": "Қол қойылған протоколдар",
+      "noProtocols": "Протоколдар жоқ",
+      "noProtocolsDesc": "Емтихандар тапсырылғаннан кейін қол қоюға протоколдар мұнда пайда болады",
+      "noProtocolsDescription": "Емтихандар тапсырылғаннан кейін қол қоюға протоколдар мұнда пайда болады",
+      "protocolNumber": "Протокол №{{number}}",
+      "pendingSignature": "Қол қоюды күтуде",
+      "signedByMembers": "Мүшелер қол қойған",
+      "student": "Тыңдаушы:",
+      "iin": "ЖСН:",
+      "examDate": "Емтихан күні:",
+      "result": "Нәтиже:",
+      "passed": "өтті",
+      "failed": "өтпеді",
+      "signatureStatus": "Қол қоюлардың мәртебесі:",
+      "chairmanRole": "Төраға",
+      "memberRole": "Комиссия мүшесі",
+      "viewDetails": "Толығырақ",
+      "details": "Толығырақ",
+      "signSms": "Қол қою (SMS)",
+      "signed": "Қол қойылды",
+      "signedStatus": "Қол қойылды",
+      "view": "Көру",
+      "viewProtocol": "Протоколды көру",
+      "protocolDetails": "Протокол №{{number}}",
+      "studentInfo": "Тыңдаушы туралы ақпарат",
+      "fullName": "Аты-жөні:",
+      "phone": "Телефон:",
+      "notSpecified": "Көрсетілмеген",
+      "examInfo": "Емтихан туралы ақпарат",
+      "course": "Курс:",
+      "score": "Балл:",
+      "passingScore": "Өту баллы:",
+      "signaturesTitle": "ПДЭК комиссиясының қол қоюлары",
+      "pdekSignatures": "ПДЭК комиссиясының қол қоюлары",
+      "awaitingSignatureStatus": "Қол қоюды күтуде",
+      "testCode": "Тестілеу коды: {{code}}",
+      "otpSent": "OTP коды сіздің телефоныңызға жіберілді",
+      "signRequestError": "Қол қоюды сұрау қатесі",
+      "signSuccess": "Протокол сәтті қол қойылды",
+      "signError": "Протоколға қол қою қатесі",
+      "otpDescription": "Протоколға қол қою үшін SMS-тен растау кодын енгізіңіз"
+    }
+  },
+  "pages": {
+    "home": {
+      "title": "Басты"
+    },
+    "projects": {
+      "title": "Жобалар"
+    },
+    "vacancies": {
+      "title": "Бос орындар",
+      "badge": "Мансап",
+      "heroTitle": "Бос орындар",
+      "heroDescription": "«Unicover» ЖШС командасына қосылыңыз! Біз қызықты жобалар, кәсіби даму және лайықты жұмыс жағдайларын ұсынамыз.",
+      "breadcrumbs": {
+        "home": "Басты",
+        "construction": "Құрылыс",
+        "vacancies": "Бос орындар"
+      },
+      "loading": "Бос орындар жүктелуде...",
+      "noVacancies": "Қазіргі уақытта ашық бос орындар жоқ",
+      "status": {
+        "open": "Ашық"
+      },
+      "details": "Толығырақ",
+      "info": {
+        "title": "Сізге лайықты бос орын таппадыңыз ба?",
+        "description": "Бізге резюмеңізді жіберіңіз, және біз сізге лайықты позиция пайда болған кезде хабарласамыз.",
+        "contactButton": "Бізбен байланысыңыз"
+      },
+      "error": {
+        "loadError": "Бос орындарды жүктеу қатесі"
+      },
+      "salary": {
+        "negotiable": "Келісім бойынша",
+        "from": "бастап",
+        "to": "дейін"
+      }
+    },
+    "support": {
+      "title": "Қолдау",
+      "description": "Сұрақтарыңыз болса, бізбен байланысыңыз",
+      "backToDashboard": "Жеке кабинетке оралу",
+      "contactInfo": "Байланыс ақпараты",
+      "phone": "Телефон",
+      "email": "Электрондық пошта",
+      "workingHours": "Дүйсенбі-Жұма: 9:00 - 18:00",
+      "responseTime": "24 сағат ішінде жауап береміз",
+      "faq": "Жиі қойылатын сұрақтар",
+      "faq1": {
+        "question": "Оқуды қалай бастауға болады?",
+        "answer": "\"Менің курстарым\" бөліміне өтіп, оқуды бастау үшін курс таңдаңыз. Администратор курс тағайындағаннан кейін, ол сіздің жеке кабинетіңізде пайда болады."
+      },
+      "faq2": {
+        "question": "Тестті қалай тапсыруға болады?",
+        "answer": "\"Тесттер\" бөлімінде қолжетімді тестті таңдап, \"Тестілеуді бастау\" батырмасын басыңыз. Сізде тестті тапсыруға шектеулі әрекеттер саны бар."
+      },
+      "faq3": {
+        "question": "Сертификатты қайдан алуға болады?",
+        "answer": "Курсты сәтті аяқтап және емтиханнан өткеннен кейін, сертификат сіздің жеке кабинетіңіздегі \"Құжаттар\" бөлімінде қолжетімді болады."
+      },
+      "faq4": {
+        "question": "Техникалық мәселелер пайда болса не істеу керек?",
+        "answer": "Жоғарыда көрсетілген телефон немесе электрондық пошта арқылы қолдау қызметімен байланысыңыз. Біз пайда болған мәселелерді шешуге көмектесеміз."
+      }
+    },
+    "verifyCertificate": {
+      "title": "Сертификаттың шынайылығын тексеру",
+      "description": "Сертификаттың шынайылығын тексеру үшін сертификат нөмірін енгізіңіз",
+      "placeholder": "Сертификат нөмірін енгізіңіз (мысалы, CERT-2025-ABC12345)",
+      "verify": "Тексеру",
+      "certificateNumber": "Сертификат нөмірі",
+      "enterNumber": "Сертификат нөмірін енгізіңіз",
+      "enterNumberMessage": "Тексеру үшін сертификат нөмірін енгізіңіз",
+      "verificationError": "Сертификатты тексеру қатесі",
+      "verificationErrorMessage": "Сертификатты тексеру кезінде қате орын алды. Қайталап көріңіз.",
+      "valid": "Сертификат жарамды",
+      "validDescription": "Сертификаттың шынайылығы расталды",
+      "invalid": "Сертификат табылмады немесе жарамсыз",
+      "invalidMessage": "Көрсетілген нөмірлі сертификат дерекқорда табылмады",
+      "student": "Студент",
+      "course": "Курс",
+      "issueDate": "Берілген күні",
+      "validUntil": "Жарамдылық мерзімі",
+      "expired": "Сертификаттың мерзімі өткен",
+      "notFound": "Сертификат табылмады",
+      "notFoundMessage": "Көрсетілген нөмірлі сертификат дерекқорда табылмады",
+      "errorCheckMessage": "Енгізілген сертификат нөмірінің дұрыстығын тексеріңіз. Егер нөмірдің дұрыс екеніне сенімді болсаңыз, қолдау қызметіне хабарласыңыз.",
+      "howToVerify": "Сертификатты қалай тексеруге болады?",
+      "instruction1": "Жоғарыдағы өріске сертификат нөмірін енгізіңіз",
+      "instruction2": "\"Тексеру\" батырмасын басыңыз",
+      "instruction3": "Сертификат табылса, оның ақпаратын қараңыз"
+    }
+  },
+  "forms": {
+    "login": {
+      "title": "Жүйеге кіру",
+      "subtitle": "UNICOVER оқу орталығы",
+      "phone": "Телефон нөмірі",
+      "phonePlaceholder": "+7 (XXX) XXX-XX-XX",
+      "password": "Құпия сөз",
+      "passwordPlaceholder": "Құпия сөзді енгізіңіз",
+      "remember": "Мені есте сақта",
+      "forgotPassword": "Құпия сөзді ұмыттыңыз ба?",
+      "noAccount": "Аккаунт жоқ па?",
+      "register": "Тіркелу",
+      "loginButton": "Кіру",
+      "loggingIn": "Кіруде...",
+      "invalidCredentials": "Телефон немесе құпия сөз дұрыс емес",
+      "loginError": "Кіру қатесі. Қайталап көріңіз.",
+      "demoAccounts": {
+        "title": "Демо-аккаунттар",
+        "subtitle": "Функционалды тестілеу үшін әртүрлі рөлдермен кіріңіз",
+        "demoVersion": "Демонстрациялық нұсқа. Оң жақтағы аккаунттарды пайдаланыңыз →",
+        "student": "Студент (Тыңдаушы)",
+        "studentDesc": "Курстарды өту, тесттер, сертификаттар алу",
+        "pdekMember": "ПДЭК мүшесі",
+        "pdekMemberDesc": "Емтихан протоколдарын қол қою",
+        "pdekChairman": "ПДЭК төрағасы",
+        "pdekChairmanDesc": "Протоколдарды соңғы бекіту",
+        "admin": "Администратор",
+        "adminDesc": "Жүйені, курсарды, пайдаланушыларды басқару",
+        "loginAs": "{{role}} ретінде кіру"
+      },
+      "studentRole": "Студент",
+      "pdekMemberRole": "ПДЭК мүшесі",
+      "pdekChairmanRole": "ПДЭК төрағасы",
+      "adminRole": "Администратор"
+    },
+    "register": {
+      "title": "Тіркелу",
+      "subtitle": "Курстарға қол жеткізу үшін аккаунт құрыңыз",
+      "fullName": "Аты-жөні",
+      "fullNamePlaceholder": "Аты-жөніңізді енгізіңіз",
+      "phone": "Телефон",
+      "password": "Құпия сөз",
+      "confirmPassword": "Құпия сөзді растау",
+      "iin": "ЖСН",
+      "city": "Қала",
+      "organization": "Компания",
+      "organizationPlaceholder": "Компания атауы (міндетті емес)",
+      "haveAccount": "Аккаунт бар ма?",
+      "login": "Кіру",
+      "loginLink": "Кіріңіз",
+      "registerButton": "Тіркелу",
+      "registering": "Тіркелуде...",
+      "registerError": "Тіркелу қатесі. Қайталап көріңіз.",
+      "terms": "Мен келісемін",
+      "termsLink": "пайдалану шарттарымен",
+      "and": "және",
+      "privacyLink": "құпиялылық саясатымен",
+      "important": "Маңызды:",
+      "importantMessage": "Тіркелгеннен кейін сіз аккаунтты іске қосу үшін көрсетілген телефон нөміріне растау коды бар SMS аласыз."
+    }
+  },
+  "messages": {
+    "success": {
+      "saved": "Сәтті сақталды",
+      "deleted": "Сәтті жойылды",
+      "created": "Сәтті құрылды",
+      "updated": "Сәтті жаңартылды"
+    },
+    "error": {
+      "generic": "Қате орын алды",
+      "network": "Желі қатесі",
+      "validation": "Тексеру қатесі",
+      "notFound": "Табылмады",
+      "unauthorized": "Авторизацияланбаған",
+      "forbidden": "Кіруге тыйым салынған"
+    }
+  },
+  "homepage": {
+    "hero": {
+      "bin": "БСН 100240007639",
+      "companyName": "«UNICOVER» ЖШС",
+      "subtitle": "Инженерлік және жобалау-құрылыс компаниясы",
+      "description": "Өнеркәсіптік қауіпсіздік, зерттеулер, жобалау, құрылыс жұмыстары және кәсіби оқыту саласындағы қызметтердің толық кешені",
+      "construction": {
+        "title": "Құрылыс",
+        "description": "Жобалау, зерттеулер және құрылыс-монтаждау жұмыстары"
+      },
+      "education": {
+        "title": "Оқу орталығы",
+        "description": "Өнеркәсіптік қауіпсіздік саласындағы мамандарды дайындау және қайта дайындау"
+      },
+      "learnMore": "Толығырақ",
+      "stats": {
+        "licenses": {
+          "title": "Лицензиялар",
+          "description": "Мемлекеттік лицензиялар мен сертификаттардың толық жинағы"
+        },
+        "quality": {
+          "title": "Сапа",
+          "description": "Жоғары стандарттар мен ҚР нормаларын сақтау"
+        },
+        "training": {
+          "title": "Оқыту",
+          "description": "Мамандарды дайындаудың заманауи бағдарламалары"
+        }
+      }
+    },
+    "about": {
+      "badge": "Компания туралы",
+      "title": "«Unicover» ЖШС",
+      "heading": "Көппрофильді инженерлік және жобалау-құрылыс компаниясы",
+      "description1": "«Unicover» ЖШС өнеркәсіптік қауіпсіздік, зерттеулер, жобалау және құрылыс жұмыстары саласындағы қызметтердің толық кешенін көрсетеді. Біз Қазақстан нарығында жұмыс істейміз, сапа, қауіпсіздік және нормативтік сәйкестіктің жоғары стандарттарын сақтаймыз.",
+      "description2": "Компанияда техникалық күрделілігі жоғары жұмыстарды орындау құқығын және құзыреттілікті растайтын барлық қажетті лицензиялар мен сертификаттар бар.",
+      "weCombine": "Біз біріктіреміз:",
+      "combineItems": {
+        "professionalism": "Инженерлік команданың кәсібилігі",
+        "technologies": "Заманауи технологиялар",
+        "knowledge": "Нормативтік базаны терең білу"
+      },
+      "ourGoal": {
+        "title": "Біздің мақсатымыз",
+        "description": "Көп жылдар бойы жұмыс істейтін сенімді шешімдер жасау"
+      },
+      "principles": {
+        "title": "Біздің принциптеріміз",
+        "quality": {
+          "title": "Сапа",
+          "description": "Жұмыстарды орындаудың жоғары стандарттары"
+        },
+        "safety": {
+          "title": "Қауіпсіздік",
+          "description": "Өнеркәсіптік қауіпсіздік нормаларын сақтау"
+        },
+        "responsibility": {
+          "title": "Жауапкершілік",
+          "description": "Әр жобаға кәсіби тәсіл"
+        },
+        "transparency": {
+          "title": "Ашықтық",
+          "description": "Жұмыста ашықтық пен адалдық"
+        }
+      },
+      "imageAlt": "UNICOVER компаниясы туралы"
+    },
+    "construction": {
+      "badge": "Құрылыс бағыты",
+      "title": "Жобалау және құрылыс",
+      "description": "Инженерлік зерттеулерден объектіні пайдалануға беруге дейінгі жұмыстардың толық циклі",
+      "services": {
+        "surveys": {
+          "title": "Инженерлік зерттеулер",
+          "items": {
+            "geological": "Инженерлік-геологиялық зерттеулер",
+            "hydrogeological": "Инженерлік-гидрогеологиялық жұмыстар",
+            "geodetic": "Инженерлік-геодезиялық зерттеулер",
+            "equipment": "Жоғары дәлдікті жабдық"
+          }
+        },
+        "design": {
+          "title": "Жобалау",
+          "items": {
+            "technological": "Өндірістік объектілерді технологиялық жобалау",
+            "architectural": "Сәулеттік жобалау (I-III жауапкершілік деңгейлері)",
+            "urban": "Қала құрылысын жобалау және жоспарлау",
+            "engineering": "Инженерлік жүйелер мен желілерді жобалау",
+            "reconstruction": "Қайта құру және капиталды жөндеу"
+          }
+        },
+        "construction": {
+          "title": "Құрылыс-монтаждау жұмыстары",
+          "items": {
+            "category": "ҚМЖ III санаты",
+            "buildings": "Әртүрлі мақсаттағы объектілерді құру",
+            "installation": "Жабдықты орнату",
+            "modernization": "Қайта құру және жаңғырту",
+            "standards": "ҚР СНиП және стандарттарын сақтау"
+          }
+        }
+      },
+      "licenses": {
+        "title": "Лицензиялар мен сертификаттар",
+        "description": "«Unicover» ЖШС келесі салаларда жұмыстарды орындау құқығын растайтын мемлекеттік лицензиялар мен салалық сертификаттардың толық жинағына ие:",
+        "surveys": {
+          "title": "Зерттеулер және жобалау",
+          "items": {
+            "surveys": "Инженерлік зерттеулерге лицензия",
+            "design": "Жобалауға лицензия",
+            "architectural": "Сәулеттік жобалау I-III деңгейлері"
+          }
+        },
+        "construction": {
+          "title": "Құрылыс",
+          "items": {
+            "category": "ҚМЖ III санатына лицензия",
+            "reconstruction": "Объектілерді қайта құру және жаңғырту",
+            "repair": "Ғимараттарды капиталды жөндеу"
+          }
+        }
+      }
+    },
+    "education": {
+      "badge": "Білім беру бағыты",
+      "title": "UNICOVER оқу орталығы",
+      "description": "Өнеркәсіптік қауіпсіздік саласындағы мамандарды дайындау және қайта дайындау",
+      "safety": {
+        "title": "Өнеркәсіптік қауіпсіздік",
+        "description": "Компанияда өнеркәсіптік қауіпсіздік саласында жұмыстарды жүргізу құқығын растайтын сертификат бар, оған мыналар кіреді:",
+        "items": {
+          "training": "Өнеркәсіптік қауіпсіздік саласындағы мамандар мен жұмысшыларды дайындау және қайта дайындау",
+          "safetyRequirements": "Қауіпті өндірістік объектілерді пайдалану кезінде қауіпсіздік талаптарын оқыту"
+        },
+        "commitment": "Біз кәсіпорындар персоналының жоғары деңгейдегі құзыреттілігін қамтамасыз етеміз, Қазақстан Республикасының салалық нормалары мен стандарттарына сәйкес білім беру бағдарламаларын жүзеге асырамыз."
+      },
+      "features": {
+        "certificate": {
+          "title": "Жұмыстарды орындау құқығына сертификат",
+          "description": "Өнеркәсіптік қауіпсіздік саласындағы мамандарды дайындауға ресми рұқсат"
+        },
+        "teachers": {
+          "title": "Тәжірибелі оқытушылар",
+          "description": "Қауіпті объектілерде практикалық тәжірибесі бар кәсіби құрам"
+        },
+        "programs": {
+          "title": "Заманауи бағдарламалар",
+          "description": "ҚР стандарттарына сәйкес келетін өзекті білім беру бағдарламалары"
+        },
+        "documents": {
+          "title": "Ресми құжаттар",
+          "description": "Белгіленген үлгідегі сертификаттар мен протоколдар беру"
+        }
+      },
+      "imageAlt": "Оқу орталығы"
+    },
+    "contacts": {
+      "badge": "Байланыстар",
+      "title": "Бізбен байланысыңыз",
+      "description": "Біз сіздің сұрақтарыңызға жауап беруге және ынтымақтастық мүмкіндіктерін талқылауға дайынбыз",
+      "info": {
+        "bin": {
+          "title": "БСН",
+          "content": "100240007639"
+        },
+        "address": {
+          "title": "Мекен-жай",
+          "content": "Атырау қ., Студенттік көшесі 25\nБЦ Bayterek Plaza, 5 қабат"
+        },
+        "phone": {
+          "title": "Телефондар",
+          "content": "+7 (7122) 20-80-92\n+7 708 420-80-92"
+        },
+        "email": {
+          "title": "Электрондық пошта",
+          "content": "info@unicover.kz"
+        },
+        "workingHours": {
+          "title": "Жұмыс режимі",
+          "content": "Дүйсенбі-Жұма: 9:00 - 18:00\nСенбі-Жексенбі: Демалыс"
+        }
+      },
+      "companyDetails": {
+        "title": "Компания реквизиттері",
+        "fullName": "Толық атауы",
+        "fullNameValue": "«UNICOVER» ЖШС",
+        "bin": "БСН",
+        "binValue": "100240007639",
+        "legalAddress": "Заңды мекен-жайы",
+        "legalAddressValue": "Атырау қ., Студенттік көшесі 25, БЦ Bayterek Plaza, 5 қабат",
+        "email": "Электрондық пошта",
+        "emailValue": "info@unicover.kz"
+      },
+      "form": {
+        "title": "Сұрау жіберу",
+        "name": "Сіздің атыңыз",
+        "namePlaceholder": "Атыңызды енгізіңіз",
+        "company": "Компания",
+        "companyPlaceholder": "Компания атауы",
+        "email": "Электрондық пошта",
+        "emailPlaceholder": "your@email.com",
+        "phone": "Телефон",
+        "phonePlaceholder": "+7 (___) ___-____",
+        "direction": "Қызықтыратын бағыт",
+        "directionPlaceholder": "Бағытты таңдаңыз",
+        "directions": {
+          "construction": "Құрылыс және жобалау",
+          "engineering": "Инженерлік зерттеулер",
+          "education": "Оқыту",
+          "safety": "Өнеркәсіптік қауіпсіздік",
+          "other": "Басқа"
+        },
+        "message": "Хабарлама",
+        "messagePlaceholder": "Сұрауыңызды толығырақ сипаттаңыз...",
+        "submit": "Сұрау жіберу",
+        "sending": "Жіберілуде...",
+        "requiredFields": "Міндетті толтыру өрістері",
+        "successMessage": "Сіздің хабарламаңыз сәтті жіберілді! Біз сізбен жақын арада байланысамыз.",
+        "errorMessage": "Хабарламаны жіберу қатесі. Қайталап көріңіз.",
+        "thankYou": "Хабарламаңызға рахмет!",
+        "contactSoon": "Біз сізбен жақын арада байланысамыз."
+      }
+    }
   }
 }
-

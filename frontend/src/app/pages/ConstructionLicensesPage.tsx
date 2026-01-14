@@ -5,16 +5,26 @@ import { FileText, Download, Award, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { licensesService, License } from '../services/licenses';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 export function ConstructionLicensesPage() {
+  const { t, i18n } = useTranslation();
   const [licenses, setLicenses] = useState<License[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState<string>('Все');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+
+  const currentLanguage = i18n.language || localStorage.getItem('language') || 'ru';
+  const localeMap: Record<string, string> = {
+    'ru': 'ru-RU',
+    'kz': 'kk-KZ',
+    'en': 'en-US'
+  };
+  const currentLocale = localeMap[currentLanguage] || 'ru-RU';
 
   const categories = [
-    { value: 'Все', label: 'Все' },
-    { value: 'surveying', label: 'Изыскания и проектирование' },
-    { value: 'construction', label: 'Строительство' },
+    { value: 'all', label: t('licenses.categories.all') },
+    { value: 'surveying', label: t('licenses.categories.surveying') },
+    { value: 'construction', label: t('licenses.categories.construction') },
   ];
 
   useEffect(() => {
@@ -25,7 +35,7 @@ export function ConstructionLicensesPage() {
         setLicenses(data);
       } catch (error: any) {
         console.error('Failed to fetch licenses:', error);
-        toast.error('Ошибка загрузки лицензий');
+        toast.error(t('licenses.errors.loadError'));
       } finally {
         setLoading(false);
       }
@@ -34,18 +44,20 @@ export function ConstructionLicensesPage() {
     fetchLicenses();
   }, []);
 
-  const filteredLicenses = selectedCategory === 'Все' 
+  const filteredLicenses = selectedCategory === 'all' 
     ? licenses 
     : licenses.filter(license => license.category === selectedCategory);
 
   const getCategoryLabel = (category: string): string => {
-    const cat = categories.find(c => c.value === category);
-    return cat ? cat.label : category;
+    if (category === 'all') return t('licenses.categories.all');
+    if (category === 'surveying') return t('licenses.categories.surveying');
+    if (category === 'construction') return t('licenses.categories.construction');
+    return category;
   };
 
   const handleDownload = async (license: License) => {
     if (!license.file_url) {
-      toast.error('Файл недоступен для скачивания');
+      toast.error(t('licenses.errors.fileUnavailable'));
       return;
     }
 
@@ -60,14 +72,14 @@ export function ConstructionLicensesPage() {
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
-        toast.success('Файл успешно скачан');
+        toast.success(t('licenses.success.downloadSuccess'));
       } else {
         // Fallback to direct URL
         window.open(license.file_url, '_blank');
       }
     } catch (error: any) {
       console.error('Failed to download license:', error);
-      toast.error('Ошибка при скачивании файла');
+      toast.error(t('licenses.errors.downloadError'));
     }
   };
 
@@ -81,12 +93,11 @@ export function ConstructionLicensesPage() {
             <div className="max-w-3xl">
               <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full mb-6">
                 <Award className="w-5 h-5" />
-                <span className="font-medium">Лицензии и сертификаты</span>
+                <span className="font-medium">{t('licenses.badge')}</span>
               </div>
-              <h1 className="text-4xl md:text-5xl font-bold mb-6">Лицензии</h1>
+              <h1 className="text-4xl md:text-5xl font-bold mb-6">{t('licenses.title')}</h1>
               <p className="text-xl text-blue-100 leading-relaxed">
-                ТОО «Unicover» обладает полным пакетом государственных лицензий и отраслевых 
-                аттестатов, подтверждающих право выполнения работ в различных областях.
+                {t('licenses.description')}
               </p>
             </div>
           </div>
@@ -96,11 +107,11 @@ export function ConstructionLicensesPage() {
         <div className="bg-gray-50 border-b border-gray-200">
           <div className="container mx-auto px-4 py-4">
             <nav className="flex items-center gap-2 text-sm text-gray-600">
-              <Link to="/" className="hover:text-blue-600 transition-colors">Главная</Link>
+              <Link to="/" className="hover:text-blue-600 transition-colors">{t('common.home')}</Link>
               <span>/</span>
-              <Link to="/construction" className="hover:text-blue-600 transition-colors">Строительство</Link>
+              <Link to="/construction" className="hover:text-blue-600 transition-colors">{t('common.construction')}</Link>
               <span>/</span>
-              <span className="text-gray-900 font-medium">Лицензии</span>
+              <span className="text-gray-900 font-medium">{t('licenses.breadcrumbs.licenses')}</span>
             </nav>
           </div>
         </div>
@@ -127,12 +138,12 @@ export function ConstructionLicensesPage() {
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
-              <span className="ml-3 text-gray-600">Загрузка лицензий...</span>
+              <span className="ml-3 text-gray-600">{t('licenses.loading')}</span>
             </div>
           ) : filteredLicenses.length === 0 ? (
             <div className="text-center py-12">
               <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-600">Лицензии не найдены</p>
+              <p className="text-gray-600">{t('licenses.notFound')}</p>
             </div>
           ) : (
             <>
@@ -159,20 +170,20 @@ export function ConstructionLicensesPage() {
                     
                     <div className="space-y-2 mb-4 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-gray-500">Номер:</span>
+                        <span className="text-gray-500">{t('licenses.card.number')}</span>
                         <span className="font-medium text-gray-900">{license.number}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-500">Выдана:</span>
+                        <span className="text-gray-500">{t('licenses.card.issued')}</span>
                         <span className="font-medium text-gray-900">
-                          {new Date(license.issued_date).toLocaleDateString('ru-RU')}
+                          {new Date(license.issued_date).toLocaleDateString(currentLocale)}
                         </span>
                       </div>
                       {license.valid_until && (
                         <div className="flex justify-between">
-                          <span className="text-gray-500">Действует до:</span>
+                          <span className="text-gray-500">{t('licenses.card.validUntil')}</span>
                           <span className="font-medium text-gray-900">
-                            {new Date(license.valid_until).toLocaleDateString('ru-RU')}
+                            {new Date(license.valid_until).toLocaleDateString(currentLocale)}
                           </span>
                         </div>
                       )}
@@ -184,12 +195,12 @@ export function ConstructionLicensesPage() {
                         className="flex items-center gap-2 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
                       >
                         <Download className="w-4 h-4" />
-                        Скачать документ
+                        {t('licenses.card.download')}
                       </button>
                     ) : (
                       <div className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-500 rounded-lg text-sm">
                         <FileText className="w-4 h-4" />
-                        Файл недоступен
+                        {t('licenses.card.fileUnavailable')}
                       </div>
                     )}
                   </div>
@@ -200,17 +211,14 @@ export function ConstructionLicensesPage() {
 
           {/* Info Section */}
           <div className="bg-blue-50 border border-blue-200 rounded-xl p-8">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">О лицензиях</h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-4">{t('licenses.info.title')}</h3>
             <p className="text-gray-700 mb-4">
-              Все лицензии выданы уполномоченными органами Республики Казахстан и подтверждают 
-              право ТОО «Unicover» на выполнение соответствующих видов работ. Лицензии регулярно 
-              обновляются и проходят необходимые процедуры переоформления.
+              {t('licenses.info.description1')}
             </p>
             <p className="text-gray-700">
-              Для получения дополнительной информации о лицензиях или запроса копий документов, 
-              пожалуйста, свяжитесь с нами через{' '}
+              {t('licenses.info.description2')}{' '}
               <Link to="/contacts" className="text-blue-600 hover:underline font-medium">
-                форму обратной связи
+                {t('licenses.info.contactLink')}
               </Link>.
             </p>
           </div>

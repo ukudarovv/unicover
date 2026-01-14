@@ -10,6 +10,24 @@ from django.core.files.base import ContentFile
 from PIL import Image
 
 
+class CertificateTemplate(models.Model):
+    """Certificate template model"""
+    
+    name = models.CharField(max_length=255, help_text='Template name')
+    description = models.TextField(blank=True, help_text='Template description')
+    file = models.FileField(upload_to='certificates/templates/', help_text='Template file')
+    is_active = models.BooleanField(default=True, help_text='Is template active')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'certificate_templates'
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return self.name
+
+
 class Certificate(models.Model):
     """Certificate model"""
     
@@ -17,6 +35,10 @@ class Certificate(models.Model):
     student = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='certificates', on_delete=models.CASCADE)
     course = models.ForeignKey(Course, related_name='certificates', on_delete=models.CASCADE)
     protocol = models.ForeignKey(Protocol, related_name='certificates', on_delete=models.SET_NULL, null=True, blank=True)
+    template = models.ForeignKey('CertificateTemplate', related_name='certificates', on_delete=models.SET_NULL, null=True, blank=True, help_text='Certificate template used')
+    file = models.FileField(upload_to='certificates/files/', null=True, blank=True, help_text='Uploaded certificate file')
+    uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='uploaded_certificates', on_delete=models.SET_NULL, null=True, blank=True, help_text='Admin who uploaded the file')
+    uploaded_at = models.DateTimeField(null=True, blank=True, help_text='When the file was uploaded')
     issued_at = models.DateTimeField(auto_now_add=True)
     valid_until = models.DateTimeField(null=True, blank=True)
     qr_code = models.TextField(blank=True, help_text='QR code data')
@@ -48,7 +70,8 @@ class Certificate(models.Model):
     def generate_qr_code(self):
         """Generate QR code for certificate"""
         from django.conf import settings
-        verification_url = f"{settings.FRONTEND_URL or 'http://localhost:5173'}/verify/{self.number}"
+        frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:5173')
+        verification_url = f"{frontend_url}/verify/{self.number}"
         
         qr = qrcode.QRCode(
             version=1,

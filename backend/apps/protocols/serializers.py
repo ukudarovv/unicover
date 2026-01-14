@@ -22,13 +22,13 @@ class ProtocolSerializer(serializers.ModelSerializer):
     """Protocol serializer"""
     student = UserSerializer(read_only=True)
     course = CourseSerializer(read_only=True)
-    attempt = TestAttemptSerializer(read_only=True)
+    attempt = TestAttemptSerializer(read_only=True, allow_null=True)
     signatures = ProtocolSignatureSerializer(many=True, read_only=True)
     
     class Meta:
         model = Protocol
         fields = [
-            'id', 'number', 'student', 'course', 'attempt',
+            'id', 'number', 'student', 'course', 'attempt', 'enrollment',
             'exam_date', 'score', 'passing_score', 'result',
             'status', 'rejection_reason', 'signatures',
             'created_at', 'updated_at'
@@ -41,7 +41,7 @@ class ProtocolCreateSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Protocol
-        fields = ['student', 'course', 'attempt', 'exam_date', 'score', 'passing_score', 'result']
+        fields = ['student', 'course', 'attempt', 'enrollment', 'exam_date', 'score', 'passing_score', 'result']
 
 
 class OTPRequestSerializer(serializers.Serializer):

@@ -1,5 +1,5 @@
 import { apiClient } from './api';
-import { Certificate } from '../types/lms';
+import { Certificate, CertificateTemplate, PendingCertificate } from '../types/lms';
 
 const certificatesService = {
   async getCertificates(params?: { user?: string }): Promise<Certificate[]> {
@@ -52,8 +52,180 @@ const certificatesService = {
     return response.blob();
   },
 
-  async verifyCertificate(qrCode: string): Promise<{ valid: boolean; certificate?: Certificate }> {
-    return apiClient.get(`/certificates/verify/${qrCode}/`);
+  async verifyCertificate(certificateNumber: string): Promise<{ 
+    valid: boolean; 
+    certificate?: Certificate; 
+    error?: string;
+    message?: string;
+  }> {
+    try {
+      // URL encode the certificate number to handle special characters
+      const encodedNumber = encodeURIComponent(certificateNumber);
+      const response = await apiClient.get<{
+        valid: boolean;
+        certificate?: Certificate;
+        error?: string;
+        message?: string;
+      }>(`/certificates/verify/${encodedNumber}/`);
+      
+      return response;
+    } catch (error: any) {
+      // Handle API errors
+      if (error.status === 404) {
+        return {
+          valid: false,
+          error: 'Сертификат не найден',
+          message: 'Сертификат с указанным номером не найден в базе данных'
+        };
+      }
+      
+      throw error;
+    }
+  },
+
+  async getTemplates(): Promise<CertificateTemplate[]> {
+    const data = await apiClient.get<any>('/certificates/templates/');
+    
+    if (Array.isArray(data)) {
+      return data;
+    }
+    
+    if (data && typeof data === 'object') {
+      if (Array.isArray(data.results)) {
+        return data.results;
+      }
+      if (Array.isArray(data.data)) {
+        return data.data;
+      }
+    }
+    
+    return [];
+  },
+
+  async getTemplate(id: string): Promise<CertificateTemplate> {
+    return apiClient.get<CertificateTemplate>(`/certificates/templates/${id}/`);
+  },
+
+  async createTemplate(template: Partial<CertificateTemplate>): Promise<CertificateTemplate> {
+    const formData = new FormData();
+    if (template.name) formData.append('name', template.name);
+    if (template.description) formData.append('description', template.description);
+    if (template.file && template.file instanceof File) formData.append('file', template.file);
+    if (template.is_active !== undefined) formData.append('is_active', String(template.is_active));
+    
+    return apiClient.post<CertificateTemplate>('/certificates/templates/', formData);
+  },
+
+  async updateTemplate(id: string, template: Partial<CertificateTemplate>): Promise<CertificateTemplate> {
+    const formData = new FormData();
+    if (template.name) formData.append('name', template.name);
+    if (template.description !== undefined) formData.append('description', template.description);
+    if (template.file && template.file instanceof File) formData.append('file', template.file);
+    if (template.is_active !== undefined) formData.append('is_active', String(template.is_active));
+    
+    // Use fetch directly for FormData with PATCH
+    const url = `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/certificates/templates/${id}/`;
+    const token = apiClient.getToken();
+    const response = await fetch(url, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: formData,
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.detail || errorData.message || 'Failed to update template');
+    }
+    
+    return response.json();
+  },
+
+  async deleteTemplate(id: string): Promise<void> {
+    await apiClient.delete(`/certificates/templates/${id}/`);
+  },
+
+  async getPendingCertificates(): Promise<PendingCertificate[]> {
+    return apiClient.get<PendingCertificate[]>('/certificates/pending/');
+  },
+
+  async uploadCertificate(
+    certificateId: string | null,
+    file: File,
+    templateId?: string,
+    studentId?: string,
+    courseId?: string
+  ): Promise<Certificate> {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (templateId) formData.append('template', templateId);
+    if (studentId) formData.append('student', studentId);
+    if (courseId) formData.append('course', courseId);
+    
+    if (certificateId) {
+      // Update existing certificate - use request method directly for FormData
+      const url = `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/certificates/${certificateId}/`;
+      const token = apiClient.getToken();
+      const response = await fetch(url, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || errorData.message || 'Failed to update certificate');
+      }
+      
+      return response.json();
+    } else {
+      // Create new certificate
+      return apiClient.post<Certificate>('/certificates/', formData);
+    }
+  },
+
+  async updateCertificate(
+    certificateId: string,
+    data: Partial<Certificate>
+  ): Promise<Certificate> {
+    const formData = new FormData();
+    if ('number' in data && data.number) {
+      formData.append('number', data.number);
+    }
+    if ('templateId' in data) {
+      formData.append('template', data.templateId || '');
+    }
+    if ('validUntil' in data) {
+      formData.append('valid_until', data.validUntil ? (data.validUntil as string) : '');
+    }
+    if (data.file && data.file instanceof File) {
+      formData.append('file', data.file);
+    }
+    
+    // Use fetch directly for FormData with PATCH
+    const url = `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/certificates/${certificateId}/`;
+    const token = apiClient.getToken();
+    const response = await fetch(url, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: formData,
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.detail || errorData.message || 'Failed to update certificate');
+    }
+    
+    return response.json();
+  },
+
+  async deleteCertificate(certificateId: string): Promise<void> {
+    await apiClient.delete(`/certificates/${certificateId}/`);
   },
 };
 

@@ -4,8 +4,8 @@ from .models import Test, Question
 
 @admin.register(Test)
 class TestAdmin(admin.ModelAdmin):
-    list_display = ('title', 'course', 'passing_score', 'time_limit', 'max_attempts', 'is_active', 'created_at')
-    list_filter = ('is_active', 'course', 'created_at')
+    list_display = ('title', 'passing_score', 'time_limit', 'max_attempts', 'is_active', 'created_at')
+    list_filter = ('is_active', 'created_at')
     search_fields = ('title',)
     ordering = ('-created_at',)
     readonly_fields = ('created_at', 'updated_at', 'questions_count')

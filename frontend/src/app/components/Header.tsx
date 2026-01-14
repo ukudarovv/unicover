@@ -79,7 +79,7 @@ export function Header() {
                 }}
                 className={`text-xs px-3 py-1 rounded ${language === 'ru' ? 'bg-blue-600 text-white' : 'hover:text-blue-300'}`}
               >
-                Русский
+                {t('header.russian')}
               </button>
               <span className="text-gray-400">|</span>
               <button
@@ -90,7 +90,7 @@ export function Header() {
                 }}
                 className={`text-xs px-3 py-1 rounded ${language === 'kz' ? 'bg-blue-600 text-white' : 'hover:text-blue-300'}`}
               >
-                Қазақша
+                {t('header.kazakh')}
               </button>
               <span className="text-gray-400">|</span>
               <button
@@ -101,7 +101,7 @@ export function Header() {
                 }}
                 className={`text-xs px-3 py-1 rounded ${language === 'en' ? 'bg-blue-600 text-white' : 'hover:text-blue-300'}`}
               >
-                English
+                {t('header.english')}
               </button>
             </div>
           </div>
@@ -113,14 +113,12 @@ export function Header() {
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <div className="flex items-center">
-            <Link to="/" className="flex items-center gap-3">
-              <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl flex items-center justify-center shadow-lg">
-                <span className="text-white font-bold text-lg">UC</span>
-              </div>
-              <div>
-                <div className="font-bold text-gray-900 text-xl">UNICOVER</div>
-                <div className="text-xs text-gray-600">ТОО "UNICOVER"</div>
-              </div>
+            <Link to="/" className="flex items-center">
+              <img 
+                src="/logo.jpg" 
+                alt="UNICOVER Logo" 
+                className="h-14 w-auto object-contain"
+              />
             </Link>
           </div>
 
@@ -146,11 +144,11 @@ export function Header() {
                 <Link to="/construction/licenses" className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">
                   {t('construction.licenses')}
                 </Link>
-                <Link to="/construction" className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                <Link to="/projects" className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">
                   {t('construction.projects')}
                 </Link>
                 <Link to="/construction/vacancies" className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                  Вакансии
+                  {t('navigation.vacancies')}
                 </Link>
                 <a href="/#partners" className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">
                   {t('construction.partners')}
@@ -171,6 +169,9 @@ export function Header() {
                 <Link to="/education" className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">
                   {t('education.programs')}
                 </Link>
+                <Link to="/verify" className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                  {t('education.certificateVerification')}
+                </Link>
               </div>
             </div>
 
@@ -185,12 +186,12 @@ export function Header() {
                   className="flex items-center gap-2 bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-md"
                 >
                   <User className="w-4 h-4" />
-                  {currentUser?.full_name?.split(' ')[0] || currentUser?.fullName?.split(' ')[0] || 'Кабинет'}
+                  {currentUser?.full_name?.split(' ')[0] || currentUser?.fullName?.split(' ')[0] || t('header.personalCabinet')}
                 </Link>
                 <button
                   onClick={handleLogout}
                   className="flex items-center gap-2 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
-                  title="Выйти"
+                  title={t('common.logout')}
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
@@ -226,34 +227,37 @@ export function Header() {
                 О компании
               </a>
               <div className="border-t border-gray-200 pt-2">
-                <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Строительство</p>
+                <p className="text-xs font-semibold text-gray-500 uppercase mb-2">{t('common.construction')}</p>
                 <Link to="/construction/about" className="text-gray-700 hover:text-blue-600 py-2 pl-4 block">
-                  О компании
+                  {t('construction.about')}
                 </Link>
                 <Link to="/construction/licenses" className="text-gray-700 hover:text-blue-600 py-2 pl-4 block">
-                  Лицензии
+                  {t('construction.licenses')}
                 </Link>
                 <Link to="/construction" className="text-gray-700 hover:text-blue-600 py-2 pl-4 block">
-                  Проекты и работы
+                  {t('construction.completedWorks')}
                 </Link>
                 <a href="/#partners" className="text-gray-700 hover:text-blue-600 py-2 pl-4 block">
-                  Партнеры
+                  {t('construction.partners')}
                 </a>
               </div>
               <div className="border-t border-gray-200 pt-2">
-                <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Учебный центр</p>
+                <p className="text-xs font-semibold text-gray-500 uppercase mb-2">{t('common.education')}</p>
                 <a href="/#education" className="text-gray-700 hover:text-blue-600 py-2 pl-4 block">
-                  О центре
+                  {t('education.about')}
                 </a>
                 <Link to="/education" className="text-gray-700 hover:text-blue-600 py-2 pl-4 block">
-                  Программы обучения
+                  {t('education.programs')}
+                </Link>
+                <Link to="/verify" className="text-gray-700 hover:text-blue-600 py-2 pl-4 block">
+                  {t('education.certificateVerification')}
                 </Link>
               </div>
               <Link to="/contacts" className="text-gray-700 hover:text-blue-600 py-2">
-                Контакты
+                {t('common.contacts')}
               </Link>
               <Link to="/login" className="text-blue-600 font-medium py-2 border-t border-gray-200">
-                Личный кабинет
+                {t('header.personalCabinet')}
               </Link>
             </div>
           </nav>

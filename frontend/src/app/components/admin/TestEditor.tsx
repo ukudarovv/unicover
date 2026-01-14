@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
-import { X, Save, Plus, Trash2, GripVertical } from 'lucide-react';
-import { Test, Question, Course } from '../../types/lms';
+import React, { useState, useEffect } from 'react';
+import { ArrowLeft, Save, Plus, Trash2, GripVertical } from 'lucide-react';
+import { Test, Question } from '../../types/lms';
 import { testsService } from '../../services/tests';
-import { coursesService } from '../../services/courses';
+import { useTranslation } from 'react-i18next';
 
 interface TestEditorProps {
   test?: Test;
@@ -10,21 +10,46 @@ interface TestEditorProps {
   onCancel: () => void;
 }
 
-export function TestEditor({ test, onSave, onCancel }: TestEditorProps) {
-  // Инициализируем courseId из test
-  const getInitialCourseId = (test?: Test): string => {
-    if (!test) return '';
-    if (test.courseId) return String(test.courseId);
-    if (test.course) {
-      return typeof test.course === 'string' ? test.course : String(test.course.id || '');
+// Функция для нормализации вопросов: преобразует объекты options в строки
+function normalizeQuestions(questions: Question[]): Question[] {
+  return questions.map(q => {
+    if (q.type === 'single_choice' || q.type === 'multiple_choice') {
+      if (Array.isArray(q.options) && q.options.length > 0) {
+        // Если options - это объекты, извлекаем text
+        if (typeof q.options[0] === 'object' && q.options[0] !== null) {
+          const optionsAsStrings = (q.options as Array<{ id?: string; text: string }>).map(opt => opt.text);
+          // Для correctAnswer: если это id, находим соответствующий text
+          let correctAnswer = q.correctAnswer;
+          if (q.type === 'single_choice' && typeof correctAnswer === 'string') {
+            const correctOption = (q.options as Array<{ id?: string; text: string }>).find(
+              opt => String(opt.id) === correctAnswer
+            );
+            correctAnswer = correctOption?.text || correctAnswer;
+          } else if (q.type === 'multiple_choice' && Array.isArray(correctAnswer)) {
+            correctAnswer = correctAnswer.map(ca => {
+              const correctOption = (q.options as Array<{ id?: string; text: string }>).find(
+                opt => String(opt.id) === ca
+              );
+              return correctOption?.text || ca;
+            });
+          }
+          return {
+            ...q,
+            options: optionsAsStrings,
+            correctAnswer
+          };
+        }
+      }
     }
-    return '';
-  };
+    return q;
+  });
+}
 
+export function TestEditor({ test, onSave, onCancel }: TestEditorProps) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<Partial<Test>>({
     title: test?.title || '',
     description: test?.description || '',
-    courseId: getInitialCourseId(test),
     timeLimit: test?.timeLimit || test?.time_limit || 30,
     passingScore: test?.passingScore || test?.passing_score || 80,
     maxAttempts: test?.maxAttempts || test?.max_attempts || 3,
@@ -36,25 +61,6 @@ export function TestEditor({ test, onSave, onCancel }: TestEditorProps) {
   const [questions, setQuestions] = useState<Question[]>(test?.questions || []);
   const [expandedQuestion, setExpandedQuestion] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [coursesLoading, setCoursesLoading] = useState(false);
-
-  // Загружаем курсы при монтировании компонента
-  useEffect(() => {
-    const loadCourses = async () => {
-      try {
-        setCoursesLoading(true);
-        const response = await coursesService.getCourses({ page_size: 1000 });
-        setCourses(response.results);
-      } catch (error) {
-        console.error('Failed to load courses:', error);
-        setCourses([]);
-      } finally {
-        setCoursesLoading(false);
-      }
-    };
-    loadCourses();
-  }, []);
 
   // Загружаем вопросы при редактировании теста
   useEffect(() => {
@@ -63,7 +69,9 @@ export function TestEditor({ test, onSave, onCancel }: TestEditorProps) {
         try {
           setLoading(true);
           const loadedQuestions = await testsService.getTestQuestions(test.id);
-          setQuestions(loadedQuestions);
+          // Нормализуем options: преобразуем объекты {id, text} в строки для работы редактора
+          const normalizedQuestions = normalizeQuestions(loadedQuestions);
+          setQuestions(normalizedQuestions);
         } catch (error) {
           console.error('Failed to load questions:', error);
           setQuestions([]);
@@ -78,27 +86,22 @@ export function TestEditor({ test, onSave, onCancel }: TestEditorProps) {
   // Обновляем formData при изменении test (для редактирования)
   useEffect(() => {
     if (test) {
-      const courseId = test.courseId 
-        || (typeof test.course === 'string' ? test.course : test.course?.id)
-        || '';
-      
       setFormData(prev => ({
         ...prev,
         title: test.title || prev.title,
         description: test.description || prev.description,
-        courseId: courseId ? String(courseId) : '',
         timeLimit: test.timeLimit || test.time_limit || prev.timeLimit,
         passingScore: test.passingScore || test.passing_score || prev.passingScore,
         maxAttempts: test.maxAttempts || test.max_attempts || prev.maxAttempts,
       }));
     }
-  }, [test?.id, test?.courseId, test?.course, test?.title, test?.description]);
+  }, [test?.id, test?.title, test?.description, test?.timeLimit, test?.time_limit, test?.passingScore, test?.passing_score, test?.maxAttempts, test?.max_attempts]);
 
   const questionTypes = [
-    { value: 'single_choice', label: 'Один правильный ответ' },
-    { value: 'multiple_choice', label: 'Несколько правильных ответов' },
-    { value: 'yes_no', label: 'Да/Нет' },
-    { value: 'short_answer', label: 'Краткий ответ' },
+    { value: 'single_choice', label: t('admin.tests.questionTypes.singleChoice') },
+    { value: 'multiple_choice', label: t('admin.tests.questionTypes.multipleChoice') },
+    { value: 'yes_no', label: t('admin.tests.questionTypes.yesNo') },
+    { value: 'short_answer', label: t('admin.tests.questionTypes.shortAnswer') },
   ];
 
   const handleAddQuestion = () => {
@@ -123,7 +126,7 @@ export function TestEditor({ test, onSave, onCancel }: TestEditorProps) {
         // При изменении типа вопроса нужно обновить options и correctAnswer
         if (updates.type && updates.type !== q.type) {
           if (updates.type === 'yes_no') {
-            updated.options = ['Да', 'Нет'];
+            updated.options = [t('common.yes'), t('common.no')];
             updated.correctAnswer = '';
           } else if (updates.type === 'short_answer') {
             updated.options = undefined;
@@ -199,39 +202,58 @@ export function TestEditor({ test, onSave, onCancel }: TestEditorProps) {
   };
 
   const handleSave = () => {
-    onSave({
+    // Валидация: название теста обязательно
+    if (!formData.title || formData.title.trim() === '') {
+      alert(t('admin.tests.testTitleRequired') || 'Название теста обязательно');
+      return;
+    }
+
+    // Убеждаемся, что числовые значения не NaN
+    const cleanFormData = {
       ...formData,
+      timeLimit: formData.timeLimit && !isNaN(formData.timeLimit) ? formData.timeLimit : 30,
+      passingScore: formData.passingScore && !isNaN(formData.passingScore) ? formData.passingScore : 80,
+      maxAttempts: formData.maxAttempts && !isNaN(formData.maxAttempts) ? formData.maxAttempts : 3,
+    };
+
+    onSave({
+      ...cleanFormData,
       questions,
     });
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-30 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
-      <div className="bg-white rounded-lg shadow-2xl ring-4 ring-white ring-opacity-50 max-w-5xl w-full my-8">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-900">
-            {test ? 'Редактировать тест' : 'Создать тест'}
-          </h2>
-          <button onClick={onCancel} className="text-gray-400 hover:text-gray-600">
-            <X className="w-6 h-6" />
+    <div className="bg-white rounded-lg shadow-lg">
+      {/* Header */}
+      <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={onCancel} 
+            className="text-gray-600 hover:text-gray-900 transition-colors"
+            title={t('common.back')}
+          >
+            <ArrowLeft className="w-6 h-6" />
           </button>
+          <h2 className="text-2xl font-bold text-gray-900">
+            {test ? t('admin.tests.editTest') : t('admin.tests.createTest')}
+          </h2>
         </div>
+      </div>
 
-        <div className="p-6 max-h-[calc(100vh-12rem)] overflow-y-auto">
+      <div className="p-6">
           {/* Basic Info */}
           <div className="mb-8">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Настройки теста</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-4">{t('admin.tests.testSettings')}</h3>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Название теста *
+                  {t('admin.tests.testTitle')} *
                 </label>
                 <input
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="Введите название теста"
+                  placeholder={t('admin.tests.testTitlePlaceholder')}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                 />
@@ -239,65 +261,46 @@ export function TestEditor({ test, onSave, onCancel }: TestEditorProps) {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Описание
+                  {t('admin.tests.description')}
                 </label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Описание теста и инструкции"
+                  placeholder={t('admin.tests.descriptionPlaceholder')}
                   rows={2}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Привязать к курсу
-                </label>
-                <select
-                  value={formData.courseId || ''}
-                  onChange={(e) => setFormData({ ...formData, courseId: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">-- Без привязки к курсу --</option>
-                  {coursesLoading ? (
-                    <option disabled>Загрузка курсов...</option>
-                  ) : (
-                    courses.map((course) => (
-                      <option key={course.id} value={course.id}>
-                        {course.title}
-                      </option>
-                    ))
-                  )}
-                </select>
-                {formData.courseId && (
-                  <p className="text-xs text-gray-500 mt-1">
-                    Выбран курс: {courses.find(c => String(c.id) === String(formData.courseId))?.title || 'Загрузка...'}
-                  </p>
-                )}
-              </div>
-
               <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Время (мин)
+                    {t('admin.tests.timeLimit')}
                   </label>
                   <input
                     type="number"
-                    value={formData.timeLimit}
-                    onChange={(e) => setFormData({ ...formData, timeLimit: parseInt(e.target.value) })}
+                    value={formData.timeLimit ?? ''}
+                    onChange={(e) => {
+                      const parsed = parseInt(e.target.value);
+                      const value = isNaN(parsed) ? 30 : parsed;
+                      setFormData({ ...formData, timeLimit: value });
+                    }}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Проходной балл (%)
+                    {t('admin.tests.passingScore')}
                   </label>
                   <input
                     type="number"
-                    value={formData.passingScore}
-                    onChange={(e) => setFormData({ ...formData, passingScore: parseInt(e.target.value) })}
+                    value={formData.passingScore ?? ''}
+                    onChange={(e) => {
+                      const parsed = parseInt(e.target.value);
+                      const value = isNaN(parsed) ? 80 : parsed;
+                      setFormData({ ...formData, passingScore: value });
+                    }}
                     min="0"
                     max="100"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -306,12 +309,16 @@ export function TestEditor({ test, onSave, onCancel }: TestEditorProps) {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Попыток
+                    {t('admin.tests.maxAttempts')}
                   </label>
                   <input
                     type="number"
-                    value={formData.maxAttempts}
-                    onChange={(e) => setFormData({ ...formData, maxAttempts: parseInt(e.target.value) })}
+                    value={formData.maxAttempts ?? ''}
+                    onChange={(e) => {
+                      const parsed = parseInt(e.target.value);
+                      const value = isNaN(parsed) ? 3 : parsed;
+                      setFormData({ ...formData, maxAttempts: value });
+                    }}
                     min="1"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
@@ -326,7 +333,7 @@ export function TestEditor({ test, onSave, onCancel }: TestEditorProps) {
                     onChange={(e) => setFormData({ ...formData, shuffleQuestions: e.target.checked })}
                     className="rounded"
                   />
-                  <span className="text-sm text-gray-700">Перемешивать вопросы</span>
+                  <span className="text-sm text-gray-700">{t('admin.tests.shuffleQuestions')}</span>
                 </label>
 
                 <label className="flex items-center gap-2">
@@ -336,7 +343,7 @@ export function TestEditor({ test, onSave, onCancel }: TestEditorProps) {
                     onChange={(e) => setFormData({ ...formData, showResults: e.target.checked })}
                     className="rounded"
                   />
-                  <span className="text-sm text-gray-700">Показывать результаты</span>
+                  <span className="text-sm text-gray-700">{t('admin.tests.showResults')}</span>
                 </label>
               </div>
             </div>
@@ -346,14 +353,14 @@ export function TestEditor({ test, onSave, onCancel }: TestEditorProps) {
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-gray-900">
-                Вопросы ({questions.length})
+                {t('admin.tests.questions')} ({questions.length})
               </h3>
               <button
                 onClick={handleAddQuestion}
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
                 <Plus className="w-4 h-4" />
-                Добавить вопрос
+                {t('admin.tests.addQuestion')}
               </button>
             </div>
 
@@ -366,7 +373,7 @@ export function TestEditor({ test, onSave, onCancel }: TestEditorProps) {
                       <GripVertical className="w-5 h-5 text-gray-400 mt-2 cursor-move" />
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-3">
-                          <span className="text-sm font-semibold text-gray-700">Вопрос {index + 1}</span>
+                          <span className="text-sm font-semibold text-gray-700">{t('admin.tests.question')} {index + 1}</span>
                           <select
                             value={question.type}
                             onChange={(e) => handleUpdateQuestion(question.id, { type: e.target.value as any })}
@@ -380,7 +387,7 @@ export function TestEditor({ test, onSave, onCancel }: TestEditorProps) {
                             type="number"
                             value={question.weight}
                             onChange={(e) => handleUpdateQuestion(question.id, { weight: parseInt(e.target.value) })}
-                            placeholder="Баллы"
+                            placeholder={t('admin.tests.points')}
                             className="w-20 px-3 py-1 border border-gray-300 rounded-lg text-sm"
                             min="1"
                           />
@@ -388,7 +395,7 @@ export function TestEditor({ test, onSave, onCancel }: TestEditorProps) {
                         <textarea
                           value={question.text}
                           onChange={(e) => handleUpdateQuestion(question.id, { text: e.target.value })}
-                          placeholder="Текст вопроса"
+                          placeholder={t('admin.tests.questionText')}
                           rows={2}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                         />
@@ -398,7 +405,7 @@ export function TestEditor({ test, onSave, onCancel }: TestEditorProps) {
                           onClick={() => setExpandedQuestion(expandedQuestion === question.id ? null : question.id)}
                           className="px-3 py-2 text-blue-600 hover:bg-blue-50 rounded-lg text-sm font-medium"
                         >
-                          {expandedQuestion === question.id ? 'Свернуть' : 'Варианты'}
+                          {expandedQuestion === question.id ? t('common.collapse') : t('admin.tests.options')}
                         </button>
                         <button
                           onClick={() => handleDeleteQuestion(question.id)}
@@ -414,18 +421,18 @@ export function TestEditor({ test, onSave, onCancel }: TestEditorProps) {
                   {expandedQuestion === question.id && (question.type === 'single_choice' || question.type === 'multiple_choice') && (
                     <div className="p-4">
                       <div className="flex items-center justify-between mb-3">
-                        <span className="text-sm font-medium text-gray-700">Варианты ответов</span>
+                        <span className="text-sm font-medium text-gray-700">{t('admin.tests.answerOptions')}</span>
                         <button
                           onClick={() => handleAddOption(question.id)}
                           className="flex items-center gap-2 px-3 py-1 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                         >
                           <Plus className="w-3 h-3" />
-                          Добавить вариант
+                          {t('admin.tests.addOption')}
                         </button>
                       </div>
 
                       <div className="space-y-2">
-                        {(Array.isArray(question.options) ? question.options.filter((opt): opt is string => typeof opt === 'string') : []).map((option, optionIndex) => (
+                        {(Array.isArray(question.options) ? question.options.map((opt: any) => typeof opt === 'string' ? opt : (typeof opt === 'object' && opt !== null ? opt.text : String(opt))) : []).map((option: string, optionIndex: number) => (
                           <div key={optionIndex} className="flex items-center gap-3">
                             <input
                               type={question.type === 'single_choice' ? 'radio' : 'checkbox'}
@@ -452,7 +459,7 @@ export function TestEditor({ test, onSave, onCancel }: TestEditorProps) {
                               type="text"
                               value={option}
                               onChange={(e) => handleUpdateOption(question.id, optionIndex, e.target.value)}
-                              placeholder={`Вариант ${optionIndex + 1}`}
+                              placeholder={t('admin.tests.option', { number: optionIndex + 1 })}
                               className="flex-1 px-3 py-2 border border-gray-300 rounded-lg"
                             />
                             <button
@@ -467,8 +474,8 @@ export function TestEditor({ test, onSave, onCancel }: TestEditorProps) {
 
                       <p className="text-xs text-gray-500 mt-2">
                         {question.type === 'single_choice' 
-                          ? 'Выберите один правильный ответ'
-                          : 'Выберите один или несколько правильных ответов'}
+                          ? t('admin.tests.selectOneCorrect')
+                          : t('admin.tests.selectMultipleCorrect')}
                       </p>
                     </div>
                   )}
@@ -478,18 +485,18 @@ export function TestEditor({ test, onSave, onCancel }: TestEditorProps) {
                     <div className="p-4">
                       <div className="mb-3">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Правильный ответ
+                          {t('admin.tests.correctAnswer')}
                         </label>
                         <input
                           type="text"
                           value={question.correctAnswer || ''}
                           onChange={(e) => handleUpdateQuestion(question.id, { correctAnswer: e.target.value })}
-                          placeholder="Введите правильный ответ"
+                          placeholder={t('admin.tests.correctAnswerPlaceholder')}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                         />
                       </div>
                       <p className="text-xs text-gray-500">
-                        Для вопросов с кратким ответом укажите правильный ответ
+                        {t('admin.tests.shortAnswerHint')}
                       </p>
                     </div>
                   )}
@@ -501,19 +508,19 @@ export function TestEditor({ test, onSave, onCancel }: TestEditorProps) {
                           <input
                             type="radio"
                             name={`correct-${question.id}`}
-                            checked={question.correctAnswer === 'Да'}
-                            onChange={() => handleUpdateQuestion(question.id, { correctAnswer: 'Да' })}
+                            checked={question.correctAnswer === t('common.yes')}
+                            onChange={() => handleUpdateQuestion(question.id, { correctAnswer: t('common.yes') })}
                           />
-                          <span>Да</span>
+                          <span>{t('common.yes')}</span>
                         </label>
                         <label className="flex items-center gap-2">
                           <input
                             type="radio"
                             name={`correct-${question.id}`}
-                            checked={question.correctAnswer === 'Нет'}
-                            onChange={() => handleUpdateQuestion(question.id, { correctAnswer: 'Нет' })}
+                            checked={question.correctAnswer === t('common.no')}
+                            onChange={() => handleUpdateQuestion(question.id, { correctAnswer: t('common.no') })}
                           />
-                          <span>Нет</span>
+                          <span>{t('common.no')}</span>
                         </label>
                       </div>
                     </div>
@@ -523,29 +530,28 @@ export function TestEditor({ test, onSave, onCancel }: TestEditorProps) {
 
               {questions.length === 0 && (
                 <div className="text-center py-8 text-gray-500">
-                  Нет вопросов. Нажмите "Добавить вопрос" для начала.
+                  {t('admin.tests.noQuestions')}
                 </div>
               )}
             </div>
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200">
-          <button
-            onClick={onCancel}
-            className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            Отмена
-          </button>
-          <button
-            onClick={handleSave}
-            className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <Save className="w-4 h-4" />
-            Сохранить тест
-          </button>
-        </div>
+      {/* Footer */}
+      <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200">
+        <button
+          onClick={onCancel}
+          className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+        >
+          {t('common.cancel')}
+        </button>
+        <button
+          onClick={handleSave}
+          className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          <Save className="w-4 h-4" />
+          {t('admin.tests.saveTest')}
+        </button>
       </div>
     </div>
   );

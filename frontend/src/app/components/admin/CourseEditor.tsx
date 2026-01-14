@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { X, Save, Plus, Trash2, GripVertical, Edit2, Video, FileText, CheckCircle, Upload } from 'lucide-react';
+import { ArrowLeft, X, Save, Plus, Trash2, GripVertical, Edit2, Video, FileText, CheckCircle, Upload } from 'lucide-react';
 import { Course, Module, Lesson } from '../../types/lms';
 import { testsService } from '../../services/tests';
 import { categoriesService, Category } from '../../services/categories';
+import { useTranslation } from 'react-i18next';
 
 interface CourseEditorProps {
   course?: Course;
@@ -11,6 +12,7 @@ interface CourseEditorProps {
 }
 
 export function CourseEditor({ course, onSave, onCancel }: CourseEditorProps) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<Partial<Course>>(course || {
     title: '',
     description: '',
@@ -18,6 +20,7 @@ export function CourseEditor({ course, onSave, onCancel }: CourseEditorProps) {
     duration: 0,
     modules: [],
     status: 'in_development',
+    language: 'ru',
   });
 
   // Обновляем formData при изменении course (для редактирования)
@@ -35,11 +38,13 @@ export function CourseEditor({ course, onSave, onCancel }: CourseEditorProps) {
         categoryId: categoryId,
         duration: course.duration || 0,
         status: course.status || 'draft',
+        language: course.language || 'ru',
         passingScore: course.passingScore || course.passing_score,
         maxAttempts: course.maxAttempts || course.max_attempts,
         hasTimer: course.hasTimer || course.has_timer,
         timerMinutes: course.timerMinutes || course.timer_minutes,
         pdekCommission: course.pdekCommission || course.pdek_commission,
+        final_test_id: course.final_test_id || course.finalTestId || null,
       });
     }
   }, [course?.id]);
@@ -111,10 +116,20 @@ export function CourseEditor({ course, onSave, onCancel }: CourseEditorProps) {
     fetchCategories();
   }, []);
 
+  const getLessonTypeName = (type: string): string => {
+    const names: Record<string, string> = {
+      'text': t('admin.courses.lessonTypes.text'),
+      'video': t('admin.courses.lessonTypes.video'),
+      'pdf': t('admin.courses.lessonTypes.pdf'),
+      'quiz': t('admin.courses.lessonTypes.quiz'),
+    };
+    return names[type] || type;
+  };
+
   const handleAddModule = () => {
     const newModule: Module = {
       id: `module-${Date.now()}`,
-      title: 'Новый модуль',
+      title: t('admin.courses.newModule'),
       description: '',
       order: modules.length + 1,
       lessons: [],
@@ -190,32 +205,37 @@ export function CourseEditor({ course, onSave, onCancel }: CourseEditorProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-30 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
-      <div className="bg-white rounded-lg shadow-2xl ring-4 ring-white ring-opacity-50 max-w-5xl w-full my-8">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-900">
-            {course ? 'Редактировать курс' : 'Создать курс'}
-          </h2>
-          <button onClick={onCancel} className="text-gray-400 hover:text-gray-600">
-            <X className="w-6 h-6" />
+    <div className="bg-white rounded-lg shadow-lg">
+      {/* Header */}
+      <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={onCancel} 
+            className="text-gray-600 hover:text-gray-900 transition-colors"
+            title={t('common.back')}
+          >
+            <ArrowLeft className="w-6 h-6" />
           </button>
+          <h2 className="text-2xl font-bold text-gray-900">
+            {course ? t('admin.courses.editCourse') : t('admin.courses.createCourse')}
+          </h2>
         </div>
+      </div>
 
-        <div className="p-6 max-h-[calc(100vh-12rem)] overflow-y-auto">
+      <div className="p-6">
           {/* Basic Info */}
           <div className="mb-8">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Основная информация</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-4">{t('admin.courses.basicInfo')}</h3>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Название курса *
+                  {t('admin.courses.courseTitle')} *
                 </label>
                 <input
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="Введите название курса"
+                  placeholder={t('admin.courses.courseTitlePlaceholder')}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                 />
@@ -223,12 +243,12 @@ export function CourseEditor({ course, onSave, onCancel }: CourseEditorProps) {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Описание
+                  {t('admin.tests.description')}
                 </label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Краткое описание курса"
+                  placeholder={t('admin.courses.courseDescriptionPlaceholder')}
                   rows={3}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
@@ -237,7 +257,7 @@ export function CourseEditor({ course, onSave, onCancel }: CourseEditorProps) {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Категория *
+                    {t('admin.courses.category')} *
                   </label>
                   <select
                     value={typeof formData.category === 'object' ? formData.category?.id : formData.category || ''}
@@ -253,9 +273,9 @@ export function CourseEditor({ course, onSave, onCancel }: CourseEditorProps) {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     disabled={loadingCategories}
                   >
-                    <option value="">-- Выберите категорию --</option>
+                    <option value="">-- {t('admin.courses.selectCategory')} --</option>
                     {loadingCategories ? (
-                      <option disabled>Загрузка категорий...</option>
+                      <option disabled>{t('admin.courses.loadingCategories')}</option>
                     ) : (
                       categories.map(cat => (
                         <option key={cat.id} value={cat.id}>{cat.name}</option>
@@ -266,7 +286,7 @@ export function CourseEditor({ course, onSave, onCancel }: CourseEditorProps) {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Длительность (часы)
+                    {t('admin.courses.duration')}
                   </label>
                   <input
                     type="number"
@@ -277,24 +297,58 @@ export function CourseEditor({ course, onSave, onCancel }: CourseEditorProps) {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Статус курса
+                    {t('admin.courses.courseStatus')}
                   </label>
                   <select
                     value={formData.status || 'in_development'}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
-                    <option value="in_development">В разработке</option>
-                    <option value="draft">Черновик</option>
-                    <option value="published">Опубликован</option>
+                    <option value="in_development">{t('admin.courses.inDevelopment')}</option>
+                    <option value="draft">{t('admin.courses.draft')}</option>
+                    <option value="published">{t('admin.courses.published')}</option>
                   </select>
                 </div>
 
                 <div>
-                  {/* Пустое место для выравнивания */}
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Язык курса *
+                  </label>
+                  <select
+                    value={formData.language || 'ru'}
+                    onChange={(e) => setFormData({ ...formData, language: e.target.value as 'ru' | 'kz' | 'en' })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="ru">Русский</option>
+                    <option value="kz">Қазақша</option>
+                    <option value="en">English</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {t('admin.courses.finalTest')}
+                  </label>
+                  <select
+                    value={formData.final_test_id || formData.finalTestId || ''}
+                    onChange={(e) => setFormData({ ...formData, final_test_id: e.target.value ? parseInt(e.target.value) : null })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    disabled={loadingTests}
+                  >
+                    <option value="">-- {t('admin.courses.noFinalTest')} --</option>
+                    {loadingTests ? (
+                      <option disabled>{t('admin.courses.loadingTests')}</option>
+                    ) : (
+                      availableTests.map((test) => (
+                        <option key={test.id} value={test.id}>
+                          {test.title}
+                        </option>
+                      ))
+                    )}
+                  </select>
                 </div>
               </div>
             </div>
@@ -303,13 +357,13 @@ export function CourseEditor({ course, onSave, onCancel }: CourseEditorProps) {
           {/* Modules */}
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-gray-900">Модули и уроки</h3>
+              <h3 className="text-lg font-bold text-gray-900">{t('admin.courses.modulesAndLessons')}</h3>
               <button
                 onClick={handleAddModule}
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
                 <Plus className="w-4 h-4" />
-                Добавить модуль
+                {t('admin.courses.addModule')}
               </button>
             </div>
 
@@ -325,13 +379,13 @@ export function CourseEditor({ course, onSave, onCancel }: CourseEditorProps) {
                           type="text"
                           value={module.title}
                           onChange={(e) => handleUpdateModule(module.id, { title: e.target.value })}
-                          placeholder="Название модуля"
+                          placeholder={t('admin.courses.moduleTitlePlaceholder')}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg mb-2 font-medium"
                         />
                         <textarea
                           value={module.description}
                           onChange={(e) => handleUpdateModule(module.id, { description: e.target.value })}
-                          placeholder="Описание модуля"
+                          placeholder={t('admin.courses.moduleDescriptionPlaceholder')}
                           rows={2}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
                         />
@@ -341,7 +395,7 @@ export function CourseEditor({ course, onSave, onCancel }: CourseEditorProps) {
                           onClick={() => setExpandedModule(expandedModule === module.id ? null : module.id)}
                           className="px-3 py-2 text-blue-600 hover:bg-blue-50 rounded-lg text-sm font-medium"
                         >
-                          {expandedModule === module.id ? 'Свернуть' : 'Развернуть'}
+                          {expandedModule === module.id ? t('common.collapse') : t('admin.courses.expand')}
                         </button>
                         <button
                           onClick={() => handleDeleteModule(module.id)}
@@ -358,14 +412,14 @@ export function CourseEditor({ course, onSave, onCancel }: CourseEditorProps) {
                     <div className="p-4">
                       <div className="flex items-center justify-between mb-3">
                         <span className="text-sm font-medium text-gray-700">
-                          Уроки ({module.lessons && Array.isArray(module.lessons) ? module.lessons.length : 0})
+                          {t('admin.courses.lessons')} ({module.lessons && Array.isArray(module.lessons) ? module.lessons.length : 0})
                         </span>
                         <button
                           onClick={() => handleAddLesson(module.id)}
                           className="flex items-center gap-2 px-3 py-1 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                         >
                           <Plus className="w-3 h-3" />
-                          Добавить урок
+                          {t('admin.courses.addLesson')}
                         </button>
                       </div>
 
@@ -375,14 +429,14 @@ export function CourseEditor({ course, onSave, onCancel }: CourseEditorProps) {
                             <GripVertical className="w-4 h-4 text-gray-400 cursor-move flex-shrink-0" />
                             {getLessonIcon(lesson.type)}
                             <div className="flex-1 min-w-0">
-                              <p className="font-medium text-gray-900 truncate">{lesson.title || 'Без названия'}</p>
+                              <p className="font-medium text-gray-900 truncate">{lesson.title || t('admin.courses.noTitle')}</p>
                               <p className="text-xs text-gray-500">
-                                {getLessonTypeName(lesson.type)} • {lesson.duration || 0} мин
+                                {getLessonTypeName(lesson.type)} • {lesson.duration || 0} {t('admin.courses.minutes')}
                               </p>
                             </div>
                             {lesson.required && (
                               <span className="px-2 py-1 bg-orange-100 text-orange-700 text-xs font-semibold rounded">
-                                Обязательный
+                                {t('admin.courses.required')}
                               </span>
                             )}
                             <div className="flex gap-1">
@@ -404,7 +458,7 @@ export function CourseEditor({ course, onSave, onCancel }: CourseEditorProps) {
 
                         {module.lessons.length === 0 && (
                           <div className="text-center py-6 text-gray-500 text-sm">
-                            Нет уроков. Нажмите "Добавить урок" для начала.
+                            {t('admin.courses.noLessons')}
                           </div>
                         )}
                       </div>
@@ -415,29 +469,28 @@ export function CourseEditor({ course, onSave, onCancel }: CourseEditorProps) {
 
               {modules.length === 0 && (
                 <div className="text-center py-8 text-gray-500">
-                  Нет модулей. Нажмите "Добавить модуль" для начала.
+                  {t('admin.courses.noModules')}
                 </div>
               )}
             </div>
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200">
-          <button
-            onClick={onCancel}
-            className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            Отмена
-          </button>
-          <button
-            onClick={handleSave}
-            className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <Save className="w-4 h-4" />
-            Сохранить курс
-          </button>
-        </div>
+      {/* Footer */}
+      <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200">
+        <button
+          onClick={onCancel}
+          className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+        >
+          {t('common.cancel')}
+        </button>
+        <button
+          onClick={handleSave}
+          className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          <Save className="w-4 h-4" />
+          {t('admin.courses.saveCourse')}
+        </button>
       </div>
 
       {/* Lesson Editor Modal */}
@@ -464,6 +517,7 @@ interface LessonEditorModalProps {
 }
 
 function LessonEditorModal({ lesson, onSave, onCancel, availableTests = [], loadingTests = false }: LessonEditorModalProps) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<Lesson>(lesson || {
     id: `lesson-${Date.now()}`,
     moduleId: '',
@@ -478,27 +532,27 @@ function LessonEditorModal({ lesson, onSave, onCancel, availableTests = [], load
   });
 
   const lessonTypes = [
-    { value: 'text', label: 'Текстовый материал', icon: FileText },
-    { value: 'video', label: 'Видео урок', icon: Video },
-    { value: 'pdf', label: 'PDF документ', icon: FileText },
-    { value: 'quiz', label: 'Проверочный тест', icon: CheckCircle },
+    { value: 'text', label: t('admin.courses.lessonTypes.text'), icon: FileText },
+    { value: 'video', label: t('admin.courses.lessonTypes.video'), icon: Video },
+    { value: 'pdf', label: t('admin.courses.lessonTypes.pdf'), icon: FileText },
+    { value: 'quiz', label: t('admin.courses.lessonTypes.quiz'), icon: CheckCircle },
   ];
 
   const handleSave = () => {
     if (!formData.title.trim()) {
-      alert('Введите название урока');
+      alert(t('admin.courses.enterLessonTitle'));
       return;
     }
     onSave(formData);
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-30 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-[60]">
       <div className="bg-white rounded-lg shadow-2xl ring-4 ring-white ring-opacity-50 max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h3 className="text-xl font-bold text-gray-900">
-            {lesson && String(lesson.id).startsWith('lesson-') && lesson.title === '' ? 'Создать урок' : 'Редактировать урок'}
+            {lesson && String(lesson.id).startsWith('lesson-') && lesson.title === '' ? t('admin.courses.createLesson') : t('admin.courses.editLesson')}
           </h3>
           <button onClick={onCancel} className="text-gray-400 hover:text-gray-600">
             <X className="w-6 h-6" />
@@ -510,17 +564,17 @@ function LessonEditorModal({ lesson, onSave, onCancel, availableTests = [], load
           <div className="space-y-6">
             {/* Basic Info */}
             <div>
-              <h4 className="font-bold text-gray-900 mb-4">Основная информация</h4>
+              <h4 className="font-bold text-gray-900 mb-4">{t('admin.courses.basicInfo')}</h4>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Название урока *
+                    {t('admin.courses.lessonTitle')} *
                   </label>
                   <input
                     type="text"
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    placeholder="Введите название урока"
+                    placeholder={t('admin.courses.lessonTitlePlaceholder')}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     autoFocus
                   />
@@ -528,12 +582,12 @@ function LessonEditorModal({ lesson, onSave, onCancel, availableTests = [], load
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Описание урока
+                    {t('admin.courses.lessonDescription')}
                   </label>
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="Краткое описание того, что изучается в уроке"
+                    placeholder={t('admin.courses.lessonDescriptionPlaceholder')}
                     rows={2}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
@@ -542,7 +596,7 @@ function LessonEditorModal({ lesson, onSave, onCancel, availableTests = [], load
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Тип урока *
+                      {t('admin.courses.lessonType')} *
                     </label>
                     <select
                       value={formData.type}
@@ -557,7 +611,7 @@ function LessonEditorModal({ lesson, onSave, onCancel, availableTests = [], load
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Длительность (минуты)
+                      {t('admin.courses.durationMinutes')}
                     </label>
                     <input
                       type="number"
@@ -578,7 +632,7 @@ function LessonEditorModal({ lesson, onSave, onCancel, availableTests = [], load
                       onChange={(e) => setFormData({ ...formData, required: e.target.checked })}
                       className="rounded"
                     />
-                    <span className="text-sm text-gray-700">Обязательный урок для прохождения курса</span>
+                    <span className="text-sm text-gray-700">{t('admin.courses.requiredLesson')}</span>
                   </label>
                 </div>
               </div>
@@ -586,22 +640,22 @@ function LessonEditorModal({ lesson, onSave, onCancel, availableTests = [], load
 
             {/* Content based on type */}
             <div>
-              <h4 className="font-bold text-gray-900 mb-4">Контент урока</h4>
+              <h4 className="font-bold text-gray-900 mb-4">{t('admin.courses.lessonContent')}</h4>
               
               {formData.type === 'text' && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Текстовое содержание
+                    {t('admin.courses.textContent')}
                   </label>
                   <textarea
                     value={formData.content}
                     onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                    placeholder="Введите текст урока. Можно использовать форматирование..."
+                    placeholder={t('admin.courses.textContentPlaceholder')}
                     rows={10}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
                   />
                   <p className="text-xs text-gray-500 mt-2">
-                    💡 Совет: Для больших текстов можно использовать редактор Markdown
+                    💡 {t('admin.courses.markdownTip')}
                   </p>
                 </div>
               )}
@@ -610,23 +664,23 @@ function LessonEditorModal({ lesson, onSave, onCancel, availableTests = [], load
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      URL видео *
+                      {t('admin.courses.videoUrl')} *
                     </label>
                     <input
                       type="url"
                       value={formData.videoUrl || ''}
                       onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
-                      placeholder="https://www.youtube.com/watch?v=... или https://vimeo.com/..."
+                      placeholder={t('admin.courses.videoUrlPlaceholder')}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                     <p className="text-xs text-gray-500 mt-1">
-                      Поддерживаются: YouTube, Vimeo, собственный сервер
+                      {t('admin.courses.videoSupported')}
                     </p>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Миниатюра видео (URL)
+                      {t('admin.courses.videoThumbnail')}
                     </label>
                     <input
                       type="url"
@@ -645,7 +699,7 @@ function LessonEditorModal({ lesson, onSave, onCancel, availableTests = [], load
                         onChange={(e) => setFormData({ ...formData, allowDownload: e.target.checked })}
                         className="rounded"
                       />
-                      <span className="text-sm text-gray-700">Разрешить скачивание</span>
+                      <span className="text-sm text-gray-700">{t('admin.courses.allowDownload')}</span>
                     </label>
                     <label className="flex items-center gap-2">
                       <input
@@ -654,7 +708,7 @@ function LessonEditorModal({ lesson, onSave, onCancel, availableTests = [], load
                         onChange={(e) => setFormData({ ...formData, trackProgress: e.target.checked })}
                         className="rounded"
                       />
-                      <span className="text-sm text-gray-700">Отслеживать просмотр</span>
+                      <span className="text-sm text-gray-700">{t('admin.courses.trackProgress')}</span>
                     </label>
                   </div>
                 </div>
@@ -664,7 +718,7 @@ function LessonEditorModal({ lesson, onSave, onCancel, availableTests = [], load
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      URL PDF документа *
+                      {t('admin.courses.pdfUrl')} *
                     </label>
                     <input
                       type="url"
@@ -677,14 +731,14 @@ function LessonEditorModal({ lesson, onSave, onCancel, availableTests = [], load
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Загрузить PDF файл
+                      {t('admin.courses.uploadPdf')}
                     </label>
                     <div className="flex items-center gap-3">
                       <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
                         <Upload className="w-4 h-4" />
-                        Выбрать файл
+                        {t('admin.courses.selectFile')}
                       </button>
-                      <span className="text-sm text-gray-500">или введите URL выше</span>
+                      <span className="text-sm text-gray-500">{t('admin.courses.orEnterUrl')}</span>
                     </div>
                   </div>
 
@@ -696,7 +750,7 @@ function LessonEditorModal({ lesson, onSave, onCancel, availableTests = [], load
                         onChange={(e) => setFormData({ ...formData, allowDownload: e.target.checked })}
                         className="rounded"
                       />
-                      <span className="text-sm text-gray-700">Разрешить скачивание PDF</span>
+                      <span className="text-sm text-gray-700">{t('admin.courses.allowDownloadPdf')}</span>
                     </label>
                   </div>
                 </div>
@@ -706,7 +760,7 @@ function LessonEditorModal({ lesson, onSave, onCancel, availableTests = [], load
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Выберите тест
+                      {t('admin.courses.selectTest')}
                     </label>
                     <select
                       value={formData.testId || ''}
@@ -714,7 +768,7 @@ function LessonEditorModal({ lesson, onSave, onCancel, availableTests = [], load
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       disabled={loadingTests}
                     >
-                      <option value="">-- Выберите тест --</option>
+                      <option value="">-- {t('admin.courses.selectTestOption')} --</option>
                       {Array.isArray(availableTests) && availableTests.map((test) => (
                         <option key={test.id} value={test.id}>
                           {test.title}
@@ -722,14 +776,14 @@ function LessonEditorModal({ lesson, onSave, onCancel, availableTests = [], load
                       ))}
                     </select>
                     <p className="text-xs text-gray-500 mt-1">
-                      Тесты создаются в разделе "Тесты" админ-панели
+                      {t('admin.courses.testsCreatedInAdmin')}
                     </p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Проходной балл (%)
+                        {t('admin.tests.passingScore')}
                       </label>
                       <input
                         type="number"
@@ -743,7 +797,7 @@ function LessonEditorModal({ lesson, onSave, onCancel, availableTests = [], load
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Максимум попыток
+                        {t('admin.courses.maxAttempts')}
                       </label>
                       <input
                         type="number"
@@ -766,14 +820,14 @@ function LessonEditorModal({ lesson, onSave, onCancel, availableTests = [], load
             onClick={onCancel}
             className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
           >
-            Отмена
+            {t('common.cancel')}
           </button>
           <button
             onClick={handleSave}
             className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             <Save className="w-4 h-4" />
-            Сохранить урок
+            {t('admin.courses.saveLesson')}
           </button>
         </div>
       </div>
@@ -793,14 +847,4 @@ function getLessonIcon(type: string) {
     default:
       return <FileText className={`${iconClass} text-blue-600`} />;
   }
-}
-
-function getLessonTypeName(type: string): string {
-  const names: Record<string, string> = {
-    'text': 'Текст',
-    'video': 'Видео',
-    'pdf': 'PDF',
-    'quiz': 'Тест',
-  };
-  return names[type] || type;
 }

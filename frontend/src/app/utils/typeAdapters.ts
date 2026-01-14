@@ -23,36 +23,84 @@ export function adaptQuestion(backendQuestion: any): Question {
  * Преобразование протокола из backend в frontend формат
  */
 export function adaptProtocol(backendProtocol: any): Protocol {
-  return {
+  console.log('adaptProtocol - raw backend data:', backendProtocol);
+  console.log('adaptProtocol - student:', backendProtocol.student);
+  console.log('adaptProtocol - course:', backendProtocol.course);
+  console.log('adaptProtocol - attempt:', backendProtocol.attempt);
+  
+  // Обработка даты экзамена
+  let examDate: Date;
+  if (backendProtocol.exam_date) {
+    examDate = new Date(backendProtocol.exam_date);
+    // Проверка на валидность даты
+    if (isNaN(examDate.getTime())) {
+      examDate = new Date(); // Fallback к текущей дате если дата невалидна
+    }
+  } else {
+    examDate = new Date(); // Fallback к текущей дате если дата отсутствует
+  }
+  
+  // Извлекаем данные студента
+  const studentFullName = backendProtocol.student?.full_name || backendProtocol.student_name || null;
+  const studentIIN = backendProtocol.student?.iin || null;
+  const studentPhone = backendProtocol.student?.phone || backendProtocol.student_phone || null;
+  
+  // Извлекаем данные курса
+  const courseTitle = backendProtocol.course?.title || backendProtocol.course_name || null;
+  
+  console.log('adaptProtocol - extracted data:', {
+    studentFullName,
+    studentIIN,
+    studentPhone,
+    courseTitle,
+  });
+  
+  const adapted = {
     id: String(backendProtocol.id),
     number: backendProtocol.number,
-    userId: String(backendProtocol.student?.id || backendProtocol.student),
-    userName: backendProtocol.student?.full_name || backendProtocol.student_name || '',
-    userIIN: backendProtocol.student?.iin,
-    userPhone: backendProtocol.student?.phone || backendProtocol.student_phone || '',
-    courseId: String(backendProtocol.course?.id || backendProtocol.course),
-    courseName: backendProtocol.course?.title || backendProtocol.course_name || '',
-    attemptId: String(backendProtocol.attempt?.id || backendProtocol.attempt),
-    examDate: new Date(backendProtocol.exam_date),
-    score: backendProtocol.score,
-    passingScore: backendProtocol.passing_score,
-    result: backendProtocol.result,
+    userId: String(backendProtocol.student?.id || backendProtocol.student || ''),
+    userName: studentFullName || 'Не указано',
+    userIIN: studentIIN || 'Не указано',
+    userPhone: studentPhone || 'Не указано',
+    courseId: String(backendProtocol.course?.id || backendProtocol.course || ''),
+    courseName: courseTitle || 'Не указано',
+    attemptId: backendProtocol.attempt?.id 
+      ? String(backendProtocol.attempt.id) 
+      : backendProtocol.attempt 
+        ? String(backendProtocol.attempt)
+        : 'Не указано',
+    examDate: examDate,
+    score: backendProtocol.score || 0,
+    passingScore: backendProtocol.passing_score || 0,
+    result: backendProtocol.result || 'passed',
     status: backendProtocol.status,
     signatures: (backendProtocol.signatures || []).map((sig: any) => adaptSignature(sig)),
     rejectionReason: backendProtocol.rejection_reason,
   };
+  
+  console.log('adaptProtocol - adapted result:', adapted);
+  
+  return adapted;
 }
 
 /**
  * Преобразование подписи из backend в frontend формат
  */
 export function adaptSignature(backendSignature: any): Signature {
+  const signerId = backendSignature.signer?.id || backendSignature.user_id || backendSignature.signer;
   return {
-    userId: String(backendSignature.signer?.id || backendSignature.user_id || backendSignature.signer),
+    signer: backendSignature.signer ? {
+      id: String(backendSignature.signer.id),
+      full_name: backendSignature.signer.full_name || '',
+      phone: backendSignature.signer.phone || '',
+    } : undefined,
+    userId: signerId ? String(signerId) : undefined,
     userName: backendSignature.signer?.full_name || backendSignature.user_name || '',
     role: backendSignature.role,
     phone: backendSignature.signer?.phone || backendSignature.phone || '',
+    signed_at: backendSignature.signed_at,
     signedAt: backendSignature.signed_at ? new Date(backendSignature.signed_at) : undefined,
+    otp_verified: backendSignature.otp_verified,
     otpVerified: backendSignature.otp_verified || backendSignature.otpVerified || false,
   };
 }

@@ -2,39 +2,42 @@ import { Header } from '../components/Header';
 import { FooterUnicover } from '../components/FooterUnicover';
 import { Building2, Compass, PenTool, Hammer, CheckCircle2, Target, Award, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export function ConstructionAboutPage() {
+  const { t } = useTranslation();
+
   const services = [
     {
       icon: Compass,
-      title: 'Инженерные изыскания',
+      title: t('constructionAbout.services.surveying.title'),
       items: [
-        'Инженерно-геологические исследования',
-        'Инженерно-гидрогеологические работы',
-        'Инженерно-геодезические изыскания',
-        'Высокоточное оборудование',
+        t('constructionAbout.services.surveying.items.geological'),
+        t('constructionAbout.services.surveying.items.hydrogeological'),
+        t('constructionAbout.services.surveying.items.geodetic'),
+        t('constructionAbout.services.surveying.items.equipment'),
       ],
     },
     {
       icon: PenTool,
-      title: 'Проектирование',
+      title: t('constructionAbout.services.design.title'),
       items: [
-        'Технологическое проектирование производственных объектов',
-        'Архитектурное проектирование (I-III уровни ответственности)',
-        'Градостроительное проектирование и планирование',
-        'Проектирование инженерных систем и сетей',
-        'Реконструкция и капитальный ремонт',
+        t('constructionAbout.services.design.items.technological'),
+        t('constructionAbout.services.design.items.architectural'),
+        t('constructionAbout.services.design.items.urban'),
+        t('constructionAbout.services.design.items.engineering'),
+        t('constructionAbout.services.design.items.reconstruction'),
       ],
     },
     {
       icon: Hammer,
-      title: 'Строительно-монтажные работы',
+      title: t('constructionAbout.services.construction.title'),
       items: [
-        'СМР III категории',
-        'Строительство объектов различного назначения',
-        'Монтаж оборудования',
-        'Реконструкция и модернизация',
-        'Соблюдение СНиП и стандартов РК',
+        t('constructionAbout.services.construction.items.category'),
+        t('constructionAbout.services.construction.items.buildings'),
+        t('constructionAbout.services.construction.items.installation'),
+        t('constructionAbout.services.construction.items.modernization'),
+        t('constructionAbout.services.construction.items.standards'),
       ],
     },
   ];
@@ -42,18 +45,18 @@ export function ConstructionAboutPage() {
   const advantages = [
     {
       icon: Target,
-      title: 'Опыт и профессионализм',
-      description: 'Многолетний опыт работы в сфере проектирования и строительства',
+      title: t('constructionAbout.advantages.experience.title'),
+      description: t('constructionAbout.advantages.experience.description'),
     },
     {
       icon: Award,
-      title: 'Лицензии и сертификаты',
-      description: 'Полный пакет государственных лицензий и отраслевых аттестатов',
+      title: t('constructionAbout.advantages.licenses.title'),
+      description: t('constructionAbout.advantages.licenses.description'),
     },
     {
       icon: Users,
-      title: 'Квалифицированная команда',
-      description: 'Высококвалифицированные специалисты с большим опытом работы',
+      title: t('constructionAbout.advantages.team.title'),
+      description: t('constructionAbout.advantages.team.description'),
     },
   ];
 
@@ -67,13 +70,11 @@ export function ConstructionAboutPage() {
             <div className="max-w-3xl">
               <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full mb-6">
                 <Building2 className="w-5 h-5" />
-                <span className="font-medium">Строительное направление</span>
+                <span className="font-medium">{t('constructionAbout.hero.badge')}</span>
               </div>
-              <h1 className="text-4xl md:text-5xl font-bold mb-6">О компании</h1>
+              <h1 className="text-4xl md:text-5xl font-bold mb-6">{t('constructionAbout.hero.title')}</h1>
               <p className="text-xl text-blue-100 leading-relaxed">
-                ТОО «Unicover» — многопрофильная инженерная и проектно-строительная компания, 
-                предоставляющая полный комплекс услуг в сфере промышленной безопасности, 
-                изысканий, проектирования и строительства.
+                {t('constructionAbout.hero.description')}
               </p>
             </div>
           </div>
@@ -83,11 +84,11 @@ export function ConstructionAboutPage() {
         <div className="bg-gray-50 border-b border-gray-200">
           <div className="container mx-auto px-4 py-4">
             <nav className="flex items-center gap-2 text-sm text-gray-600">
-              <Link to="/" className="hover:text-blue-600 transition-colors">Главная</Link>
+              <Link to="/" className="hover:text-blue-600 transition-colors">{t('constructionAbout.breadcrumbs.home')}</Link>
               <span>/</span>
-              <Link to="/construction" className="hover:text-blue-600 transition-colors">Строительство</Link>
+              <Link to="/construction" className="hover:text-blue-600 transition-colors">{t('constructionAbout.breadcrumbs.construction')}</Link>
               <span>/</span>
-              <span className="text-gray-900 font-medium">О компании</span>
+              <span className="text-gray-900 font-medium">{t('constructionAbout.breadcrumbs.about')}</span>
             </nav>
           </div>
         </div>
@@ -96,22 +97,16 @@ export function ConstructionAboutPage() {
           {/* About Section */}
           <section className="mb-16">
             <div className="max-w-4xl mx-auto">
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">Наша деятельность</h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-6">{t('constructionAbout.about.title')}</h2>
               <div className="prose prose-lg max-w-none text-gray-700 space-y-4">
                 <p>
-                  ТОО «Unicover» специализируется на выполнении полного цикла работ от инженерных 
-                  изысканий до ввода объекта в эксплуатацию. Мы работаем в различных отраслях 
-                  промышленности и гражданского строительства.
+                  {t('constructionAbout.about.paragraph1')}
                 </p>
                 <p>
-                  Компания располагает всеми необходимыми лицензиями и аттестатами, подтверждающими 
-                  право выполнения работ в области изысканий, проектирования и строительства. 
-                  Наши специалисты имеют большой опыт работы с объектами различной сложности.
+                  {t('constructionAbout.about.paragraph2')}
                 </p>
                 <p>
-                  Мы гарантируем высокое качество выполняемых работ, соблюдение всех нормативных 
-                  требований и стандартов Республики Казахстан, а также индивидуальный подход 
-                  к каждому проекту.
+                  {t('constructionAbout.about.paragraph3')}
                 </p>
               </div>
             </div>
@@ -120,9 +115,9 @@ export function ConstructionAboutPage() {
           {/* Services Section */}
           <section className="mb-16">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">Направления деятельности</h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">{t('constructionAbout.services.title')}</h2>
               <p className="text-gray-600 max-w-3xl mx-auto">
-                Полный спектр услуг в сфере проектирования и строительства
+                {t('constructionAbout.services.subtitle')}
               </p>
             </div>
 
@@ -155,7 +150,7 @@ export function ConstructionAboutPage() {
           {/* Advantages Section */}
           <section className="mb-16">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">Наши преимущества</h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">{t('constructionAbout.advantages.title')}</h2>
             </div>
 
             <div className="grid md:grid-cols-3 gap-8">
@@ -179,23 +174,22 @@ export function ConstructionAboutPage() {
 
           {/* CTA Section */}
           <section className="bg-gradient-to-br from-blue-600 to-blue-800 text-white p-12 rounded-2xl text-center">
-            <h2 className="text-3xl font-bold mb-4">Готовы начать проект?</h2>
+            <h2 className="text-3xl font-bold mb-4">{t('constructionAbout.cta.title')}</h2>
             <p className="text-blue-100 mb-8 max-w-2xl mx-auto">
-              Свяжитесь с нами для обсуждения вашего проекта. Наши специалисты готовы ответить 
-              на все ваши вопросы и предложить оптимальное решение.
+              {t('constructionAbout.cta.description')}
             </p>
             <div className="flex flex-wrap gap-4 justify-center">
               <Link
                 to="/contacts"
                 className="px-8 py-3 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
               >
-                Связаться с нами
+                {t('constructionAbout.cta.contact')}
               </Link>
               <Link
                 to="/construction"
                 className="px-8 py-3 border-2 border-white text-white rounded-lg font-semibold hover:bg-white/10 transition-colors"
               >
-                Наши проекты
+                {t('constructionAbout.cta.projects')}
               </Link>
             </div>
           </section>
@@ -205,4 +199,3 @@ export function ConstructionAboutPage() {
     </>
   );
 }
-

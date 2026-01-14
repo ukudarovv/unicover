@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Category, Course, Module, Lesson, CourseEnrollment, LessonProgress
+from .models import Category, Course, Module, Lesson, CourseEnrollment, LessonProgress, CourseCompletionVerification
 from apps.accounts.serializers import UserSerializer
 
 
@@ -23,11 +23,12 @@ class LessonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
         fields = [
-            'id', 'title', 'description', 'type', 'content',
+            'id', 'title', 'title_kz', 'title_en', 'description', 'description_kz', 'description_en',
+            'type', 'content', 'content_kz', 'content_en',
             'video_url', 'thumbnail_url', 'pdf_url', 'test_id',
             'duration', 'order', 'required', 'allow_download',
             'track_progress', 'passing_score', 'max_attempts',
-            'completed', 'created_at', 'updated_at'
+            'language', 'completed', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at', 'completed']
 
@@ -38,7 +39,10 @@ class ModuleSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Module
-        fields = ['id', 'title', 'description', 'order', 'lessons', 'created_at', 'updated_at']
+        fields = [
+            'id', 'title', 'title_kz', 'title_en', 'description', 'description_kz', 'description_en',
+            'language', 'order', 'lessons', 'created_at', 'updated_at'
+        ]
         read_only_fields = ['id', 'created_at', 'updated_at']
 
 
@@ -53,14 +57,16 @@ class CourseSerializer(serializers.ModelSerializer):
         required=False,
         allow_null=True
     )
+    final_test_id = serializers.IntegerField(source='final_test.id', read_only=True, allow_null=True)
     
     class Meta:
         model = Course
         fields = [
-            'id', 'title', 'title_kz', 'title_en', 'description', 'category', 'category_id',
+            'id', 'title', 'title_kz', 'title_en', 'description', 'description_kz', 'description_en',
+            'category', 'category_id',
             'duration', 'format', 'passing_score', 'max_attempts',
             'has_timer', 'timer_minutes', 'pdek_commission', 'status',
-            'modules', 'created_at', 'updated_at'
+            'language', 'final_test_id', 'modules', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
 
@@ -78,10 +84,11 @@ class CourseCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
         fields = [
-            'title', 'title_kz', 'title_en', 'description', 'category_id',
+            'title', 'title_kz', 'title_en', 'description', 'description_kz', 'description_en',
+            'category_id',
             'duration', 'format', 'passing_score', 'max_attempts',
             'has_timer', 'timer_minutes', 'pdek_commission', 'status',
-            'modules'
+            'language', 'final_test', 'modules'
         ]
     
     def create(self, validated_data):
@@ -187,4 +194,26 @@ class LessonProgressSerializer(serializers.ModelSerializer):
         model = LessonProgress
         fields = ['id', 'lesson', 'completed', 'completed_at']
         read_only_fields = ['id', 'completed_at']
+
+
+class CourseCompletionVerificationSerializer(serializers.ModelSerializer):
+    """Course completion verification serializer"""
+    
+    class Meta:
+        model = CourseCompletionVerification
+        fields = [
+            'id', 'enrollment', 'otp_code', 'otp_expires_at',
+            'verified', 'verified_at', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'otp_code', 'otp_expires_at', 'verified', 'verified_at', 'created_at', 'updated_at']
+
+
+class OTPRequestSerializer(serializers.Serializer):
+    """Serializer for OTP request"""
+    pass
+
+
+class OTPVerifySerializer(serializers.Serializer):
+    """Serializer for OTP verification"""
+    otp_code = serializers.CharField(max_length=6, min_length=6)
 

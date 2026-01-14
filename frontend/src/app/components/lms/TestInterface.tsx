@@ -12,6 +12,8 @@ interface TestInterfaceProps {
   onComplete: (answers: Answer[], timeSpent: number) => void;
   onCancel: () => void;
   inModal?: boolean; // Флаг для использования в модальном окне
+  savedAnswers?: Record<string, any>; // Сохраненные ответы для восстановления
+  startedAt?: string; // Время начала теста для восстановления таймера
 }
 
 export function TestInterface({ 
@@ -22,14 +24,42 @@ export function TestInterface({
   questions, 
   onComplete, 
   onCancel,
-  inModal = false
+  inModal = false,
+  savedAnswers,
+  startedAt
 }: TestInterfaceProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState<Answer[]>(
-    questions.map(q => ({ questionId: q.id, answer: '' }))
-  );
-  const [timeLeft, setTimeLeft] = useState(timeLimit ? timeLimit * 60 : null); // секунды
-  const [startTime] = useState(Date.now());
+  
+  // Восстанавливаем сохраненные ответы, если они есть
+  const initialAnswers = savedAnswers 
+    ? questions.map(q => {
+        const questionId = String(q.id);
+        const savedAnswer = savedAnswers[questionId];
+        return {
+          questionId: q.id,
+          answer: savedAnswer !== undefined && savedAnswer !== null ? savedAnswer : ''
+        };
+      })
+    : questions.map(q => ({ questionId: q.id, answer: '' }));
+  
+  const [answers, setAnswers] = useState<Answer[]>(initialAnswers);
+  
+  // Восстанавливаем время, если тест был начат ранее
+  const calculateTimeLeft = () => {
+    if (!timeLimit) return null;
+    if (startedAt) {
+      const started = new Date(startedAt).getTime();
+      const now = Date.now();
+      const elapsedSeconds = Math.floor((now - started) / 1000);
+      const totalSeconds = timeLimit * 60;
+      const remaining = totalSeconds - elapsedSeconds;
+      return remaining > 0 ? remaining : 0;
+    }
+    return timeLimit * 60;
+  };
+  
+  const [timeLeft, setTimeLeft] = useState(calculateTimeLeft()); // секунды
+  const [startTime] = useState(startedAt ? new Date(startedAt).getTime() : Date.now());
   const [showConfirmSubmit, setShowConfirmSubmit] = useState(false);
   const [autoSaveStatus, setAutoSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved');
 
@@ -41,7 +71,7 @@ export function TestInterface({
     if (timeLeft === null) return;
     
     if (timeLeft <= 0) {
-      handleSubmit();
+      handleSubmit().catch(console.error);
       return;
     }
 
@@ -75,13 +105,23 @@ export function TestInterface({
           if (currentAttemptId && answers[currentQuestionIndex]) {
             const answer = answers[currentQuestionIndex];
             const questionId = answer.questionId;
+            const currentQuestion = questions[currentQuestionIndex];
             
-            // Определяем тип ответа
-            let answerData: any = { question: questionId };
-            if (Array.isArray(answer.answer)) {
-              answerData.selected_options = answer.answer;
-            } else {
-              answerData.answer_text = answer.answer;
+            // Определяем тип ответа и формат для сохранения
+            let answerValue: any = answer.answer;
+            const answerData: any = { question: questionId };
+            
+            // Для multiple_choice сохраняем массив ID
+            if (Array.isArray(answerValue)) {
+              answerData.selected_options = answerValue;
+            } 
+            // Для yes_no и short_answer сохраняем текст
+            else if (currentQuestion.type === 'yes_no' || currentQuestion.type === 'short_answer') {
+              answerData.answer_text = answerValue;
+            } 
+            // Для single_choice сохраняем ID опции (строку)
+            else {
+              answerData.answer_text = answerValue;
             }
             
             await examsService.saveAnswer(Number(currentAttemptId), answerData);
@@ -145,7 +185,31 @@ export function TestInterface({
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    // Сохраняем все ответы перед завершением
+    try {
+      const savedProgress = localStorage.getItem(`test_${testId}_progress`);
+      const progress = savedProgress ? JSON.parse(savedProgress) : null;
+      const currentAttemptId = attemptId || progress?.attemptId;
+      
+      if (currentAttemptId) {
+        // Сохраняем все ответы одним запросом
+        const allAnswers: Record<string, any> = {};
+        answers.forEach((answer) => {
+          if (answer.answer !== '' && answer.answer !== null && answer.answer !== undefined) {
+            allAnswers[answer.questionId] = answer.answer;
+          }
+        });
+        
+        if (Object.keys(allAnswers).length > 0) {
+          await examsService.saveAllAnswers(Number(currentAttemptId), allAnswers);
+        }
+      }
+    } catch (error) {
+      console.error('Error saving all answers before submit:', error);
+      // Продолжаем выполнение даже если сохранение не удалось
+    }
+    
     const timeSpent = Math.floor((Date.now() - startTime) / 1000);
     localStorage.removeItem(`test_${testId}_progress`);
     onComplete(answers, timeSpent);
@@ -279,11 +343,34 @@ export function TestInterface({
 
               {/* Answer Options */}
               <div className="space-y-3">
-                {currentQuestion.type === 'single_choice' && currentQuestion.options?.map((option, index) => (
+                {/* Debug: показываем тип вопроса для отладки */}
+                {process.env.NODE_ENV === 'development' && (
+                  <div className="text-xs text-gray-400 mb-2">
+                    Тип вопроса: {currentQuestion.type}
+                  </div>
+                )}
+                
+                {currentQuestion.type === 'single_choice' && currentQuestion.options?.map((option, index) => {
+                  // Опции всегда должны быть объектами с id и text
+                  // Пропускаем не-объекты (например, строки для yes_no вопросов)
+                  if (typeof option !== 'object' || option === null) {
+                    return null;
+                  }
+                  
+                  // Всегда используем option.id, если его нет - пропускаем опцию
+                  if (!option.id) {
+                    return null;
+                  }
+                  
+                  const optionId = String(option.id);
+                  const optionText = option.text || '';
+                  const isSelected = currentAnswer.answer === optionId;
+                  
+                  return (
                   <label
-                    key={index}
+                      key={optionId}
                     className={`flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                      currentAnswer.answer === option
+                        isSelected
                         ? 'border-blue-500 bg-blue-50'
                         : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
                     }`}
@@ -291,39 +378,55 @@ export function TestInterface({
                     <input
                       type="radio"
                       name={`question-${currentQuestion.id}`}
-                      value={option}
-                      checked={currentAnswer.answer === option}
+                        value={optionId}
+                        checked={isSelected}
                       onChange={(e) => handleAnswerChange(e.target.value)}
                       className="mt-1"
                     />
-                    <span className="flex-1 text-gray-800">{option}</span>
+                      <span className="flex-1 text-gray-800">{optionText}</span>
                   </label>
-                ))}
+                  );
+                })}
 
                 {currentQuestion.type === 'multiple_choice' && currentQuestion.options?.map((option, index) => {
+                  // Опции всегда должны быть объектами с id и text
+                  // Пропускаем не-объекты (например, строки для yes_no вопросов)
+                  if (typeof option !== 'object' || option === null) {
+                    return null;
+                  }
+                  
+                  // Всегда используем option.id, если его нет - пропускаем опцию
+                  if (!option.id) {
+                    return null;
+                  }
+                  
+                  const optionId = String(option.id);
+                  const optionText = option.text || '';
                   const selectedAnswers = Array.isArray(currentAnswer.answer) ? currentAnswer.answer : [];
+                  const isSelected = selectedAnswers.includes(optionId);
+                  
                   return (
                     <label
-                      key={index}
+                      key={optionId}
                       className={`flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                        selectedAnswers.includes(option)
+                        isSelected
                           ? 'border-blue-500 bg-blue-50'
                           : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
                       }`}
                     >
                       <input
                         type="checkbox"
-                        value={option}
-                        checked={selectedAnswers.includes(option)}
+                        value={optionId}
+                        checked={isSelected}
                         onChange={(e) => {
                           const newAnswers = e.target.checked
-                            ? [...selectedAnswers, option]
-                            : selectedAnswers.filter(a => a !== option);
+                            ? [...selectedAnswers, optionId]
+                            : selectedAnswers.filter(a => a !== optionId);
                           handleAnswerChange(newAnswers);
                         }}
                         className="mt-1"
                       />
-                      <span className="flex-1 text-gray-800">{option}</span>
+                      <span className="flex-1 text-gray-800">{optionText}</span>
                     </label>
                   );
                 })}
@@ -331,6 +434,7 @@ export function TestInterface({
                 {currentQuestion.type === 'yes_no' && (
                   <div className="grid grid-cols-2 gap-4">
                     <button
+                      type="button"
                       onClick={() => handleAnswerChange('Да')}
                       className={`p-4 border-2 rounded-lg font-medium transition-all ${
                         currentAnswer.answer === 'Да'
@@ -341,6 +445,7 @@ export function TestInterface({
                       Да
                     </button>
                     <button
+                      type="button"
                       onClick={() => handleAnswerChange('Нет')}
                       className={`p-4 border-2 rounded-lg font-medium transition-all ${
                         currentAnswer.answer === 'Нет'
@@ -361,6 +466,18 @@ export function TestInterface({
                     rows={4}
                     className="w-full p-4 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none"
                   />
+                )}
+                
+                {/* Fallback для неопознанных типов */}
+                {!['single_choice', 'multiple_choice', 'yes_no', 'short_answer'].includes(currentQuestion.type) && (
+                  <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <p className="text-sm text-yellow-800 mb-1">
+                      Тип вопроса: <strong>{currentQuestion.type}</strong>
+                    </p>
+                    <p className="text-xs text-yellow-700">
+                      Этот тип вопроса не поддерживается для отображения вариантов ответа.
+                    </p>
+                  </div>
                 )}
               </div>
 
@@ -402,7 +519,7 @@ export function TestInterface({
 
       {/* Confirm Submit Modal */}
       {showConfirmSubmit && (
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-30 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg shadow-2xl ring-4 ring-white ring-opacity-50 max-w-md w-full p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">

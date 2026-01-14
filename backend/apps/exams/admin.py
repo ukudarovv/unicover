@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import TestAttempt
+from .models import TestAttempt, ExtraAttemptRequest
 
 
 @admin.register(TestAttempt)
@@ -9,4 +9,25 @@ class TestAttemptAdmin(admin.ModelAdmin):
     search_fields = ('user__phone', 'user__full_name', 'test__title')
     ordering = ('-started_at',)
     readonly_fields = ('started_at', 'completed_at', 'score', 'passed')
+
+
+@admin.register(ExtraAttemptRequest)
+class ExtraAttemptRequestAdmin(admin.ModelAdmin):
+    list_display = ('user', 'test', 'status', 'processed_by', 'created_at', 'processed_at')
+    list_filter = ('status', 'created_at', 'processed_at')
+    search_fields = ('user__phone', 'user__full_name', 'test__title', 'reason')
+    ordering = ('-created_at',)
+    readonly_fields = ('created_at', 'updated_at', 'processed_at')
+    
+    fieldsets = (
+        ('Основная информация', {
+            'fields': ('user', 'test', 'reason', 'status')
+        }),
+        ('Обработка', {
+            'fields': ('processed_by', 'processed_at', 'admin_response')
+        }),
+        ('Временные метки', {
+            'fields': ('created_at', 'updated_at')
+        }),
+    )
 

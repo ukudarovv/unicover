@@ -26,13 +26,16 @@ export function AssignCoursesModal({ user, users, onClose, onAssign }: AssignCou
     const fetchCourses = async () => {
       try {
         setLoading(true);
-        const data = await coursesService.getCourses();
-        setCourses(data);
+        const response = await coursesService.getCourses({ page_size: 1000 });
+        // getCourses возвращает PaginatedResponse, нужно извлечь results
+        const coursesList = response?.results || (Array.isArray(response) ? response : []);
+        setCourses(Array.isArray(coursesList) ? coursesList : []);
         setError(null);
       } catch (err) {
         const message = err instanceof ApiError ? err.message : 'Ошибка загрузки курсов';
         setError(message);
         console.error('Failed to fetch courses:', err);
+        setCourses([]); // Устанавливаем пустой массив при ошибке
       } finally {
         setLoading(false);
       }
@@ -42,7 +45,13 @@ export function AssignCoursesModal({ user, users, onClose, onAssign }: AssignCou
   }, []);
 
 
-  const getCategoryName = (cat: string) => {
+  const getCategoryName = (cat: any) => {
+    // Если category - объект, используем name напрямую
+    if (cat && typeof cat === 'object') {
+      return cat.name || cat.name_kz || cat.name_en || '—';
+    }
+    
+    // Если category - строка (ID или название)
     const names: Record<string, string> = {
       'industrial_safety': 'Промбезопасность',
       'fire_safety': 'Пожарная безопасность',
@@ -50,15 +59,15 @@ export function AssignCoursesModal({ user, users, onClose, onAssign }: AssignCou
       'labor_protection': 'Охрана труда',
       'professions': 'Рабочие профессии',
     };
-    return names[cat] || cat;
+    return names[cat] || cat || '—';
   };
 
-  const filteredCourses = courses.filter(course => {
-    const matchesSearch = course.title.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredCourses = Array.isArray(courses) ? courses.filter(course => {
+    const matchesSearch = course.title?.toLowerCase().includes(searchQuery.toLowerCase()) ?? true;
     const categoryName = getCategoryName(course.category);
     const matchesCategory = filterCategory === 'all' || categoryName === filterCategory;
     return matchesSearch && matchesCategory;
-  });
+  }) : [];
 
   const handleToggleCourse = (courseId: string) => {
     const newSelected = new Set(selectedCourses);
@@ -89,7 +98,7 @@ export function AssignCoursesModal({ user, users, onClose, onAssign }: AssignCou
 
 
   return (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-30 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg shadow-2xl ring-4 ring-white ring-opacity-50 max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="p-6 border-b border-gray-200">

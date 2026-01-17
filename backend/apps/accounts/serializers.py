@@ -19,10 +19,11 @@ class UserSerializer(serializers.ModelSerializer):
 class UserCreateSerializer(serializers.ModelSerializer):
     """Serializer for user registration"""
     password = serializers.CharField(write_only=True, required=False, allow_blank=True, min_length=8)
+    verification_code = serializers.CharField(write_only=True, required=False, allow_blank=True)
     
     class Meta:
         model = User
-        fields = ['phone', 'password', 'full_name', 'email', 'iin', 'role', 'city', 'organization', 'language', 'verified', 'is_active']
+        fields = ['phone', 'password', 'full_name', 'email', 'iin', 'role', 'city', 'organization', 'language', 'verified', 'is_active', 'verification_code']
     
     def validate_password(self, value):
         """Validate password if provided"""
@@ -30,11 +31,41 @@ class UserCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Password must be at least 8 characters long.')
         return value
     
+    def validate(self, data):
+        """Validate SMS verification code if provided"""
+        verification_code = data.get('verification_code')
+        phone = data.get('phone')
+        
+        if verification_code and phone:
+            # Normalize phone number
+            normalized_phone = ''.join(filter(str.isdigit, str(phone)))
+            if normalized_phone.startswith('8'):
+                normalized_phone = '7' + normalized_phone[1:]
+            if not normalized_phone.startswith('7'):
+                normalized_phone = '7' + normalized_phone
+            
+            # Find the most recent unverified code for this phone and registration purpose
+            verification_obj = SMSVerificationCode.objects.filter(
+                phone=normalized_phone,
+                purpose='registration',
+                is_verified=False
+            ).order_by('-created_at').first()
+            
+            if not verification_obj:
+                raise serializers.ValidationError({'verification_code': 'Verification code not found or already used'})
+            
+            # Verify the code
+            if not verification_obj.verify(verification_code):
+                raise serializers.ValidationError({'verification_code': 'Invalid or expired verification code'})
+        
+        return data
+    
     def create(self, validated_data):
         import secrets
         import string
         
         password = validated_data.pop('password', None)
+        validated_data.pop('verification_code', None)  # Remove verification_code, it's not a model field
         
         # Если роль не указана, устанавливаем 'student' по умолчанию
         if 'role' not in validated_data or not validated_data.get('role'):

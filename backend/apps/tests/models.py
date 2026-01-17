@@ -19,7 +19,10 @@ class Test(models.Model):
     time_limit = models.IntegerField(null=True, blank=True, help_text='Time limit in minutes')
     max_attempts = models.IntegerField(default=3, help_text='Maximum attempts allowed')
     is_active = models.BooleanField(default=True)
+    requires_video_recording = models.BooleanField(default=False, help_text='Require video recording during test')
     language = models.CharField(max_length=2, choices=LANGUAGE_CHOICES, default='ru', help_text='Language of the test content')
+    category = models.ForeignKey('courses.Category', related_name='tests', on_delete=models.PROTECT, null=True, blank=True, help_text='Category for standalone tests displayed on Training Programs page')
+    is_standalone = models.BooleanField(default=False, help_text='If True, test can be taken without a course and will be displayed on Training Programs page')
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -106,4 +109,72 @@ class Question(models.Model):
                 if isinstance(opt, dict) and ('id' not in opt or not opt.get('id')):
                     opt['id'] = str(uuid.uuid4())
         super().save(*args, **kwargs)
+
+
+class TestCompletionVerification(models.Model):
+    """Test completion SMS verification for standalone tests"""
+    
+    test_attempt = models.OneToOneField('exams.TestAttempt', related_name='completion_verification', on_delete=models.CASCADE)
+    otp_code = models.CharField(max_length=6, blank=True)
+    otp_expires_at = models.DateTimeField(null=True, blank=True)
+    verified = models.BooleanField(default=False)
+    verified_at = models.DateTimeField(null=True, blank=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'test_completion_verifications'
+    
+    def __str__(self):
+        return f"{self.test_attempt.user.full_name or self.test_attempt.user.phone} - {self.test_attempt.test.title}"
+    
+    def generate_otp(self):
+        """Generate OTP code"""
+        import random
+        import string
+        from django.utils import timezone
+        from datetime import timedelta
+        import logging
+        
+        logger = logging.getLogger(__name__)
+        
+        self.otp_code = ''.join(random.choices(string.digits, k=6))
+        self.otp_expires_at = timezone.now() + timedelta(minutes=10)
+        self.save()
+        
+        logger.info(f"Generated OTP for test attempt {self.test_attempt.id}: '{self.otp_code}', expires at {self.otp_expires_at}")
+        
+        return self.otp_code
+    
+    def verify_otp(self, code):
+        """Verify OTP code"""
+        from django.utils import timezone
+        import logging
+        
+        logger = logging.getLogger(__name__)
+        
+        # Нормализуем код: убираем пробелы и приводим к строке
+        code = str(code).strip()
+        
+        logger.info(f"Verifying OTP: code='{code}', stored='{self.otp_code}', test_attempt={self.test_attempt.id}")
+        
+        if not self.otp_code or not self.otp_expires_at:
+            logger.warning(f"OTP verification failed: missing otp_code or otp_expires_at")
+            return False
+        
+        if timezone.now() > self.otp_expires_at:
+            logger.warning(f"OTP verification failed: expired. Now: {timezone.now()}, Expires: {self.otp_expires_at}")
+            return False
+        
+        otp_code = str(self.otp_code).strip()
+        if otp_code != code:
+            logger.warning(f"OTP verification failed: code mismatch. Expected: '{otp_code}', Got: '{code}'")
+            return False
+        
+        logger.info(f"OTP verification successful for test attempt {self.test_attempt.id}")
+        self.verified = True
+        self.verified_at = timezone.now()
+        self.save()
+        return True
 

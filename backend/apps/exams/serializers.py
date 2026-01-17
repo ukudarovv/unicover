@@ -10,13 +10,24 @@ class TestAttemptSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     answer_details = serializers.SerializerMethodField()
     
+    video_recording = serializers.SerializerMethodField()
+    
     class Meta:
         model = TestAttempt
         fields = [
             'id', 'test', 'user', 'started_at', 'completed_at',
-            'score', 'passed', 'answers', 'answer_details', 'ip_address', 'user_agent'
+            'score', 'passed', 'answers', 'answer_details', 'video_recording', 'ip_address', 'user_agent'
         ]
-        read_only_fields = ['id', 'started_at', 'completed_at', 'score', 'passed', 'answer_details']
+        read_only_fields = ['id', 'started_at', 'completed_at', 'score', 'passed', 'answer_details', 'video_recording']
+    
+    def get_video_recording(self, obj):
+        """Return video recording URL if available"""
+        if obj.video_recording:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.video_recording.url)
+            return obj.video_recording.url
+        return None
     
     def get_answer_details(self, obj):
         """Get detailed information about each answer"""

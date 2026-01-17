@@ -1,0 +1,38 @@
+from django.db import models
+from django.utils import timezone
+
+
+class ContentPage(models.Model):
+    """Model for storing editable content pages like Terms and Privacy Policy"""
+    
+    PAGE_TYPE_CHOICES = [
+        ('terms', 'Terms of Use'),
+        ('privacy', 'Privacy Policy'),
+    ]
+    
+    page_type = models.CharField(max_length=20, choices=PAGE_TYPE_CHOICES, unique=True, verbose_name='Тип страницы')
+    content_ru = models.TextField(verbose_name='Содержание (русский)')
+    content_kz = models.TextField(blank=True, verbose_name='Содержание (казахский)')
+    content_en = models.TextField(blank=True, verbose_name='Содержание (английский)')
+    
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Дата обновления')
+    
+    class Meta:
+        db_table = 'content_pages'
+        verbose_name = 'Контентная страница'
+        verbose_name_plural = 'Контентные страницы'
+        ordering = ['page_type']
+    
+    def __str__(self):
+        return f"{self.get_page_type_display()}"
+    
+    def get_content(self, lang='ru'):
+        """Get content for specified language with fallback to Russian"""
+        if lang == 'ru':
+            return self.content_ru
+        elif lang == 'kz':
+            return self.content_kz or self.content_ru
+        elif lang == 'en':
+            return self.content_en or self.content_ru
+        return self.content_ru

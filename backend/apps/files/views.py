@@ -57,6 +57,6 @@ class FileViewSet(viewsets.ModelViewSet):
                 uploaded_by=request.user
             )
             
-            serializer = self.get_serializer(file_instance)
+            serializer = self.get_serializer(file_instance, context={'request': request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 

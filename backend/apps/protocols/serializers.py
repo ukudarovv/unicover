@@ -3,6 +3,7 @@ from .models import Protocol, ProtocolSignature
 from apps.courses.serializers import CourseSerializer
 from apps.accounts.serializers import UserSerializer
 from apps.exams.serializers import TestAttemptSerializer
+from apps.tests.serializers import TestSerializer
 
 
 class ProtocolSignatureSerializer(serializers.ModelSerializer):
@@ -41,7 +42,7 @@ class ProtocolCreateSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Protocol
-        fields = ['student', 'course', 'attempt', 'enrollment', 'exam_date', 'score', 'passing_score', 'result']
+        fields = ['student', 'course', 'test', 'attempt', 'enrollment', 'exam_date', 'score', 'passing_score', 'result']
 
 
 class OTPRequestSerializer(serializers.Serializer):

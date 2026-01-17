@@ -76,20 +76,29 @@ class CourseViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Filter courses for public access and by language"""
         queryset = super().get_queryset()
+        
+        # Для detail actions (retrieve, with_progress и т.д.) не применяем фильтрацию по языку
+        # чтобы можно было открыть любой курс по ID независимо от языка
+        is_detail_action = self.action in ['retrieve', 'with_progress', 'enroll', 'students', 
+                                          'request_completion_otp', 'verify_completion_otp',
+                                          'revoke_enrollment', 'update', 'partial_update', 'destroy']
+        
         # Для неавторизованных пользователей показываем только опубликованные курсы
         if not hasattr(self.request.user, 'is_authenticated') or not self.request.user.is_authenticated:
             queryset = queryset.filter(status='published')
         
-        # Фильтрация по языку (если не указан явно в параметрах запроса)
-        # Для админов (staff) не применяем автоматическую фильтрацию по языку
-        is_admin = hasattr(self.request.user, 'is_authenticated') and self.request.user.is_authenticated and (
-            self.request.user.is_staff or 
-            getattr(self.request.user, 'role', None) == 'admin'
-        )
-        
-        if 'language' not in self.request.query_params and not is_admin:
-            lang = get_request_language(self.request)
-            queryset = queryset.filter(language=lang)
+        # Фильтрация по языку применяется только для list (список курсов)
+        # Для detail actions не применяем, чтобы можно было открыть курс на любом языке
+        if not is_detail_action:
+            # Для админов (staff) не применяем автоматическую фильтрацию по языку
+            is_admin = hasattr(self.request.user, 'is_authenticated') and self.request.user.is_authenticated and (
+                self.request.user.is_staff or 
+                getattr(self.request.user, 'role', None) == 'admin'
+            )
+            
+            if 'language' not in self.request.query_params and not is_admin:
+                lang = get_request_language(self.request)
+                queryset = queryset.filter(language=lang)
         
         return queryset
     

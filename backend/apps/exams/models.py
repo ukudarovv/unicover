@@ -1,6 +1,13 @@
 from django.db import models
 from django.conf import settings
 from apps.tests.models import Test
+import os
+
+
+def test_attempt_video_upload_to(instance, filename):
+    """Generate upload path for test attempt video"""
+    ext = os.path.splitext(filename)[1]
+    return f"test_attempts/{instance.id}/video{ext}"
 
 
 class ExtraAttemptRequest(models.Model):
@@ -51,6 +58,7 @@ class TestAttempt(models.Model):
     score = models.FloatField(null=True, blank=True, help_text='Score percentage')
     passed = models.BooleanField(null=True, blank=True)
     answers = models.JSONField(default=dict, help_text='User answers: {question_id: answer}')
+    video_recording = models.FileField(upload_to=test_attempt_video_upload_to, null=True, blank=True, help_text='Video recording of test attempt')
     ip_address = models.GenericIPAddressField(null=True, blank=True)
     user_agent = models.CharField(max_length=255, blank=True)
     

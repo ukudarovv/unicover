@@ -35,6 +35,7 @@ urlpatterns = [
     path('api/contacts/', include('apps.contacts.urls')),
     path('api/projects/', include('apps.projects.urls')),
     path('api/', include('apps.partners.urls')),
+    path('api/core/', include('apps.core.urls')),
     path('api/lessons/', include('apps.courses.lesson_urls')),  # For lesson endpoints
 ]
 

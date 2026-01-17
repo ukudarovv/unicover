@@ -1,5 +1,7 @@
 from rest_framework import serializers
-from .models import Test, Question
+from .models import Test, Question, TestCompletionVerification
+from apps.courses.serializers import CategorySerializer
+from apps.courses.models import Category
 import uuid
 
 
@@ -19,13 +21,21 @@ class TestSerializer(serializers.ModelSerializer):
     """Test serializer with nested questions"""
     questions = QuestionSerializer(many=True, read_only=True)
     questions_count = serializers.IntegerField(read_only=True)
+    category = CategorySerializer(read_only=True)
+    category_id = serializers.PrimaryKeyRelatedField(
+        queryset=Category.objects.filter(is_active=True),
+        source='category',
+        write_only=True,
+        required=False,
+        allow_null=True
+    )
     
     class Meta:
         model = Test
         fields = [
             'id', 'title', 'title_kz', 'title_en', 'passing_score',
-            'time_limit', 'max_attempts', 'is_active', 'language',
-            'questions', 'questions_count', 'created_at', 'updated_at'
+            'time_limit', 'max_attempts', 'is_active', 'requires_video_recording', 'language',
+            'category', 'category_id', 'is_standalone', 'questions', 'questions_count', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'questions_count', 'created_at', 'updated_at']
 
@@ -90,4 +100,16 @@ class QuestionCreateSerializer(serializers.ModelSerializer):
                         opt['id'] = str(uuid.uuid4())
             validated_data['options'] = options
         return super().update(instance, validated_data)
+
+
+class TestCompletionVerificationSerializer(serializers.ModelSerializer):
+    """Test completion verification serializer"""
+    
+    class Meta:
+        model = TestCompletionVerification
+        fields = [
+            'id', 'test_attempt', 'otp_code', 'otp_expires_at',
+            'verified', 'verified_at', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'otp_code', 'otp_expires_at', 'verified', 'verified_at', 'created_at', 'updated_at']
 

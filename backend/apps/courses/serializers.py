@@ -66,7 +66,7 @@ class CourseSerializer(serializers.ModelSerializer):
             'category', 'category_id',
             'duration', 'format', 'passing_score', 'max_attempts',
             'has_timer', 'timer_minutes', 'pdek_commission', 'status',
-            'language', 'final_test_id', 'modules', 'created_at', 'updated_at'
+            'language', 'final_test_id', 'is_standalone_test', 'modules', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
 
@@ -88,7 +88,7 @@ class CourseCreateUpdateSerializer(serializers.ModelSerializer):
             'category_id',
             'duration', 'format', 'passing_score', 'max_attempts',
             'has_timer', 'timer_minutes', 'pdek_commission', 'status',
-            'language', 'final_test', 'modules'
+            'language', 'final_test', 'is_standalone_test', 'modules'
         ]
     
     def create(self, validated_data):

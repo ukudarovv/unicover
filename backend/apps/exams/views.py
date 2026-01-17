@@ -76,7 +76,7 @@ class TestAttemptViewSet(viewsets.ModelViewSet):
         )
         
         return Response(
-            TestAttemptSerializer(attempt).data,
+            TestAttemptSerializer(attempt, context={'request': request}).data,
             status=status.HTTP_201_CREATED
         )
     
@@ -109,7 +109,7 @@ class TestAttemptViewSet(viewsets.ModelViewSet):
         attempt.save()
         
         return Response(
-            TestAttemptSerializer(attempt).data,
+            TestAttemptSerializer(attempt, context={'request': request}).data,
             status=status.HTTP_200_OK
         )
     
@@ -128,9 +128,27 @@ class TestAttemptViewSet(viewsets.ModelViewSet):
         # Check if already completed
         if attempt.completed_at:
             return Response(
-                TestAttemptSerializer(attempt).data,
+                TestAttemptSerializer(attempt, context={'request': request}).data,
                 status=status.HTTP_200_OK
             )
+        
+        # Handle video recording upload if provided
+        if 'video_recording' in request.FILES:
+            video_file = request.FILES['video_recording']
+            # Validate file size (max 500MB)
+            max_size = 500 * 1024 * 1024  # 500MB in bytes
+            if video_file.size > max_size:
+                return Response(
+                    {'error': 'Video file too large. Maximum size is 500MB'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            # Validate file type (should be video)
+            if not video_file.content_type.startswith('video/'):
+                return Response(
+                    {'error': 'Invalid file type. Only video files are allowed'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            attempt.video_recording = video_file
         
         # Calculate score
         score, passed = attempt.calculate_score()
@@ -169,7 +187,7 @@ class TestAttemptViewSet(viewsets.ModelViewSet):
             user=request.user
         ).select_related('test').order_by('-started_at')
         
-        serializer = TestAttemptSerializer(attempts, many=True)
+        serializer = TestAttemptSerializer(attempts, many=True, context={'request': request})
         return Response(serializer.data)
     
     @action(detail=False, methods=['get'])
@@ -195,7 +213,7 @@ class TestAttemptViewSet(viewsets.ModelViewSet):
             test=test
         ).select_related('test').order_by('-started_at')
         
-        serializer = TestAttemptSerializer(attempts, many=True)
+        serializer = TestAttemptSerializer(attempts, many=True, context={'request': request})
         return Response(serializer.data)
     
     def _get_client_ip(self, request):

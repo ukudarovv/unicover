@@ -72,6 +72,12 @@ class RegisterView(APIView):
         serializer = UserCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
+        
+        # Mark user as verified after successful registration with SMS code
+        if request.data.get('verification_code'):
+            user.verified = True
+            user.save()
+        
         tokens = TokenSerializer.get_tokens_for_user(user)
         return Response(tokens, status=status.HTTP_201_CREATED)
 

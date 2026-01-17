@@ -72,6 +72,7 @@ class Course(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='in_development')
     language = models.CharField(max_length=2, choices=LANGUAGE_CHOICES, default='ru', help_text='Language of the course content')
     final_test = models.ForeignKey('tests.Test', related_name='final_courses', on_delete=models.SET_NULL, null=True, blank=True, help_text='Final test for course completion')
+    is_standalone_test = models.BooleanField(default=False, help_text='If True, this course is displayed as a standalone test on Training Programs page')
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -20,7 +20,8 @@ class Protocol(models.Model):
     
     number = models.CharField(max_length=50, unique=True, db_index=True)
     student = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='protocols', on_delete=models.CASCADE)
-    course = models.ForeignKey(Course, related_name='protocols', on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, related_name='protocols', on_delete=models.CASCADE, null=True, blank=True, help_text='Course for course completion protocols')
+    test = models.ForeignKey('tests.Test', related_name='protocols', on_delete=models.CASCADE, null=True, blank=True, help_text='Test for standalone test completion protocols')
     attempt = models.ForeignKey(TestAttempt, related_name='protocols', on_delete=models.CASCADE, null=True, blank=True)
     enrollment = models.ForeignKey(CourseEnrollment, related_name='protocols', on_delete=models.CASCADE, null=True, blank=True, help_text='Enrollment for course completion protocols')
     exam_date = models.DateTimeField()
@@ -38,7 +39,8 @@ class Protocol(models.Model):
         ordering = ['-created_at']
     
     def __str__(self):
-        return f"Protocol {self.number} - {self.student.full_name or self.student.phone}"
+        course_or_test = self.course.title if self.course else (self.test.title if self.test else 'Unknown')
+        return f"Protocol {self.number} - {self.student.full_name or self.student.phone} - {course_or_test}"
     
     def generate_number(self):
         """Generate unique protocol number"""

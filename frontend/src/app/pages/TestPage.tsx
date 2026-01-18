@@ -3,16 +3,20 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { FooterUnicover } from '../components/FooterUnicover';
 import { TestInterface } from '../components/lms/TestInterface';
-import { Answer } from '../types/lms';
-import { CheckCircle, XCircle } from 'lucide-react';
+import { TestResultPage } from '../components/lms/TestResultPage';
+import { Answer, TestAttempt } from '../types/lms';
 import { useTest } from '../hooks/useTests';
 import { examsService } from '../services/exams';
+import { useUser } from '../contexts/UserContext';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 export function TestPage() {
   const { testId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
+  const { user } = useUser();
   const { test, loading: testLoading } = useTest(testId);
   const [attemptId, setAttemptId] = useState<number | null>(null);
   const [testCompleted, setTestCompleted] = useState(false);
@@ -20,38 +24,143 @@ export function TestPage() {
   const [starting, setStarting] = useState(false);
   const [savedAnswers, setSavedAnswers] = useState<Record<string, any> | null>(null);
   const [startedAt, setStartedAt] = useState<string | null>(null);
+  const [testAttemptResult, setTestAttemptResult] = useState<TestAttempt | null>(null);
+  const [testTimeSpent, setTestTimeSpent] = useState(0);
+  const [testAttempts, setTestAttempts] = useState<TestAttempt[]>([]);
   
   // Получаем courseId и attemptId из state (для финального теста)
   const courseId = (location.state as any)?.courseId;
   const stateAttemptId = (location.state as any)?.attemptId;
+  const viewResults = (location.state as any)?.viewResults || false;
+  
+  // Проверяем, является ли тест автономным
+  // Для viewResults можем определить из попытки
+  const isStandaloneTest = test 
+    ? (test.is_standalone || test.isStandalone) && test.category
+    : (testAttemptResult?.test && typeof testAttemptResult.test === 'object' 
+        ? (testAttemptResult.test.is_standalone || testAttemptResult.test.isStandalone) && testAttemptResult.test.category
+        : false);
+  
+  // Обрабатываем просмотр результатов завершенной попытки
+  useEffect(() => {
+    if (viewResults && stateAttemptId && !testCompleted && !testAttemptResult) {
+      const loadCompletedAttempt = async () => {
+        try {
+          setStarting(true);
+          
+          // Загружаем попытку
+          const attempt = await examsService.getTestAttempt(String(stateAttemptId));
+          const completedAt = attempt.completed_at || attempt.completedAt;
+          
+          if (!completedAt) {
+            // Попытка не завершена, но передан viewResults - это ошибка
+            toast.error('Попытка теста еще не завершена');
+            navigate('/student/dashboard');
+            setStarting(false);
+            return;
+          }
+          
+          // Получаем testId из попытки, если тест еще не загружен
+          const testIdFromAttempt = typeof attempt.test === 'object' ? attempt.test?.id : attempt.test;
+          const testIdToUse = testIdFromAttempt || testId;
+          
+          // Вычисляем время прохождения
+          const startedDate = attempt.started_at || attempt.startedAt;
+          let timeSpent = 0;
+          if (startedDate && completedAt) {
+            const started = typeof startedDate === 'string' ? new Date(startedDate) : startedDate;
+            const completed = typeof completedAt === 'string' ? new Date(completedAt) : completedAt;
+            timeSpent = Math.floor((completed.getTime() - started.getTime()) / 1000);
+          }
+          
+          // Загружаем все попытки для подсчета (если есть testId)
+          if (testIdToUse) {
+            try {
+              const attempts = await examsService.getTestAttempts(String(testIdToUse));
+              setTestAttempts(attempts);
+            } catch (error) {
+              console.error('Failed to load test attempts:', error);
+              setTestAttempts([]);
+            }
+          }
+          
+          // Устанавливаем состояние для отображения результатов
+          setTestAttemptResult(attempt);
+          setTestTimeSpent(timeSpent);
+          setTestResult({ 
+            score: attempt.score || 0, 
+            passed: attempt.passed || false 
+          });
+          setTestCompleted(true);
+        } catch (error: any) {
+          console.error('Failed to load completed attempt:', error);
+          toast.error(error.message || 'Ошибка при загрузке результатов теста');
+          navigate('/student/dashboard');
+        } finally {
+          setStarting(false);
+        }
+      };
+      
+      loadCompletedAttempt();
+    }
+  }, [viewResults, stateAttemptId, testCompleted, testAttemptResult, testId, navigate]);
+
+  // Загружаем попытки теста
+  useEffect(() => {
+    const loadAttempts = async () => {
+      if (test?.id) {
+        try {
+          const attempts = await examsService.getTestAttempts(test.id);
+          setTestAttempts(attempts);
+        } catch (error) {
+          console.error('Failed to load test attempts:', error);
+        }
+      }
+    };
+    // Загружаем попытки если тест завершен
+    if (test?.id && testCompleted && !viewResults) {
+      loadAttempts();
+    }
+  }, [test?.id, testCompleted, viewResults]);
 
   // Начинаем попытку при загрузке теста или продолжаем незавершенную
   useEffect(() => {
+    // Если передан viewResults, не начинаем новую попытку
+    if (viewResults) {
+      return;
+    }
+    
     if (test && !attemptId && !starting) {
       const initializeAttempt = async () => {
         try {
           setStarting(true);
           
-          // Если передан attemptId из state (для продолжения теста)
+          // Если передан attemptId из state (для продолжения незавершенной попытки)
           if (stateAttemptId) {
             try {
               const attempt = await examsService.getTestAttempt(String(stateAttemptId));
               const attemptIdNum = Number(attempt.id);
-              setAttemptId(attemptIdNum);
+              const completedAt = attempt.completed_at || attempt.completedAt;
               
-              // Сохраняем ответы и время начала для передачи в TestInterface
-              const savedAnswersData = attempt.answers || {};
-              const startedAtDate = attempt.started_at || attempt.startedAt;
-              setSavedAnswers(savedAnswersData);
-              setStartedAt(startedAtDate);
-              
-              // Сохраняем attemptId и ответы в localStorage для автосохранения
-              localStorage.setItem(`test_${test.id}_progress`, JSON.stringify({
-                attemptId: attemptIdNum,
-                answers: savedAnswersData,
-                startedAt: startedAtDate
-              }));
-              return;
+              // Если попытка не завершена, продолжаем её
+              if (!completedAt) {
+                setAttemptId(attemptIdNum);
+                
+                // Сохраняем ответы и время начала для передачи в TestInterface
+                const savedAnswersData = attempt.answers || {};
+                const startedAtDate = attempt.started_at || attempt.startedAt;
+                setSavedAnswers(savedAnswersData);
+                setStartedAt(startedAtDate);
+                
+                // Сохраняем attemptId и ответы в localStorage для автосохранения
+                localStorage.setItem(`test_${test.id}_progress`, JSON.stringify({
+                  attemptId: attemptIdNum,
+                  answers: savedAnswersData,
+                  startedAt: startedAtDate
+                }));
+                setStarting(false);
+                return;
+              }
             } catch (error: any) {
               console.error('Failed to load attempt from state:', error);
               // Если не удалось загрузить попытку, продолжаем с проверкой localStorage
@@ -145,16 +254,20 @@ export function TestPage() {
       };
       initializeAttempt();
     }
-  }, [test, attemptId, starting, navigate, stateAttemptId]);
+  }, [test, attemptId, starting, navigate, stateAttemptId, viewResults]);
 
-  const handleTestComplete = async (answers: Answer[], timeSpent: number) => {
-    if (!attemptId) return;
+  const handleTestComplete = async (answers: Answer[], timeSpent: number, videoBlob?: Blob) => {
+    if (!attemptId || !test) return;
 
     try {
-      const result = await examsService.submitTestAttempt(String(attemptId));
+      const result = await examsService.submitTestAttempt(String(attemptId), videoBlob);
       
       // Удаляем сохраненный прогресс
-      localStorage.removeItem(`test_${test?.id}_progress`);
+      localStorage.removeItem(`test_${test.id}_progress`);
+      
+      // Сохраняем результат попытки и время
+      setTestAttemptResult(result);
+      setTestTimeSpent(timeSpent);
       
       setTestResult({ 
         score: result.score || 0, 
@@ -162,110 +275,76 @@ export function TestPage() {
       });
       setTestCompleted(true);
       
+      // Обновляем список попыток
+      const updatedAttempts = await examsService.getTestAttempts(test.id);
+      setTestAttempts(updatedAttempts);
+      
       if (result.passed) {
-        toast.success('Тест успешно сдан!');
+        if (!isStandaloneTest) {
+          toast.success(t('lms.test.testPassed') || 'Тест успешно сдан!');
+        }
       } else {
-        toast.error('Тест не сдан. Попробуйте еще раз.');
+        toast.error(t('lms.test.testFailed') || 'Тест не сдан. Попробуйте еще раз.');
       }
     } catch (error: any) {
-      toast.error(error.message || 'Ошибка при завершении теста');
+      toast.error(error.message || t('lms.test.testCompleteError') || 'Ошибка при завершении теста');
     }
   };
+
 
   const handleCancel = () => {
     navigate('/student/dashboard');
   };
 
-  if (testCompleted && testResult) {
+  // Показываем страницу результатов вместо модального окна
+  // Для viewResults можем показать результаты даже если test еще загружается (данные есть в attempt)
+  if (testCompleted && testResult && testAttemptResult) {
+    // Если тест еще не загружен, но есть данные в попытке, используем их
+    const testToShow = test || (testAttemptResult.test && typeof testAttemptResult.test === 'object' ? testAttemptResult.test : null);
+    
+    if (!testToShow) {
+      // Если нет данных о тесте, показываем загрузку
+      return (
+        <>
+          <Header />
+          <div className="min-h-screen bg-gray-50 pt-20 flex items-center justify-center">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="mt-4 text-gray-600">Загрузка теста...</p>
+            </div>
+          </div>
+          <FooterUnicover />
+        </>
+      );
+    }
     return (
       <>
         <Header />
-        <div className="min-h-screen bg-gray-50 pt-20">
-          <div className="container mx-auto px-4 py-8 max-w-2xl">
-            <div className="bg-white rounded-lg shadow-md p-8 text-center">
-              {testResult.passed ? (
-                <>
-                  <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <CheckCircle className="w-12 h-12 text-green-600" />
-                  </div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">Тест успешно сдан!</h1>
-                  <p className="text-gray-600 mb-6">Поздравляем с успешным прохождением экзамена</p>
-                </>
-              ) : (
-                <>
-                  <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <XCircle className="w-12 h-12 text-red-600" />
-                  </div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">Тест не сдан</h1>
-                  <p className="text-gray-600 mb-6">К сожалению, вы не набрали проходной балл</p>
-                </>
-              )}
-
-              <div className="bg-gray-50 rounded-lg p-6 mb-6">
-                <div className="grid grid-cols-2 gap-6">
-                  <div>
-                    <p className="text-sm text-gray-600 mb-1">Ваш результат</p>
-                    <p className={`text-3xl font-bold ${testResult.passed ? 'text-green-600' : 'text-red-600'}`}>
-                      {Number(testResult.score || 0).toFixed(2)}%
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600 mb-1">Проходной балл</p>
-                    <p className="text-3xl font-bold text-gray-900">80%</p>
-                  </div>
-                </div>
-              </div>
-
-              {testResult.passed ? (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                  <p className="text-sm text-blue-800">
-                    Протокол экзамена сформирован и отправлен на утверждение комиссии ПДЭК.
-                    После подписания протокола вы получите сертификат.
-                  </p>
-                </div>
-              ) : (
-                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
-                  <p className="text-sm text-orange-800">
-                    У вас осталось 2 попытки. Рекомендуем повторить материал курса перед следующей попыткой.
-                  </p>
-                </div>
-              )}
-
-              <div className="flex gap-3 justify-center">
-                {/* Если это финальный тест и он пройден, перенаправляем на страницу курса */}
-                {courseId && testResult.passed ? (
-                  <button
-                    onClick={() => navigate(`/student/course/${courseId}`)}
-                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-                  >
-                    Вернуться к курсу
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => navigate('/student/dashboard')}
-                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-                  >
-                    Вернуться к курсам
-                  </button>
-                )}
-                {testResult.passed && (
-                  <button
-                    onClick={() => navigate('/student/documents')}
-                    className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
-                  >
-                    Посмотреть протокол
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
+        <TestResultPage
+          test={testToShow}
+          result={testAttemptResult}
+          attemptsUsed={testAttempts.length}
+          attemptsTotal={testToShow.max_attempts || testToShow.maxAttempts || 3}
+          timeSpent={testTimeSpent}
+          isStandalone={isStandaloneTest}
+          onRetry={() => {
+            setTestResult(null);
+            setTestAttemptResult(null);
+            setTestCompleted(false);
+            setAttemptId(null);
+            // Перезагружаем страницу для новой попытки
+            window.location.reload();
+          }}
+          onBackToCourse={courseId ? () => navigate(`/student/course/${courseId}`) : undefined}
+          onBackToDashboard={() => navigate('/student/dashboard')}
+        />
         <FooterUnicover />
       </>
     );
   }
 
-  if (testLoading || starting || !test || !attemptId) {
+  // Показываем загрузку только если не просматриваем результаты и не завершен тест
+  if (!testCompleted && (testLoading || starting || !test || (!viewResults && !attemptId))) {
     return (
       <>
         <Header />
@@ -311,6 +390,7 @@ export function TestPage() {
         title={test.title}
         timeLimit={test.timeLimit || test.time_limit || 30}
         questions={test.questions || []}
+        requiresVideoRecording={test.requiresVideoRecording || test.requires_video_recording || false}
         onComplete={handleTestComplete}
         onCancel={handleCancel}
         savedAnswers={savedAnswers || undefined}

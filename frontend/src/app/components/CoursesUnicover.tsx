@@ -1,9 +1,10 @@
-import { Shield, Flame, Zap, Briefcase, Wrench, Filter, Globe } from 'lucide-react';
+import { Shield, Flame, Zap, Briefcase, Wrench, Filter, Globe, FileQuestion } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { coursesService } from '../services/courses';
 import { categoriesService, Category } from '../services/categories';
-import { Course } from '../types/lms';
+import { testsService } from '../services/tests';
+import { Course, Test } from '../types/lms';
 import { useUser } from '../contexts/UserContext';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -24,6 +25,7 @@ export function CoursesUnicover() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null); // null = использовать язык интерфейса
   const [courses, setCourses] = useState<Course[]>([]);
+  const [tests, setTests] = useState<Test[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -53,13 +55,14 @@ export function CoursesUnicover() {
     fetchCategories();
   }, []);
 
-  // Загружаем курсы с учетом языка
+  // Загружаем курсы и тесты с учетом языка
   useEffect(() => {
-    const fetchCourses = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
+        
         // Получаем курсы с фильтрацией по языку - API возвращает пагинированный ответ
-        const response = await coursesService.getCourses({ 
+        const coursesResponse = await coursesService.getCourses({ 
           status: 'published',
           language: languageToUse
         });
@@ -67,12 +70,12 @@ export function CoursesUnicover() {
         let coursesList: Course[] = [];
         
         // coursesService.getCourses() всегда возвращает PaginatedResponse<Course>
-        if (response && typeof response === 'object') {
-          if ('results' in response && Array.isArray(response.results)) {
-            coursesList = response.results;
-          } else if (Array.isArray(response)) {
+        if (coursesResponse && typeof coursesResponse === 'object') {
+          if ('results' in coursesResponse && Array.isArray(coursesResponse.results)) {
+            coursesList = coursesResponse.results;
+          } else if (Array.isArray(coursesResponse)) {
             // Fallback на случай, если вернулся массив напрямую
-            coursesList = response;
+            coursesList = coursesResponse;
           }
         }
         
@@ -81,14 +84,40 @@ export function CoursesUnicover() {
           course && course.status && course.status !== 'draft' && course.status !== 'annulled'
         );
         setCourses(activeCourses);
+        
+        // Получаем тесты с категориями и фильтрацией по языку
+        const testsResponse = await testsService.getTests({ 
+          page_size: 1000, // Получаем все тесты
+          language: languageToUse // Фильтруем по языку
+        });
+        let testsList: Test[] = [];
+        
+        if (testsResponse && typeof testsResponse === 'object') {
+          if ('results' in testsResponse && Array.isArray(testsResponse.results)) {
+            testsList = testsResponse.results;
+          } else if (Array.isArray(testsResponse)) {
+            testsList = testsResponse;
+          }
+        }
+        
+        // Фильтруем активные тесты с категориями и is_standalone=true
+        // Показываем только тесты, которые имеют категорию И помечены как standalone
+        const activeTests = testsList.filter(test => 
+          test && 
+          test.is_active !== false && 
+          test.category && // Должна быть категория
+          (test.is_standalone || test.isStandalone) // И должен быть флаг is_standalone
+        );
+        setTests(activeTests);
       } catch (error) {
-        console.error('Failed to fetch courses:', error);
+        console.error('Failed to fetch courses and tests:', error);
         setCourses([]);
+        setTests([]);
       } finally {
         setLoading(false);
       }
     };
-    fetchCourses();
+    fetchData();
   }, [languageToUse]);
   
   // Сбрасываем выбранный язык фильтра при изменении языка интерфейса
@@ -119,6 +148,26 @@ export function CoursesUnicover() {
         return false;
       });
 
+  // Фильтруем тесты по выбранной категории
+  const filteredTests = selectedCategory === 'all'
+    ? tests
+    : tests.filter(test => {
+        if (!test.category) return false;
+        
+        const categoryId = test.category.id || String(test.category.id);
+        return categoryId === selectedCategory || String(categoryId) === selectedCategory;
+      });
+
+  // Получаем курсы-тесты (курсы с is_standalone_test=true)
+  const standaloneTestCourses = filteredCourses.filter(course => 
+    course.is_standalone_test || course.isStandaloneTest
+  );
+
+  // Получаем обычные курсы (без is_standalone_test)
+  const regularCourses = filteredCourses.filter(course => 
+    !course.is_standalone_test && !course.isStandaloneTest
+  );
+
   // Получаем иконку для категории
   const getCategoryIcon = (category: string | { id?: string; name?: string; icon?: string } | null) => {
     if (!category) return Briefcase;
@@ -137,11 +186,27 @@ export function CoursesUnicover() {
     return categoryIcons[category] || Briefcase;
   };
 
-  // Получаем название категории для отображения
-  const getCategoryName = (categoryId: string | null | undefined): string => {
+  // Получаем название категории для отображения с учетом языка
+  const getCategoryName = (category: Category | null | undefined): string => {
+    if (!category) return t('education.courses.unknownCategory');
+    
+    // Выбираем название в зависимости от текущего языка интерфейса
+    // Используем i18n.language напрямую, чтобы всегда получать актуальный язык
+    const lang = i18n.language || localStorage.getItem('language') || 'ru';
+    if (lang === 'kz' && category.name_kz) {
+      return category.name_kz;
+    } else if (lang === 'en' && category.name_en) {
+      return category.name_en;
+    }
+    // Fallback на русское название или основное
+    return category.name || t('education.courses.unknownCategory');
+  };
+
+  // Получаем название категории по ID
+  const getCategoryNameById = (categoryId: string | null | undefined): string => {
     if (!categoryId || categoryId === 'all') return t('education.courses.allCourses');
     const category = categories.find(cat => cat.id === categoryId);
-    return category?.name || t('education.courses.unknownCategory');
+    return getCategoryName(category);
   };
 
   const handleEnrollClick = (course: Course) => {
@@ -157,6 +222,32 @@ export function CoursesUnicover() {
       navigate(`/student/course/${course.id}`);
     } else {
       toast.info(t('education.courses.studentsOnly'));
+    }
+  };
+
+  const handleTestClick = (testId: string | number) => {
+    if (!user) {
+      // Если пользователь не авторизован, перенаправляем на страницу входа
+      toast.info(t('education.courses.loginRequired'));
+      navigate('/login', { state: { returnTo: `/student/test/${testId}` } });
+      return;
+    }
+
+    // Если пользователь авторизован, переходим к тесту
+    if (user.role === 'student') {
+      navigate(`/student/test/${testId}`);
+    } else {
+      toast.info(t('education.courses.studentsOnly'));
+    }
+  };
+
+  const handleStandaloneTestCourseClick = (course: Course) => {
+    // Для курсов-тестов переходим напрямую к финальному тесту
+    const testId = course.final_test_id || course.finalTestId;
+    if (testId) {
+      handleTestClick(testId);
+    } else {
+      toast.error(t('education.courses.testNotLinked') || 'Тест не привязан к курсу');
     }
   };
 
@@ -268,15 +359,16 @@ export function CoursesUnicover() {
                     : 'bg-white text-gray-700 hover:bg-blue-50 border border-gray-200'
                 }`}
               >
-                {cat.name}
+                {getCategoryName(cat)}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Courses Grid */}
+        {/* Courses and Tests Grid */}
         <div className="grid md:grid-cols-2 gap-8">
-          {filteredCourses.map((course) => {
+          {/* Обычные курсы */}
+          {regularCourses.map((course) => {
             // Получаем иконку для категории курса
             const categoryObj = typeof course.category === 'object' 
               ? course.category 
@@ -293,7 +385,7 @@ export function CoursesUnicover() {
                   </div>
                   <div className="flex-1">
                     <h3 className="text-xl font-bold text-gray-900 mb-2">{course.title}</h3>
-                    <p className="text-sm text-blue-600 font-medium">{course.duration} часов</p>
+                    <p className="text-sm text-blue-600 font-medium">{course.duration} {t('education.courses.hours')}</p>
                   </div>
                 </div>
                 
@@ -322,9 +414,93 @@ export function CoursesUnicover() {
               </div>
             );
           })}
+
+          {/* Курсы-тесты */}
+          {standaloneTestCourses.map((course) => {
+            // Получаем иконку для категории курса
+            const categoryObj = typeof course.category === 'object' 
+              ? course.category 
+              : categories.find(cat => cat.id === course.category || cat.name === course.category);
+            const Icon = FileQuestion;
+            return (
+              <div
+                key={`test-course-${course.id}`}
+                className="bg-white p-8 rounded-xl shadow-sm hover:shadow-xl transition-shadow border border-orange-200"
+              >
+                <div className="flex items-start gap-4 mb-6">
+                  <div className="w-14 h-14 bg-orange-600 text-white rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Icon className="w-7 h-7" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h3 className="text-xl font-bold text-gray-900">{course.title}</h3>
+                      <span className="px-2 py-1 bg-orange-100 text-orange-700 text-xs font-semibold rounded">
+                        {t('education.courses.test') || 'Тест'}
+                      </span>
+                    </div>
+                    <p className="text-sm text-orange-600 font-medium">{t('education.courses.standaloneTest') || 'Автономный тест'}</p>
+                  </div>
+                </div>
+                
+                <p className="text-gray-600 mb-6">{course.description || t('education.courses.defaultDescription')}</p>
+                
+                <button 
+                  onClick={() => handleStandaloneTestCourseClick(course)}
+                  className="mt-6 w-full bg-orange-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-orange-700 transition-colors"
+                >
+                  {user ? (t('education.courses.startTest') || 'Начать тест') : t('education.courses.enroll')}
+                </button>
+              </div>
+            );
+          })}
+
+          {/* Отдельные тесты */}
+          {filteredTests.map((test) => {
+            const categoryObj = test.category;
+            const Icon = FileQuestion;
+            return (
+              <div
+                key={`test-${test.id}`}
+                className="bg-white p-8 rounded-xl shadow-sm hover:shadow-xl transition-shadow border border-orange-200"
+              >
+                <div className="flex items-start gap-4 mb-6">
+                  <div className="w-14 h-14 bg-orange-600 text-white rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Icon className="w-7 h-7" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h3 className="text-xl font-bold text-gray-900">{test.title}</h3>
+                      <span className="px-2 py-1 bg-orange-100 text-orange-700 text-xs font-semibold rounded">
+                        {t('education.courses.test') || 'Тест'}
+                      </span>
+                    </div>
+                    <p className="text-sm text-orange-600 font-medium">
+                      {test.questions_count || test.questionsCount || 0} {t('education.courses.questions') || 'вопросов'}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="bg-gray-50 p-4 rounded-lg mb-6">
+                  <div className="flex items-center justify-between text-sm text-gray-600">
+                    <span>{t('education.courses.passingScore') || 'Проходной балл'}: {test.passing_score || test.passingScore || 80}%</span>
+                    {test.time_limit || test.timeLimit ? (
+                      <span>{t('education.courses.timeLimit') || 'Время'}: {test.time_limit || test.timeLimit} {t('education.courses.minutes') || 'мин'}</span>
+                    ) : null}
+                  </div>
+                </div>
+                
+                <button 
+                  onClick={() => handleTestClick(test.id)}
+                  className="mt-6 w-full bg-orange-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-orange-700 transition-colors"
+                >
+                  {user ? (t('education.courses.startTest') || 'Начать тест') : t('education.courses.enroll')}
+                </button>
+              </div>
+            );
+          })}
         </div>
 
-        {filteredCourses.length === 0 && (
+        {regularCourses.length === 0 && standaloneTestCourses.length === 0 && filteredTests.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-500">{t('education.courses.noCoursesInCategory')}</p>
           </div>

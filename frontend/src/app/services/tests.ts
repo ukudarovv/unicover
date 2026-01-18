@@ -154,13 +154,23 @@ const testsService = {
       previous = data.previous || null;
     }
     
-    // Обрабатываем course: преобразуем в courseId для каждого теста
+    // Обрабатываем course и category: преобразуем в courseId и categoryId для каждого теста
     tests = tests.map((test: any) => {
       if (test.course) {
         test.courseId = typeof test.course === 'string' ? test.course : String(test.course);
       } else {
         test.courseId = '';
       }
+      
+      // Обрабатываем category
+      if (test.category) {
+        if (typeof test.category === 'object' && test.category.id) {
+          test.categoryId = String(test.category.id);
+        } else if (typeof test.category === 'string') {
+          test.categoryId = test.category;
+        }
+      }
+      
       return test;
     });
     
@@ -187,6 +197,15 @@ const testsService = {
       data.courseId = '';
     }
     
+    // Обрабатываем category
+    if (data.category) {
+      if (typeof data.category === 'object' && data.category.id) {
+        data.categoryId = String(data.category.id);
+      } else if (typeof data.category === 'string') {
+        data.categoryId = data.category;
+      }
+    }
+    
     return data as Test;
   },
 
@@ -206,18 +225,33 @@ const testsService = {
       courseId = null;
     }
     
+    // Обрабатываем categoryId
+    let categoryId: string | number | null = null;
+    if (test.categoryId) {
+      categoryId = test.categoryId;
+    } else if (test.category) {
+      categoryId = typeof test.category === 'string' ? test.category : test.category?.id;
+    }
+    if (categoryId === '' || categoryId === undefined) {
+      categoryId = null;
+    }
+
     // Convert frontend format to backend format
     const backendTest: any = {
       ...test,
       course_id: courseId,
+      category_id: categoryId,
       passing_score: test.passingScore || test.passing_score,
       time_limit: test.timeLimit || test.time_limit,
       max_attempts: test.maxAttempts || test.max_attempts,
+      language: test.language || 'ru',
       is_active: test.is_active !== undefined ? test.is_active : true,
     };
     // Remove frontend-specific fields
     delete backendTest.courseId;
     delete backendTest.course;
+    delete backendTest.categoryId;
+    delete backendTest.category;
     delete backendTest.passingScore;
     delete backendTest.timeLimit;
     delete backendTest.maxAttempts;
@@ -267,18 +301,33 @@ const testsService = {
       courseId = null;
     }
     
+    // Обрабатываем categoryId
+    let categoryId: string | number | null = null;
+    if (test.categoryId) {
+      categoryId = test.categoryId;
+    } else if (test.category) {
+      categoryId = typeof test.category === 'string' ? test.category : test.category?.id;
+    }
+    if (categoryId === '' || categoryId === undefined) {
+      categoryId = null;
+    }
+
     // Convert frontend format to backend format
     const backendTest: any = {
       ...test,
       course_id: courseId,
+      category_id: categoryId,
       passing_score: test.passingScore || test.passing_score,
       time_limit: test.timeLimit || test.time_limit,
       max_attempts: test.maxAttempts || test.max_attempts,
+      language: test.language || 'ru',
       is_active: test.is_active !== undefined ? test.is_active : true,
     };
     // Remove frontend-specific fields
     delete backendTest.courseId;
     delete backendTest.course;
+    delete backendTest.categoryId;
+    delete backendTest.category;
     delete backendTest.passingScore;
     delete backendTest.timeLimit;
     delete backendTest.maxAttempts;
@@ -379,6 +428,29 @@ const testsService = {
 
   async deleteQuestion(testId: string, questionId: string): Promise<void> {
     await apiClient.delete(`/tests/${testId}/questions/${questionId}/`);
+  },
+
+  async requestCompletionOTP(testId: string): Promise<{
+    message: string;
+    otp_code?: string;
+    otp_expires_at?: string;
+    otp_is_new: boolean;
+    sms_sent: boolean;
+    sms_error?: string;
+    warning?: string;
+    debug?: boolean;
+    debug_reason?: string;
+  }> {
+    return await apiClient.post(`/tests/${testId}/request_completion_otp/`, {});
+  },
+
+  async verifyCompletionOTP(testId: string, otpCode: string): Promise<{
+    message: string;
+    protocol_id: number;
+  }> {
+    return await apiClient.post(`/tests/${testId}/verify_completion_otp/`, {
+      otp_code: otpCode,
+    });
   },
 };
 

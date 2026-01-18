@@ -294,14 +294,14 @@ export function CoursePlayer({ course, onLessonComplete, onCourseComplete }: Cou
     }
   };
 
-  const handleTestComplete = async (answers: Answer[], timeSpent: number) => {
+  const handleTestComplete = async (answers: Answer[], timeSpent: number, videoBlob?: Blob) => {
     if (!test || !testAttemptId) return;
 
     // Check if this is the final test
     const isFinalTest = course.final_test_id && String(test.id) === String(course.final_test_id);
     
     if (isFinalTest) {
-      handleFinalTestComplete(answers, timeSpent);
+      handleFinalTestComplete(answers, timeSpent, videoBlob);
       return;
     }
 
@@ -313,7 +313,7 @@ export function CoursePlayer({ course, onLessonComplete, onCourseComplete }: Cou
       });
 
       await examsService.saveTestAttempt(String(testAttemptId), answersData);
-      const result = await examsService.submitTestAttempt(String(testAttemptId));
+      const result = await examsService.submitTestAttempt(String(testAttemptId), videoBlob);
 
       // Удаляем сохраненный прогресс
       localStorage.removeItem(`test_${test.id}_progress`);
@@ -350,7 +350,7 @@ export function CoursePlayer({ course, onLessonComplete, onCourseComplete }: Cou
     setTestAttemptId(null);
   };
 
-  const handleFinalTestComplete = async (answers: Answer[], timeSpent: number) => {
+  const handleFinalTestComplete = async (answers: Answer[], timeSpent: number, videoBlob?: Blob) => {
     if (!test || !testAttemptId) return;
 
     try {
@@ -365,7 +365,7 @@ export function CoursePlayer({ course, onLessonComplete, onCourseComplete }: Cou
       });
 
       await examsService.saveAllAnswers(testAttemptId, answersData);
-      const result = await examsService.submitTestAttempt(String(testAttemptId));
+      const result = await examsService.submitTestAttempt(String(testAttemptId), videoBlob);
 
       // Удаляем сохраненный прогресс
       localStorage.removeItem(`test_${test.id}_progress`);
@@ -1248,15 +1248,33 @@ export function CoursePlayer({ course, onLessonComplete, onCourseComplete }: Cou
                     </div>
                   )}
 
-                  {selectedLesson.type === 'pdf' && (
+                  {selectedLesson.type === 'pdf' && selectedLesson.pdfUrl && (
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-bold text-gray-900">PDF Документ</h3>
+                        <a
+                          href={selectedLesson.pdfUrl}
+                          download
+                          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                        >
+                          <Download className="w-4 h-4" />
+                          Скачать PDF
+                        </a>
+                      </div>
+                      <div className="border border-gray-300 rounded-lg overflow-hidden" style={{ height: '800px' }}>
+                        <iframe
+                          src={`${selectedLesson.pdfUrl}#toolbar=1&navpanes=1&scrollbar=1`}
+                          className="w-full h-full border-0"
+                          title="PDF Viewer"
+                        />
+                      </div>
+                    </div>
+                  )}
+                  {selectedLesson.type === 'pdf' && !selectedLesson.pdfUrl && (
                     <div className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center">
                       <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                       <h3 className="font-bold text-gray-900 mb-2">PDF Документ</h3>
-                      <p className="text-gray-600 mb-4">{selectedLesson.pdfUrl}</p>
-                      <button className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                        <Download className="w-4 h-4" />
-                        Скачать материал
-                      </button>
+                      <p className="text-gray-600">URL PDF файла не указан</p>
                     </div>
                   )}
 
@@ -1635,12 +1653,13 @@ export function CoursePlayer({ course, onLessonComplete, onCourseComplete }: Cou
                 title={test.title}
                 timeLimit={test.timeLimit || test.time_limit || 30}
                 questions={test.questions || []}
+                requiresVideoRecording={test.requiresVideoRecording || test.requires_video_recording || false}
                 onComplete={handleTestComplete}
                 onCancel={handleTestCancel}
                 inModal={true}
-                  savedAnswers={Object.keys(savedAnswers).length > 0 ? savedAnswers : undefined}
-                  startedAt={startedAtDate}
-                />
+                savedAnswers={Object.keys(savedAnswers).length > 0 ? savedAnswers : undefined}
+                startedAt={startedAtDate}
+              />
               </div>
             </div>
           </div>

@@ -44,7 +44,7 @@ export function DocumentsView() {
   });
 
   const filteredProtocols = protocols.filter(protocol => {
-    const courseName = protocol.courseName || protocol.course?.title || '';
+    const courseName = protocol.courseName || protocol.course?.title || protocol.test?.title || protocol.testName || '';
     const number = protocol.number || '';
     const query = searchQuery.toLowerCase();
     return courseName.toLowerCase().includes(query) || number.toLowerCase().includes(query);
@@ -382,7 +382,7 @@ function ProtocolCard({ protocol }: { protocol: Protocol }) {
                 {getStatusText()}
               </span>
             </div>
-            <p className="text-gray-600 mb-3">{protocol.course?.title || protocol.courseName}</p>
+            <p className="text-gray-600 mb-3">{protocol.course?.title || protocol.courseName || protocol.test?.title || protocol.testName || ''}</p>
             
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div>

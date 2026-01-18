@@ -48,11 +48,19 @@ export function adaptProtocol(backendProtocol: any): Protocol {
   // Извлекаем данные курса
   const courseTitle = backendProtocol.course?.title || backendProtocol.course_name || null;
   
+  // Извлекаем данные теста (для standalone тестов)
+  const testTitle = backendProtocol.test?.title || backendProtocol.test_name || null;
+  
+  // Для standalone тестов используем название теста в качестве courseName
+  const displayCourseName = courseTitle || testTitle || null;
+  
   console.log('adaptProtocol - extracted data:', {
     studentFullName,
     studentIIN,
     studentPhone,
     courseTitle,
+    testTitle,
+    displayCourseName,
   });
   
   const adapted = {
@@ -63,7 +71,9 @@ export function adaptProtocol(backendProtocol: any): Protocol {
     userIIN: studentIIN || 'Не указано',
     userPhone: studentPhone || 'Не указано',
     courseId: String(backendProtocol.course?.id || backendProtocol.course || ''),
-    courseName: courseTitle || 'Не указано',
+    courseName: displayCourseName || 'Не указано',
+    testId: String(backendProtocol.test?.id || backendProtocol.test || ''),
+    testName: testTitle || 'Не указано',
     attemptId: backendProtocol.attempt?.id 
       ? String(backendProtocol.attempt.id) 
       : backendProtocol.attempt 

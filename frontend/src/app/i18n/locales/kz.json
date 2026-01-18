@@ -251,7 +251,16 @@
       "enroll": "Курсқа жазылу",
       "noCoursesInCategory": "Бұл категориядағы курстар жақында пайда болады",
       "loginRequired": "Курсқа жазылу үшін жүйеге кіру керек",
-      "studentsOnly": "Бұл функция тек студенттерге қолжетімді"
+      "studentsOnly": "Бұл функция тек студенттерге қолжетімді",
+      "hours": "сағат",
+      "test": "Тест",
+      "standaloneTest": "Автономды тест",
+      "startTest": "Тестті бастау",
+      "questions": "сұрақтар",
+      "passingScore": "Өту баллы",
+      "timeLimit": "Уақыт",
+      "minutes": "мин",
+      "testNotLinked": "Тест курсқа байланысты емес"
     },
     "online": {
       "title": "Онлайн оқыту",
@@ -485,6 +494,9 @@
       "finalTest": "Қорытынды тест",
       "noFinalTest": "Қорытынды тест жоқ",
       "loadingTests": "Тесттер жүктелуде...",
+      "isStandaloneTest": "Автономды тест ретінде көрсету (курссыз тек тест)",
+      "standaloneTestWarning": "⚠️ Тест курсы үшін қорытынды тестті көрсету керек. Курс Training Programs бетінде тест ретінде көрсетіледі.",
+      "standaloneTestRequiresFinalTest": "Тест курсы үшін қорытынды тестті көрсету керек",
       "modulesAndLessons": "Модульдер мен сабақтар",
       "addModule": "Модуль қосу",
       "newModule": "Жаңа модуль",
@@ -524,6 +536,10 @@
       "selectFile": "Файлды таңдау",
       "orEnterUrl": "немесе жоғарыда URL енгізіңіз",
       "allowDownloadPdf": "PDF жүктеуді рұқсат ету",
+      "uploading": "Жүктелуде...",
+      "fileUploaded": "Файл сәтті жүктелді",
+      "uploadError": "Файлды жүктеу қатесі",
+      "pdfOnly": "PDF файлын таңдаңыз",
       "selectTest": "Тестті таңдаңыз",
       "selectTestOption": "Тестті таңдаңыз",
       "testsCreatedInAdmin": "Тесттер админ-панельдің \"Тесттер\" бөлімінде құрылады",
@@ -537,7 +553,49 @@
       }
     },
     "tests": {
-      "title": "Тесттер"
+      "title": "Тесттер",
+      "editTest": "Тестті өңдеу",
+      "createTest": "Тест құру",
+      "testSettings": "Тест параметрлері",
+      "testTitle": "Тест атауы",
+      "testTitlePlaceholder": "Тест атауын енгізіңіз",
+      "description": "Сипаттама",
+      "descriptionPlaceholder": "Тест сипаттамасы және нұсқаулар",
+      "timeLimit": "Уақыт (мин)",
+      "passingScore": "Өту баллы (%)",
+      "maxAttempts": "Әрекеттер",
+      "shuffleQuestions": "Сұрақтарды араластыру",
+      "showResults": "Нәтижелерді көрсету",
+      "questions": "Сұрақтар",
+      "addQuestion": "Сұрақ қосу",
+      "question": "Сұрақ",
+      "points": "Баллдар",
+      "questionText": "Сұрақ мәтіні",
+      "collapse": "Жию",
+      "options": "Варианттар",
+      "answerOptions": "Жауап варианттары",
+      "addOption": "Вариант қосу",
+      "option": "Вариант {{number}}",
+      "selectOneCorrect": "Бір дұрыс жауапты таңдаңыз",
+      "selectMultipleCorrect": "Бір немесе бірнеше дұрыс жауапты таңдаңыз",
+      "correctAnswer": "Дұрыс жауап",
+      "correctAnswerPlaceholder": "Дұрыс жауапты енгізіңіз",
+      "shortAnswerHint": "Қысқа жауапты сұрақтар үшін дұрыс жауапты көрсетіңіз",
+      "noQuestions": "Сұрақтар жоқ. Бастау үшін \"Сұрақ қосу\" батырмасын басыңыз.",
+      "saveTest": "Тестті сақтау",
+      "category": "Категория",
+      "selectCategory": "Категорияны таңдаңыз",
+      "loadingCategories": "Категориялар жүктелуде...",
+      "language": "Тест тілі",
+      "isStandalone": "Курссыз өтуге болады",
+      "standaloneTestWarning": "⚠️ Автономды тест үшін категорияны таңдау керек. Тест Training Programs бетінде көрсетіледі.",
+      "standaloneTestRequiresCategory": "Автономды тест үшін категорияны таңдау керек",
+      "questionTypes": {
+        "singleChoice": "Бір дұрыс жауап",
+        "multipleChoice": "Бірнеше дұрыс жауап",
+        "yesNo": "Иә/Жоқ",
+        "shortAnswer": "Қысқа жауап"
+      }
     },
     "licenses": {
       "title": "Лицензиялар"
@@ -547,6 +605,18 @@
     },
     "contacts": {
       "title": "Кері байланыс"
+    },
+    "contentPages": {
+      "title": "Контенттік беттер",
+      "description": "\"Пайдалану шарттары\" және \"Құпиялылық саясаты\" беттерінің мазмұнын өңдеңіз. Үш тілде мазмұн көрсете аласыз: орыс, қазақ және ағылшын.",
+      "termsTitle": "Пайдалану шарттары",
+      "privacyTitle": "Құпиялылық саясаты",
+      "termsDescription": "Барлық тілдерде пайдалану шарттарын өңдеу",
+      "privacyDescription": "Барлық тілдерде құпиялылық саясатын өңдеу",
+      "contentRu": "Мазмұн (орыс)",
+      "contentKz": "Мазмұн (қазақ)",
+      "contentEn": "Мазмұн (ағылшын)",
+      "saveSuccess": "Мазмұн сәтті сақталды"
     },
     "overview": {
       "title": "Шолу"
@@ -811,6 +881,14 @@
       "documentsDesc": "Сертификаттар, протоколдар және справкалар",
       "historyDesc": "Аяқталған курстар және нәтижелер",
       "supportDesc": "Сұрақ қою немесе көмек алу",
+      "completedStandaloneTests": "Аяқталған тесттер",
+      "completedStandaloneTestsDesc": "Курстардан бөлек өткен тесттер",
+      "noCompletedStandaloneTests": "Сізде әлі аяқталған тесттер жоқ",
+      "testCompletedDate": "Аяқталу күні",
+      "testResult": "Нәтиже",
+      "protocolStatus": "Хаттама мәртебесі",
+      "viewTestDetails": "Толығырақ көру",
+      "viewTests": "Тесттерді көру",
       "status": {
         "inProgress": "Оқу процесінде",
         "completed": "Аяқталды",
@@ -936,6 +1014,7 @@
       "testResultScore": "Сіздің нәтижеңіз",
       "testResultPassingScore": "Өту баллы",
       "testResultTimeSpent": "Өткен уақыт",
+      "testAttempts": "Әрекеттер",
       "testProgress": "Орындау прогрессі",
       "testResultLessonCompleted": "Сабақ автоматты түрде аяқталған деп белгіленеді. Курсты оқуды жалғастыра аласыз.",
       "testResultRemainingAttempts": "Сізде {{count}} {{attempts}} қалды. Келесі әрекетке дейін сабақ материалын қайталауға кеңес береміз.",
@@ -946,6 +1025,7 @@
       "testResultRetake": "Тестті қайта тапсыру",
       "testResultBackToCourse": "Курсқа оралу",
       "testResultDetails": "Толық нәтижелер ({{correct}} {{total}} дұрыс)",
+      "testResultQuestion": "Сұрақ {{number}}",
       "testResultYourAnswer": "Сіздің жауабыңыз",
       "testResultNotAnswered": "Жауап берілмеді",
       "testResultCorrectAnswer": "Дұрыс жауап"
@@ -998,6 +1078,16 @@
         "pendingPdek": "ПДЭК бекітуінде",
         "rejected": "Қабылданбады",
         "created": "Құрылды"
+      }
+    },
+    "protocol": {
+      "status": {
+        "generated": "Құрылды",
+        "pendingPdek": "ПДЭК күтуде",
+        "signedMembers": "Мүшелер қол қойды",
+        "signedChairman": "Төраға қол қойды",
+        "rejected": "Қабылданбады",
+        "annulled": "Жарамсыз деп танылды"
       }
     },
     "pdek": {
@@ -1053,11 +1143,49 @@
       "signSuccess": "Протокол сәтті қол қойылды",
       "signError": "Протоколға қол қою қатесі",
       "otpDescription": "Протоколға қол қою үшін SMS-тен растау кодын енгізіңіз"
+    },
+    "test": {
+      "testPassed": "Тест сәтті өтті!",
+      "testFailed": "Тест өтпеді. Қайталап көріңіз.",
+      "testCompleteError": "Тестті аяқтау кезінде қате",
+      "smsRequestError": "SMS кодын сұрау кезінде қате",
+      "smsVerifyError": "SMS кодын растау кезінде қате",
+      "smsSent": "SMS жіберілді",
+      "testCode": "Тестілеу коды: {{code}}",
+      "testCompletedSuccess": "Тест аяқталды. Протокол құрылды және ПДЭК қол қоюға жіберілді.",
+      "completionTitle": "Тестті аяқтау",
+      "completionDescription": "Тестті аяқтау үшін SMS-тен растау кодын енгізіңіз",
+      "protocolCreated": "Емтихан протоколы құрылды және ПДЭК комиссиясының бекітуіне жіберілді. Протокол қол қойылғаннан кейін сіз сертификат аласыз.",
+      "smsVerificationRequired": "Тестті аяқтау үшін SMS арқылы растау қажет.",
+      "protocolInfo": "Емтихан протоколы құрылды және ПДЭК комиссиясының бекітуіне жіберілді. Протокол қол қойылғаннан кейін сіз сертификат аласыз.",
+      "retryInfo": "Сізде әлі де әрекеттер бар. Келесі әрекетке дейін материалды қайталап көрген жөн.",
+      "backToCourse": "Курсқа оралу",
+      "backToDashboard": "Курстарға оралу",
+      "viewProtocol": "Протоколды көру",
+      "question": "Сұрақ",
+      "of": "ішінен",
+      "answered": "жауап берілді",
+      "notAnswered": "Жауап берілмеді",
+      "current": "Ағымдағы",
+      "progress": "Орындау прогрессі",
+      "questions": "Сұрақтар",
+      "saved": "Сақталды",
+      "saving": "Сақталуда...",
+      "saveError": "Сақтау қатесі",
+      "recording": "Жазу жүріп жатыр",
+      "recordingError": "Жазу қатесі",
+      "attempts": "Әрекеттер"
     }
   },
   "pages": {
     "home": {
       "title": "Басты"
+    },
+    "terms": {
+      "title": "Пайдалану шарттары"
+    },
+    "privacy": {
+      "title": "Құпиялылық саясаты"
     },
     "projects": {
       "title": "Жобалар"

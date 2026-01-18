@@ -251,7 +251,16 @@
       "enroll": "Enroll in Course",
       "noCoursesInCategory": "Courses in this category will appear soon",
       "loginRequired": "You must log in to enroll in a course",
-      "studentsOnly": "This feature is only available for students"
+      "studentsOnly": "This feature is only available for students",
+      "hours": "hours",
+      "test": "Test",
+      "standaloneTest": "Standalone Test",
+      "startTest": "Start Test",
+      "questions": "questions",
+      "passingScore": "Passing Score",
+      "timeLimit": "Time",
+      "minutes": "min",
+      "testNotLinked": "Test is not linked to course"
     },
     "online": {
       "title": "Online Learning",
@@ -485,6 +494,9 @@
       "finalTest": "Final Test",
       "noFinalTest": "No Final Test",
       "loadingTests": "Loading tests...",
+      "isStandaloneTest": "Display as standalone test (test only without course)",
+      "standaloneTestWarning": "⚠️ For a test course, you must specify a final test. The course will be displayed on the Training Programs page as a test.",
+      "standaloneTestRequiresFinalTest": "A final test must be specified for a test course",
       "modulesAndLessons": "Modules and Lessons",
       "addModule": "Add Module",
       "newModule": "New Module",
@@ -524,6 +536,10 @@
       "selectFile": "Select File",
       "orEnterUrl": "or enter URL above",
       "allowDownloadPdf": "Allow PDF Download",
+      "uploading": "Uploading...",
+      "fileUploaded": "File uploaded successfully",
+      "uploadError": "File upload error",
+      "pdfOnly": "Please select a PDF file",
       "selectTest": "Select Test",
       "selectTestOption": "Select Test",
       "testsCreatedInAdmin": "Tests are created in the \"Tests\" section of the admin panel",
@@ -537,7 +553,49 @@
       }
     },
     "tests": {
-      "title": "Tests"
+      "title": "Tests",
+      "editTest": "Edit Test",
+      "createTest": "Create Test",
+      "testSettings": "Test Settings",
+      "testTitle": "Test Title",
+      "testTitlePlaceholder": "Enter test title",
+      "description": "Description",
+      "descriptionPlaceholder": "Test description and instructions",
+      "timeLimit": "Time (min)",
+      "passingScore": "Passing Score (%)",
+      "maxAttempts": "Attempts",
+      "shuffleQuestions": "Shuffle Questions",
+      "showResults": "Show Results",
+      "questions": "Questions",
+      "addQuestion": "Add Question",
+      "question": "Question",
+      "points": "Points",
+      "questionText": "Question Text",
+      "collapse": "Collapse",
+      "options": "Options",
+      "answerOptions": "Answer Options",
+      "addOption": "Add Option",
+      "option": "Option {{number}}",
+      "selectOneCorrect": "Select one correct answer",
+      "selectMultipleCorrect": "Select one or more correct answers",
+      "correctAnswer": "Correct Answer",
+      "correctAnswerPlaceholder": "Enter correct answer",
+      "shortAnswerHint": "For short answer questions, specify the correct answer",
+      "noQuestions": "No questions. Click \"Add Question\" to start.",
+      "saveTest": "Save Test",
+      "category": "Category",
+      "selectCategory": "Select Category",
+      "loadingCategories": "Loading categories...",
+      "language": "Test Language",
+      "isStandalone": "Can be taken without a course",
+      "standaloneTestWarning": "⚠️ For a standalone test, you must select a category. The test will be displayed on the Training Programs page.",
+      "standaloneTestRequiresCategory": "For a standalone test, you must select a category",
+      "questionTypes": {
+        "singleChoice": "Single Choice",
+        "multipleChoice": "Multiple Choice",
+        "yesNo": "Yes/No",
+        "shortAnswer": "Short Answer"
+      }
     },
     "licenses": {
       "title": "Licenses"
@@ -547,6 +605,18 @@
     },
     "contacts": {
       "title": "Feedback"
+    },
+    "contentPages": {
+      "title": "Content Pages",
+      "description": "Edit the content of \"Terms of Use\" and \"Privacy Policy\" pages. You can specify content in three languages: Russian, Kazakh, and English.",
+      "termsTitle": "Terms of Use",
+      "privacyTitle": "Privacy Policy",
+      "termsDescription": "Edit terms of use text in all languages",
+      "privacyDescription": "Edit privacy policy text in all languages",
+      "contentRu": "Content (Russian)",
+      "contentKz": "Content (Kazakh)",
+      "contentEn": "Content (English)",
+      "saveSuccess": "Content successfully saved"
     },
     "overview": {
       "title": "Overview"
@@ -811,6 +881,14 @@
       "documentsDesc": "Certificates, protocols and certificates",
       "historyDesc": "Completed courses and results",
       "supportDesc": "Ask a question or get help",
+      "completedStandaloneTests": "Completed Tests",
+      "completedStandaloneTestsDesc": "Tests completed separately from courses",
+      "noCompletedStandaloneTests": "You don't have completed tests yet",
+      "testCompletedDate": "Completion Date",
+      "testResult": "Result",
+      "protocolStatus": "Protocol Status",
+      "viewTestDetails": "View Details",
+      "viewTests": "View Tests",
       "status": {
         "inProgress": "In Progress",
         "completed": "Completed",
@@ -936,6 +1014,7 @@
       "testResultScore": "Your Score",
       "testResultPassingScore": "Passing Score",
       "testResultTimeSpent": "Time Spent",
+      "testAttempts": "Attempts",
       "testProgress": "Progress",
       "testResultLessonCompleted": "The lesson will be automatically marked as completed. You can continue studying the course.",
       "testResultRemainingAttempts": "You have {{count}} {{attempts}} remaining. We recommend reviewing the lesson material before the next attempt.",
@@ -946,6 +1025,7 @@
       "testResultRetake": "Retake Test",
       "testResultBackToCourse": "Back to Course",
       "testResultDetails": "Detailed Results ({{correct}} out of {{total}} correct)",
+      "testResultQuestion": "Question {{number}}",
       "testResultYourAnswer": "Your Answer",
       "testResultNotAnswered": "Not Answered",
       "testResultCorrectAnswer": "Correct Answer"
@@ -1000,15 +1080,63 @@
         "created": "Created"
       }
     },
+    "protocol": {
+      "status": {
+        "generated": "Generated",
+        "pendingPdek": "Pending PDEK",
+        "signedMembers": "Signed by Members",
+        "signedChairman": "Signed by Chairman",
+        "rejected": "Rejected",
+        "annulled": "Annulled"
+      }
+    },
     "pdek": {
       "dashboard": "PDEK Dashboard",
       "pending": "Pending Signature",
       "signed": "Signed by Me"
+    },
+    "test": {
+      "testPassed": "Test passed successfully!",
+      "testFailed": "Test not passed. Please try again.",
+      "testCompleteError": "Error completing test",
+      "smsRequestError": "Error requesting SMS code",
+      "smsVerifyError": "Error verifying SMS code",
+      "smsSent": "SMS sent",
+      "testCode": "Test code: {{code}}",
+      "testCompletedSuccess": "Test completed. Protocol created and sent for PDEK signing.",
+      "completionTitle": "Test Completion",
+      "completionDescription": "Enter the confirmation code from SMS to complete the test",
+      "protocolCreated": "Exam protocol has been created and sent for PDEK commission approval. After the protocol is signed, you will receive a certificate.",
+      "smsVerificationRequired": "SMS verification is required to complete the test.",
+      "protocolInfo": "Exam protocol has been created and sent for PDEK commission approval. After the protocol is signed, you will receive a certificate.",
+      "retryInfo": "You have attempts remaining. We recommend reviewing the material before the next attempt.",
+      "backToCourse": "Back to Course",
+      "backToDashboard": "Back to Courses",
+      "viewProtocol": "View Protocol",
+      "question": "Question",
+      "of": "of",
+      "answered": "answered",
+      "notAnswered": "Not answered",
+      "current": "Current",
+      "progress": "Progress",
+      "questions": "Questions",
+      "saved": "Saved",
+      "saving": "Saving...",
+      "saveError": "Save error",
+      "recording": "Recording",
+      "recordingError": "Recording error",
+      "attempts": "Attempts"
     }
   },
   "pages": {
     "home": {
       "title": "Home"
+    },
+    "terms": {
+      "title": "Terms of Use"
+    },
+    "privacy": {
+      "title": "Privacy Policy"
     },
     "projects": {
       "title": "Projects"

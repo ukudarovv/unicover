@@ -27,6 +27,8 @@ import { EditTestPage } from './pages/EditTestPage';
 import { CreateTestPage } from './pages/CreateTestPage';
 import { EditCoursePage } from './pages/EditCoursePage';
 import { VerifyCertificatePage } from './pages/VerifyCertificatePage';
+import { TermsPage } from './pages/TermsPage';
+import { PrivacyPage } from './pages/PrivacyPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 export default function App() {
@@ -46,6 +48,8 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/contacts" element={<ContactsPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/verify/:certificateNumber?" element={<VerifyCertificatePage />} />
         
         {/* Protected Routes */}

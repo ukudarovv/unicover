@@ -5,6 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { authService, RegisterData } from '../services/auth';
 import { ApiError } from '../services/api';
 import { useUser } from '../contexts/UserContext';
+import { SMSVerification } from './lms/SMSVerification';
+import { smsService } from '../services/smsService';
 
 export function RegisterForm() {
   const { t } = useTranslation();
@@ -22,6 +24,9 @@ export function RegisterForm() {
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showSMSVerification, setShowSMSVerification] = useState(false);
+  const [otpCode, setOtpCode] = useState<string>('');
+  const [sendingSMS, setSendingSMS] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -32,10 +37,46 @@ export function RegisterForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    // Validate passwords match
+    if (formData.password !== formData.password_confirm) {
+      setError('Пароли не совпадают');
+      return;
+    }
+
+    // Validate required fields
+    if (!formData.phone || !formData.password || !formData.full_name) {
+      setError('Заполните все обязательные поля');
+      return;
+    }
+
+    try {
+      setSendingSMS(true);
+      // Send SMS verification code
+      const smsResponse = await smsService.sendVerificationCode(formData.phone, 'registration');
+      
+      // In development mode, SMS service may return OTP code
+      if (smsResponse.otp_code) {
+        setOtpCode(smsResponse.otp_code);
+      }
+      
+      setShowSMSVerification(true);
+      setError('');
+    } catch (err: any) {
+      setError(err.message || 'Ошибка отправки SMS кода. Попробуйте снова.');
+    } finally {
+      setSendingSMS(false);
+    }
+  };
+
+  const handleSMSVerified = async (code: string) => {
+    setError('');
     setLoading(true);
 
     try {
-      const response = await authService.register(formData);
+      // Register user with verification code
+      const registerData = { ...formData, verification_code: code };
+      const response = await authService.register(registerData);
       
       // Автоматически логиним пользователя после регистрации
       if (response && response.user) {
@@ -70,8 +111,24 @@ export function RegisterForm() {
       } else {
         setError(t('forms.register.registerError'));
       }
+      setShowSMSVerification(false);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendSMS = async () => {
+    try {
+      setSendingSMS(true);
+      const smsResponse = await smsService.sendVerificationCode(formData.phone, 'registration');
+      if (smsResponse.otp_code) {
+        setOtpCode(smsResponse.otp_code);
+      }
+      setError('');
+    } catch (err: any) {
+      setError(err.message || 'Ошибка отправки SMS кода.');
+    } finally {
+      setSendingSMS(false);
     }
   };
 
@@ -238,25 +295,38 @@ export function RegisterForm() {
                 />
                 <label htmlFor="terms" className="text-sm text-gray-600">
                   {t('forms.register.terms')}{' '}
-                  <a href="#terms" className="text-blue-600 hover:text-blue-700">
+                  <Link to="/terms" className="text-blue-600 hover:text-blue-700">
                     {t('forms.register.termsLink')}
-                  </a>
+                  </Link>
                   {' '}{t('forms.register.and')}{' '}
-                  <a href="#privacy" className="text-blue-600 hover:text-blue-700">
+                  <Link to="/privacy" className="text-blue-600 hover:text-blue-700">
                     {t('forms.register.privacyLink')}
-                  </a>
+                  </Link>
                 </label>
               </div>
 
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || sendingSMS}
                 className="w-full bg-blue-600 text-white px-8 py-4 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <UserPlus className="w-5 h-5" />
-                {loading ? t('forms.register.registering') : t('forms.register.registerButton')}
+                {sendingSMS ? 'Отправка SMS...' : loading ? t('forms.register.registering') : t('forms.register.registerButton')}
               </button>
             </form>
+
+            {showSMSVerification && (
+              <SMSVerification
+                phone={formData.phone}
+                onVerified={handleSMSVerified}
+                onCancel={() => setShowSMSVerification(false)}
+                title="Подтверждение регистрации"
+                description={`На номер ${formData.phone} отправлен SMS код. Введите его для завершения регистрации.`}
+                otpCode={otpCode}
+                purpose="registration"
+                onResend={handleResendSMS}
+              />
+            )}
 
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600">

@@ -20,6 +20,7 @@ import { ProjectCategoryManagement } from '../admin/ProjectCategoryManagement';
 import { PartnerManagement } from '../admin/PartnerManagement';
 import { PartnerEditor } from '../admin/PartnerEditor';
 import { CertificateManagement } from '../admin/CertificateManagement';
+import { ContentPageEditor } from '../admin/ContentPageEditor';
 import { Course, Test, User } from '../../types/lms';
 import { License, licensesService } from '../../services/licenses';
 import { Vacancy, vacanciesService } from '../../services/vacancies';
@@ -55,12 +56,14 @@ function getStatusText(status: string, t: (key: string) => string): string {
 export function AdminDashboard() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [activeSection, setActiveSection] = useState<'overview' | 'courses' | 'users' | 'tests' | 'reports' | 'categories' | 'licenses' | 'contacts' | 'extra-attempts' | 'vacancies' | 'vacancy-applications' | 'vacancy-statistics' | 'projects' | 'project-categories' | 'partners' | 'certificates'>('overview');
+  const [activeSection, setActiveSection] = useState<'overview' | 'courses' | 'users' | 'tests' | 'reports' | 'categories' | 'licenses' | 'contacts' | 'extra-attempts' | 'vacancies' | 'vacancy-applications' | 'vacancy-statistics' | 'projects' | 'project-categories' | 'partners' | 'certificates' | 'content-pages'>('overview');
   const [showUserEditor, setShowUserEditor] = useState(false);
   const [showLicenseEditor, setShowLicenseEditor] = useState(false);
   const [showVacancyEditor, setShowVacancyEditor] = useState(false);
   const [showProjectEditor, setShowProjectEditor] = useState(false);
   const [showPartnerEditor, setShowPartnerEditor] = useState(false);
+  const [showContentPageEditor, setShowContentPageEditor] = useState(false);
+  const [editingContentPageType, setEditingContentPageType] = useState<'terms' | 'privacy' | null>(null);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [vacanciesRefreshTrigger, setVacanciesRefreshTrigger] = useState(0);
   const [projectsRefreshTrigger, setProjectsRefreshTrigger] = useState(0);
@@ -485,6 +488,17 @@ export function AdminDashboard() {
                   <Handshake className="w-5 h-5" />
                   <span className="font-medium">{t('admin.partners.title')}</span>
                 </button>
+                <button
+                  onClick={() => setActiveSection('content-pages')}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    activeSection === 'content-pages'
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <FileText className="w-5 h-5" />
+                  <span className="font-medium">{t('admin.contentPages.title') || 'Контентные страницы'}</span>
+                </button>
               </nav>
             </div>
           </div>
@@ -567,6 +581,18 @@ export function AdminDashboard() {
                 refreshTrigger={partnersRefreshTrigger}
               />
             )}
+            {activeSection === 'content-pages' && (
+              <ContentPagesSection 
+                onEditTerms={() => {
+                  setEditingContentPageType('terms');
+                  setShowContentPageEditor(true);
+                }}
+                onEditPrivacy={() => {
+                  setEditingContentPageType('privacy');
+                  setShowContentPageEditor(true);
+                }}
+              />
+            )}
           </div>
         </div>
       </div>
@@ -622,6 +648,69 @@ export function AdminDashboard() {
           }}
         />
       )}
+      {showContentPageEditor && editingContentPageType && (
+        <ContentPageEditor
+          pageType={editingContentPageType}
+          onSave={() => {
+            setShowContentPageEditor(false);
+            setEditingContentPageType(null);
+            toast.success(t('admin.contentPages.saveSuccess') || 'Контент успешно сохранен');
+          }}
+          onCancel={() => {
+            setShowContentPageEditor(false);
+            setEditingContentPageType(null);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function ContentPagesSection({ onEditTerms, onEditPrivacy }: { onEditTerms: () => void; onEditPrivacy: () => void }) {
+  const { t } = useTranslation();
+
+  return (
+    <div className="bg-white rounded-lg shadow-md p-6">
+      <h2 className="text-2xl font-bold text-gray-900 mb-6">
+        {t('admin.contentPages.title') || 'Контентные страницы'}
+      </h2>
+      <p className="text-gray-600 mb-6">
+        {t('admin.contentPages.description') || 'Редактируйте содержимое страниц "Условия использования" и "Политика конфиденциальности". Вы можете указать контент на трех языках: русском, казахском и английском.'}
+      </p>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="border border-gray-200 rounded-lg p-6 hover:border-blue-300 transition-colors">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            {t('pages.terms.title') || 'Условия использования'}
+          </h3>
+          <p className="text-sm text-gray-600 mb-4">
+            {t('admin.contentPages.termsDescription') || 'Редактировать текст условий использования на всех языках'}
+          </p>
+          <button
+            onClick={onEditTerms}
+            className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+          >
+            <Edit className="w-4 h-4" />
+            {t('common.edit') || 'Редактировать'}
+          </button>
+        </div>
+
+        <div className="border border-gray-200 rounded-lg p-6 hover:border-blue-300 transition-colors">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            {t('pages.privacy.title') || 'Политика конфиденциальности'}
+          </h3>
+          <p className="text-sm text-gray-600 mb-4">
+            {t('admin.contentPages.privacyDescription') || 'Редактировать текст политики конфиденциальности на всех языках'}
+          </p>
+          <button
+            onClick={onEditPrivacy}
+            className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+          >
+            <Edit className="w-4 h-4" />
+            {t('common.edit') || 'Редактировать'}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

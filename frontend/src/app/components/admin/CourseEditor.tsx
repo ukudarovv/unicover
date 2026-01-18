@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, X, Save, Plus, Trash2, GripVertical, Edit2, Video, FileText, CheckCircle, Upload } from 'lucide-react';
 import { Course, Module, Lesson } from '../../types/lms';
 import { testsService } from '../../services/tests';
 import { categoriesService, Category } from '../../services/categories';
 import { useTranslation } from 'react-i18next';
+import { apiClient } from '../../services/api';
 
 interface CourseEditorProps {
   course?: Course;
@@ -45,6 +46,8 @@ export function CourseEditor({ course, onSave, onCancel }: CourseEditorProps) {
         timerMinutes: course.timerMinutes || course.timer_minutes,
         pdekCommission: course.pdekCommission || course.pdek_commission,
         final_test_id: course.final_test_id || course.finalTestId || null,
+        isStandaloneTest: course.is_standalone_test || course.isStandaloneTest || false,
+        is_standalone_test: course.is_standalone_test || course.isStandaloneTest || false,
       });
     }
   }, [course?.id]);
@@ -198,10 +201,27 @@ export function CourseEditor({ course, onSave, onCancel }: CourseEditorProps) {
   };
 
   const handleSave = () => {
-    onSave({
+    // Валидация: если курс-тест, должен быть указан финальный тест
+    if (formData.isStandaloneTest || formData.is_standalone_test) {
+      const finalTestId = formData.final_test_id || formData.finalTestId;
+      if (!finalTestId) {
+        alert(t('admin.courses.standaloneTestRequiresFinalTest') || 'Для курса-теста необходимо указать финальный тест');
+        return;
+      }
+    }
+    
+    // Преобразуем isStandaloneTest в is_standalone_test для backend
+    const saveData: any = {
       ...formData,
       modules,
-    });
+    };
+    
+    // Убеждаемся, что is_standalone_test передается в правильном формате
+    if (saveData.isStandaloneTest !== undefined) {
+      saveData.is_standalone_test = saveData.isStandaloneTest;
+    }
+    
+    onSave(saveData);
   };
 
   return (
@@ -350,6 +370,28 @@ export function CourseEditor({ course, onSave, onCancel }: CourseEditorProps) {
                     )}
                   </select>
                 </div>
+              </div>
+
+              {/* Standalone Test Checkbox */}
+              <div className="mt-4">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.isStandaloneTest || formData.is_standalone_test || false}
+                    onChange={(e) => setFormData({ ...formData, isStandaloneTest: e.target.checked, is_standalone_test: e.target.checked })}
+                    className="rounded"
+                  />
+                  <span className="text-sm text-gray-700">
+                    {t('admin.courses.isStandaloneTest') || 'Отображать как автономный тест (только тест без курса)'}
+                  </span>
+                </label>
+                {(formData.isStandaloneTest || formData.is_standalone_test) && (
+                  <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <p className="text-sm text-yellow-800">
+                      {t('admin.courses.standaloneTestWarning') || '⚠️ Для курса-теста необходимо указать финальный тест. Курс будет отображаться на странице Training Programs как тест.'}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -518,6 +560,8 @@ interface LessonEditorModalProps {
 
 function LessonEditorModal({ lesson, onSave, onCancel, availableTests = [], loadingTests = false }: LessonEditorModalProps) {
   const { t } = useTranslation();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState<Lesson>(lesson || {
     id: `lesson-${Date.now()}`,
     moduleId: '',
@@ -537,6 +581,60 @@ function LessonEditorModal({ lesson, onSave, onCancel, availableTests = [], load
     { value: 'pdf', label: t('admin.courses.lessonTypes.pdf'), icon: FileText },
     { value: 'quiz', label: t('admin.courses.lessonTypes.quiz'), icon: CheckCircle },
   ];
+
+  const handleFileSelect = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Проверяем, что это PDF файл
+    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+      alert(t('admin.courses.pdfOnly') || 'Пожалуйста, выберите PDF файл');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      console.log('Uploading file:', file.name, file.size, 'bytes');
+      const response = await apiClient.upload<{ file_url?: string; file?: string; name: string }>(
+        '/files/upload/',
+        file,
+        { name: file.name }
+      );
+      
+      console.log('Upload response:', response);
+      
+      // Обновляем pdfUrl с полученным URL (используем file_url или file)
+      const fileUrl = response.file_url || response.file;
+      if (fileUrl) {
+        // Если URL относительный, добавляем базовый URL API
+        let fullUrl = fileUrl;
+        if (!fileUrl.startsWith('http')) {
+          const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+          fullUrl = `${baseUrl}${fileUrl.startsWith('/') ? '' : '/'}${fileUrl}`;
+        }
+        console.log('Setting PDF URL:', fullUrl);
+        setFormData({ ...formData, pdfUrl: fullUrl });
+        alert(t('admin.courses.fileUploaded') || 'Файл успешно загружен');
+      } else {
+        console.error('No file URL in response:', response);
+        throw new Error('URL файла не получен от сервера');
+      }
+    } catch (error: any) {
+      console.error('File upload error:', error);
+      const errorMessage = error.message || error.statusText || 'Неизвестная ошибка';
+      alert(t('admin.courses.uploadError') || `Ошибка загрузки файла: ${errorMessage}`);
+    } finally {
+      setUploading(false);
+      // Очищаем input для возможности повторной загрузки того же файла
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
 
   const handleSave = () => {
     if (!formData.title.trim()) {
@@ -734,12 +832,29 @@ function LessonEditorModal({ lesson, onSave, onCancel, availableTests = [], load
                       {t('admin.courses.uploadPdf')}
                     </label>
                     <div className="flex items-center gap-3">
-                      <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".pdf,application/pdf"
+                        onChange={handleFileChange}
+                        className="hidden"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleFileSelect}
+                        disabled={uploading}
+                        className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
                         <Upload className="w-4 h-4" />
-                        {t('admin.courses.selectFile')}
+                        {uploading ? (t('admin.courses.uploading') || 'Загрузка...') : t('admin.courses.selectFile')}
                       </button>
                       <span className="text-sm text-gray-500">{t('admin.courses.orEnterUrl')}</span>
                     </div>
+                    {formData.pdfUrl && (
+                      <p className="text-xs text-green-600 mt-2">
+                        ✓ {t('admin.courses.fileUploaded') || 'Файл загружен'}
+                      </p>
+                    )}
                   </div>
 
                   <div>

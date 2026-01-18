@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import { Clock, CheckCircle, Circle, AlertTriangle, ArrowLeft, ArrowRight, Flag } from 'lucide-react';
 import { Question, Answer } from '../../types/lms';
 import { examsService } from '../../services/exams';
+import { VideoPermissionModal } from './VideoPermissionModal';
+import { useVideoRecorder } from '../../hooks/useVideoRecorder';
+import { useTranslation } from 'react-i18next';
 
 interface TestInterfaceProps {
   testId: string;
@@ -9,7 +12,8 @@ interface TestInterfaceProps {
   title: string;
   timeLimit?: number; // минуты
   questions: Question[];
-  onComplete: (answers: Answer[], timeSpent: number) => void;
+  requiresVideoRecording?: boolean; // Требуется ли видеозапись
+  onComplete: (answers: Answer[], timeSpent: number, videoBlob?: Blob) => void;
   onCancel: () => void;
   inModal?: boolean; // Флаг для использования в модальном окне
   savedAnswers?: Record<string, any>; // Сохраненные ответы для восстановления
@@ -21,14 +25,20 @@ export function TestInterface({
   attemptId,
   title, 
   timeLimit, 
-  questions, 
+  questions,
+  requiresVideoRecording = false,
   onComplete, 
   onCancel,
   inModal = false,
   savedAnswers,
   startedAt
 }: TestInterfaceProps) {
+  const { t } = useTranslation();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [showVideoModal, setShowVideoModal] = useState(false);
+  const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
+  const [videoPermissionGranted, setVideoPermissionGranted] = useState(false);
+  const { isRecording, startRecording, stopRecording, error: videoError, recordingTime } = useVideoRecorder();
   
   // Восстанавливаем сохраненные ответы, если они есть
   const initialAnswers = savedAnswers 
@@ -62,6 +72,38 @@ export function TestInterface({
   const [startTime] = useState(startedAt ? new Date(startedAt).getTime() : Date.now());
   const [showConfirmSubmit, setShowConfirmSubmit] = useState(false);
   const [autoSaveStatus, setAutoSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved');
+  const [testStarted, setTestStarted] = useState(false);
+
+  // Check if video recording is required on mount
+  useEffect(() => {
+    if (requiresVideoRecording && !videoPermissionGranted && !testStarted) {
+      setShowVideoModal(true);
+    } else if (!requiresVideoRecording) {
+      setTestStarted(true);
+    }
+  }, [requiresVideoRecording, videoPermissionGranted, testStarted]);
+
+  // Handle video permission granted
+  const handleVideoPermissionGranted = async (stream: MediaStream) => {
+    setVideoStream(stream);
+    setVideoPermissionGranted(true);
+    setShowVideoModal(false);
+    setTestStarted(true);
+    
+    // Start recording
+    try {
+      await startRecording(stream);
+    } catch (error) {
+      console.error('Error starting video recording:', error);
+    }
+  };
+
+  // Handle video permission denied
+  const handleVideoPermissionDenied = () => {
+    setShowVideoModal(false);
+    // User can still proceed, but video won't be recorded
+    setTestStarted(true);
+  };
 
   const currentQuestion = questions[currentQuestionIndex];
   const currentAnswer = answers[currentQuestionIndex];
@@ -186,6 +228,22 @@ export function TestInterface({
   };
 
   const handleSubmit = async () => {
+    // Stop video recording if active
+    let videoBlob: Blob | null = null;
+    if (isRecording) {
+      try {
+        videoBlob = await stopRecording();
+      } catch (error) {
+        console.error('Error stopping video recording:', error);
+      }
+    }
+
+    // Stop video stream if active
+    if (videoStream) {
+      videoStream.getTracks().forEach((track) => track.stop());
+      setVideoStream(null);
+    }
+
     // Сохраняем все ответы перед завершением
     try {
       const savedProgress = localStorage.getItem(`test_${testId}_progress`);
@@ -212,7 +270,7 @@ export function TestInterface({
     
     const timeSpent = Math.floor((Date.now() - startTime) / 1000);
     localStorage.removeItem(`test_${testId}_progress`);
-    onComplete(answers, timeSpent);
+    onComplete(answers, timeSpent, videoBlob || undefined);
   };
 
   const formatTime = (seconds: number | null) => {
@@ -232,8 +290,34 @@ export function TestInterface({
 
   const answeredCount = answers.filter((_, i) => isAnswered(i)).length;
 
+  // Don't render test interface until video permission is handled (if required)
+  if (requiresVideoRecording && !testStarted) {
+    return (
+      <>
+        <VideoPermissionModal
+          isOpen={showVideoModal}
+          onClose={handleVideoPermissionDenied}
+          onPermissionGranted={handleVideoPermissionGranted}
+          onPermissionDenied={handleVideoPermissionDenied}
+        />
+        <div className={inModal ? "bg-gray-50" : "min-h-screen bg-gray-50 pt-20 flex items-center justify-center"}>
+          <div className="text-center">
+            <p className="text-gray-600">Ожидание разрешения на видеозапись...</p>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
-    <div className={inModal ? "bg-gray-50" : "min-h-screen bg-gray-50 pt-20"}>
+    <>
+      <VideoPermissionModal
+        isOpen={showVideoModal}
+        onClose={handleVideoPermissionDenied}
+        onPermissionGranted={handleVideoPermissionGranted}
+        onPermissionDenied={handleVideoPermissionDenied}
+      />
+      <div className={inModal ? "bg-gray-50" : "min-h-screen bg-gray-50 pt-20"}>
       <div className={inModal ? "px-4 py-4 max-w-6xl" : "container mx-auto px-4 py-8 max-w-6xl"}>
         {/* Header */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -241,7 +325,7 @@ export function TestInterface({
             <div>
               <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
               <p className="text-sm text-gray-600 mt-1">
-                Вопрос {currentQuestionIndex + 1} из {questions.length}
+                {t('lms.test.question') || 'Вопрос'} {currentQuestionIndex + 1} {t('lms.test.of') || 'из'} {questions.length}
               </p>
             </div>
             
@@ -258,8 +342,8 @@ export function TestInterface({
           {/* Progress Bar */}
           <div className="mb-4">
             <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
-              <span>Прогресс прохождения</span>
-              <span>{answeredCount} из {questions.length} отвечено</span>
+              <span>{t('lms.test.progress') || 'Прогресс прохождения'}</span>
+              <span>{answeredCount} {t('lms.test.of') || 'из'} {questions.length} {t('lms.test.answered') || 'отвечено'}</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div 
@@ -268,14 +352,58 @@ export function TestInterface({
               />
             </div>
           </div>
+          
+          {/* Question Navigation Pills */}
+          <div className="mb-4">
+            <div className="flex flex-wrap gap-2">
+              {questions.map((q, idx) => {
+                const isCurrent = idx === currentQuestionIndex;
+                const isQuestionAnswered = isAnswered(idx);
+                return (
+                  <button
+                    key={q.id || idx}
+                    onClick={() => setCurrentQuestionIndex(idx)}
+                    className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                      isCurrent
+                        ? 'bg-blue-600 text-white'
+                        : isQuestionAnswered
+                        ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                    title={q.title || `Вопрос ${idx + 1}`}
+                  >
+                    {idx + 1}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
-          {/* Auto-save indicator */}
+          {/* Auto-save indicator and video recording status */}
           <div className="flex items-center justify-between text-xs text-gray-500">
             <div className="flex items-center gap-2">
               {autoSaveStatus === 'saved' && <CheckCircle className="w-3 h-3 text-green-600" />}
               {autoSaveStatus === 'saving' && <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />}
-              <span>{autoSaveStatus === 'saved' ? 'Сохранено' : 'Сохранение...'}</span>
+              {autoSaveStatus === 'error' && <AlertTriangle className="w-3 h-3 text-red-600" />}
+              <span>
+                {autoSaveStatus === 'saved' 
+                  ? (t('lms.test.saved') || 'Сохранено')
+                  : autoSaveStatus === 'saving'
+                  ? (t('lms.test.saving') || 'Сохранение...')
+                  : (t('lms.test.saveError') || 'Ошибка сохранения')}
+              </span>
             </div>
+            {isRecording && (
+              <div className="flex items-center gap-2 text-red-600">
+                <div className="w-2 h-2 bg-red-600 rounded-full animate-pulse" />
+                <span>{t('lms.test.recording') || 'Идет запись'}: {Math.floor(recordingTime / 60)}:{(recordingTime % 60).toString().padStart(2, '0')}</span>
+              </div>
+            )}
+            {videoError && (
+              <div className="text-red-600 text-xs">
+                {t('lms.test.recordingError') || 'Ошибка записи'}: {videoError}
+              </div>
+            )}
           </div>
         </div>
 
@@ -283,8 +411,8 @@ export function TestInterface({
           {/* Question Navigation Sidebar */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-md p-4 sticky top-24">
-              <h3 className="font-bold text-gray-900 mb-3">Вопросы</h3>
-              <div className="grid grid-cols-5 lg:grid-cols-4 gap-2">
+              <h3 className="font-bold text-gray-900 mb-3">{t('lms.test.questions') || 'Вопросы'}</h3>
+              <div className="grid grid-cols-5 lg:grid-cols-4 gap-2 max-h-64 overflow-y-auto">
                 {questions.map((_, index) => (
                   <button
                     key={index}
@@ -296,6 +424,7 @@ export function TestInterface({
                         ? 'bg-green-100 text-green-700 hover:bg-green-200'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
+                    title={isAnswered(index) ? (t('lms.test.answered') || 'Отвечено') : (t('lms.test.notAnswered') || 'Не отвечено')}
                   >
                     {index + 1}
                   </button>
@@ -305,15 +434,15 @@ export function TestInterface({
               <div className="mt-4 pt-4 border-t border-gray-200 space-y-2 text-xs">
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 bg-blue-600 rounded"></div>
-                  <span className="text-gray-600">Текущий</span>
+                  <span className="text-gray-600">{t('lms.test.current') || 'Текущий'}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 bg-green-100 rounded"></div>
-                  <span className="text-gray-600">Отвечено</span>
+                  <span className="text-gray-600">{t('lms.test.answered') || 'Отвечено'}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 bg-gray-100 rounded"></div>
-                  <span className="text-gray-600">Не отвечено</span>
+                  <span className="text-gray-600">{t('lms.test.notAnswered') || 'Не отвечено'}</span>
                 </div>
               </div>
             </div>
@@ -559,6 +688,7 @@ export function TestInterface({
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }

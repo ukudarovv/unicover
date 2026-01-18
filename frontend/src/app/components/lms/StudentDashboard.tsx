@@ -1,11 +1,13 @@
-import { BookOpen, Award, FileText, TrendingUp, CheckCircle2, AlertCircle, Play, Clock } from 'lucide-react';
+import { BookOpen, Award, FileText, TrendingUp, CheckCircle2, AlertCircle, Play, Clock, FileQuestion } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useMyEnrollments } from '../../hooks/useMyEnrollments';
 import { useNotifications } from '../../hooks/useNotifications';
 import { certificatesService } from '../../services/certificates';
+import { examsService } from '../../services/exams';
+import { protocolsService } from '../../services/protocols';
 import { useState, useEffect } from 'react';
-import { Certificate } from '../../types/lms';
+import { Certificate, TestAttempt, Protocol } from '../../types/lms';
 
 export function StudentDashboard() {
   const { t } = useTranslation();
@@ -13,6 +15,9 @@ export function StudentDashboard() {
   const { notifications, loading: notificationsLoading } = useNotifications({ read: false });
   const [certificates, setCertificates] = useState<Certificate[]>([]);
   const [certificatesLoading, setCertificatesLoading] = useState(true);
+  const [testAttempts, setTestAttempts] = useState<TestAttempt[]>([]);
+  const [protocols, setProtocols] = useState<Protocol[]>([]);
+  const [loadingTests, setLoadingTests] = useState(true);
 
   useEffect(() => {
     const fetchCertificates = async () => {
@@ -28,6 +33,27 @@ export function StudentDashboard() {
     fetchCertificates();
   }, []);
 
+  useEffect(() => {
+    const fetchTestData = async () => {
+      try {
+        setLoadingTests(true);
+        const [attemptsData, protocolsData] = await Promise.all([
+          examsService.getMyAttempts(),
+          protocolsService.getProtocols()
+        ]);
+        setTestAttempts(attemptsData);
+        setProtocols(protocolsData);
+      } catch (error) {
+        console.error('Failed to fetch test attempts and protocols:', error);
+        setTestAttempts([]);
+        setProtocols([]);
+      } finally {
+        setLoadingTests(false);
+      }
+    };
+    fetchTestData();
+  }, []);
+
   const activeCourses = Array.isArray(courses) ? courses.filter(c => 
     c.status === 'in_progress' || 
     c.status === 'exam_available' || 
@@ -38,6 +64,43 @@ export function StudentDashboard() {
   const completedCourses = Array.isArray(courses) ? courses.filter(c => c.status === 'completed') : [];
   // Защита от случаев, когда notifications не является массивом
   const unreadNotifications = Array.isArray(notifications) ? notifications.filter(n => !n.read) : [];
+
+  // Фильтруем пройденные standalone тесты
+  const completedStandaloneTests = Array.isArray(testAttempts) ? testAttempts.filter(attempt => {
+    // Проверяем, что test является объектом (не строкой)
+    if (!attempt.test || typeof attempt.test === 'string') {
+      return false;
+    }
+    
+    // Проверяем, что тест является standalone
+    const isStandalone = attempt.test.is_standalone || attempt.test.isStandalone;
+    if (!isStandalone) {
+      return false;
+    }
+    
+    // Проверяем, что тест пройден
+    if (!attempt.passed) {
+      return false;
+    }
+    
+    // Проверяем, что тест завершен
+    const completedAt = attempt.completed_at || attempt.completedAt;
+    if (!completedAt) {
+      return false;
+    }
+    
+    return true;
+  }) : [];
+
+  // Связываем попытки с протоколами по attemptId
+  const testsWithProtocols = completedStandaloneTests.map(attempt => {
+    const attemptId = String(attempt.id);
+    const protocol = protocols.find(p => p.attemptId === attemptId);
+    return {
+      attempt,
+      protocol
+    };
+  });
 
   return (
     <div className="min-h-screen bg-gray-50 pt-20">
@@ -88,6 +151,19 @@ export function StudentDashboard() {
               {t('lms.student.viewDocuments')}
             </Link>
           </div>
+
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                <FileQuestion className="w-6 h-6 text-orange-600" />
+              </div>
+              <span className="text-2xl font-bold text-orange-600">{completedStandaloneTests.length}</span>
+            </div>
+            <h3 className="text-sm font-medium text-gray-600 mb-1">{t('lms.student.completedStandaloneTests') || 'Пройденные тесты'}</h3>
+            <a href="#completed-tests" className="text-xs text-orange-600 hover:text-orange-700">
+              {t('lms.student.viewTests') || 'Просмотреть тесты'}
+            </a>
+          </div>
         </div>
 
         {/* Notifications */}
@@ -110,6 +186,87 @@ export function StudentDashboard() {
             </div>
           </div>
         )}
+
+        {/* Completed Standalone Tests */}
+        <div id="completed-tests" className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-bold text-gray-900">{t('lms.student.completedStandaloneTests') || 'Пройденные тесты'}</h2>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {testsWithProtocols.length > 0 ? testsWithProtocols.map(({ attempt, protocol }) => {
+                const test = attempt.test as any;
+                const completedAt = attempt.completed_at || attempt.completedAt;
+                const completedDate = completedAt ? new Date(completedAt) : null;
+                
+                return (
+                  <div key={attempt.id} className="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex-1">
+                          {test.category && (
+                            <span className="inline-block px-3 py-1 bg-orange-100 text-orange-800 text-xs font-semibold rounded-full mb-2">
+                              {getCategoryName(test.category, t)}
+                            </span>
+                          )}
+                          <h3 className="text-lg font-bold text-gray-900">{test.title}</h3>
+                          {completedDate && (
+                            <p className="text-sm text-gray-600 mt-1">
+                              {t('lms.student.testCompletedDate') || 'Дата прохождения'}: {formatDate(completedDate, t)}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Test Result */}
+                      <div className="mb-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm text-gray-600">{t('lms.student.testResult') || 'Результат'}</span>
+                          <span className={`text-sm font-semibold ${attempt.passed ? 'text-green-600' : 'text-red-600'}`}>
+                            {attempt.score ? `${attempt.score.toFixed(1)}%` : '—'}
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className={`h-2 rounded-full transition-all duration-300 ${attempt.passed ? 'bg-green-600' : 'bg-red-600'}`}
+                            style={{ width: `${Math.min(attempt.score || 0, 100)}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Protocol Status */}
+                      {protocol && (
+                        <div className="mb-4">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-gray-500">{t('lms.student.protocolStatus') || 'Статус протокола'}:</span>
+                            <span className={`text-xs font-semibold ${getProtocolStatusColor(protocol.status)}`}>
+                              {getProtocolStatusText(protocol.status, t)}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Action Button */}
+                      <div className="flex items-center justify-end">
+                        <Link
+                          to={`/student/test/${test.id}`}
+                          state={{ attemptId: attempt.id, viewResults: true }}
+                          className="px-4 py-2 bg-orange-600 text-white rounded-lg text-sm font-medium hover:bg-orange-700 transition-colors"
+                        >
+                          {t('lms.student.viewTestDetails') || 'Просмотреть детали'}
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }) : (
+                <div className="col-span-2 text-center py-8 bg-white rounded-lg shadow-md">
+                  <FileQuestion className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-600">{t('lms.student.noCompletedStandaloneTests') || 'У вас пока нет пройденных тестов'}</p>
+                </div>
+              )}
+          </div>
+        </div>
 
         {/* Active Courses */}
         <div className="mb-8">
@@ -237,4 +394,42 @@ function getCategoryName(category: any, t: any): string {
   }
   
   return '—';
+}
+
+function formatDate(date: Date, t: any): string {
+  try {
+    return date.toLocaleDateString('ru-RU', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  } catch {
+    return '—';
+  }
+}
+
+function getProtocolStatusText(status: string, t: any): string {
+  const statusMap: Record<string, string> = {
+    'generated': t('lms.pdek.status.generated') || t('lms.certificate.status.created') || 'Создан',
+    'pending_pdek': t('lms.pdek.status.pendingPdek') || t('lms.certificate.status.pendingPdek') || 'Ожидает ПДЭК',
+    'signed_members': t('lms.pdek.status.signedMembers') || 'Подписан членами',
+    'signed_chairman': t('lms.pdek.status.signedChairman') || 'Подписан председателем',
+    'rejected': t('lms.pdek.status.rejected') || t('lms.certificate.status.rejected') || 'Отклонен',
+    'annulled': t('lms.pdek.status.annulled') || t('lms.student.status.annulled') || 'Аннулирован',
+  };
+  return statusMap[status] || status;
+}
+
+function getProtocolStatusColor(status: string): string {
+  const colorMap: Record<string, string> = {
+    'generated': 'text-gray-600',
+    'pending_pdek': 'text-orange-600',
+    'signed_members': 'text-blue-600',
+    'signed_chairman': 'text-green-600',
+    'rejected': 'text-red-600',
+    'annulled': 'text-gray-400',
+  };
+  return colorMap[status] || 'text-gray-600';
 }

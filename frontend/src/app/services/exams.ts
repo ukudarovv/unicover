@@ -10,7 +10,13 @@ const examsService = {
     return apiClient.post<TestAttempt>(`/exams/${attemptId}/save/`, { answers });
   },
 
-  async submitTestAttempt(attemptId: string): Promise<TestAttempt> {
+  async submitTestAttempt(attemptId: string, videoBlob?: Blob): Promise<TestAttempt> {
+    if (videoBlob) {
+      // Send video as FormData
+      const formData = new FormData();
+      formData.append('video_recording', videoBlob, `test_attempt_${attemptId}_${Date.now()}.webm`);
+      return apiClient.post<TestAttempt>(`/exams/${attemptId}/submit/`, formData);
+    }
     return apiClient.post<TestAttempt>(`/exams/${attemptId}/submit/`);
   },
 

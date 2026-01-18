@@ -123,6 +123,8 @@ export interface Course {
   enrollment_status?: CourseStatus; // Статус enrollment (для with_progress endpoint)
   final_test_id?: number; // ID финального теста
   finalTestId?: number; // Frontend format (for compatibility)
+  is_standalone_test?: boolean; // Backend format
+  isStandaloneTest?: boolean; // Frontend format (for compatibility)
   created_at?: string;
   updated_at?: string;
 }
@@ -206,6 +208,12 @@ export interface Test {
   max_attempts?: number; // Backend format
   maxAttempts?: number; // Frontend format (for compatibility)
   is_active?: boolean; // Backend format
+  requires_video_recording?: boolean; // Backend format
+  requiresVideoRecording?: boolean; // Frontend format (for compatibility)
+  category?: Category; // Backend format
+  categoryId?: string; // Frontend format (for compatibility)
+  is_standalone?: boolean; // Backend format
+  isStandalone?: boolean; // Frontend format (for compatibility)
   questions_count?: number; // Backend format (readonly)
   questionsCount?: number; // Frontend format (for compatibility)
   attemptsUsed?: number; // Frontend only
@@ -257,6 +265,8 @@ export interface TestAttempt {
   answers?: Record<string, any>;
   answer_details?: AnswerDetail[];
   answerDetails?: AnswerDetail[]; // Frontend format
+  video_recording?: string; // Backend format (URL)
+  videoRecording?: string; // Frontend format (URL)
 }
 
 export interface ExtraAttemptRequest {
@@ -299,6 +309,9 @@ export interface Protocol {
   course?: { id: string; title: string }; // Backend format
   courseId?: string; // Frontend format (computed)
   courseName?: string; // Frontend format (computed)
+  test?: { id: string; title: string }; // Backend format (for standalone tests)
+  testId?: string; // Frontend format (computed)
+  testName?: string; // Frontend format (computed)
   attempt?: { id: string }; // Backend format
   attemptId?: string; // Frontend format (computed)
   exam_date?: string; // Backend format

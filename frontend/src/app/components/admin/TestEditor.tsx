@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Save, Plus, Trash2, GripVertical } from 'lucide-react';
 import { Test, Question } from '../../types/lms';
 import { testsService } from '../../services/tests';
+import { categoriesService, Category } from '../../services/categories';
 import { useTranslation } from 'react-i18next';
 
 interface TestEditorProps {
@@ -53,14 +54,38 @@ export function TestEditor({ test, onSave, onCancel }: TestEditorProps) {
     timeLimit: test?.timeLimit || test?.time_limit || 30,
     passingScore: test?.passingScore || test?.passing_score || 80,
     maxAttempts: test?.maxAttempts || test?.max_attempts || 3,
+    language: test?.language || 'ru',
     shuffleQuestions: true,
     showResults: true,
     questions: [],
+    category: test?.category,
+    categoryId: typeof test?.category === 'object' ? test?.category?.id : test?.categoryId,
+    isStandalone: test?.is_standalone || test?.isStandalone || false,
+    is_standalone: test?.is_standalone || test?.isStandalone || false,
   });
 
   const [questions, setQuestions] = useState<Question[]>(test?.questions || []);
   const [expandedQuestion, setExpandedQuestion] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(false);
+  
+  // Загружаем категории из API
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoadingCategories(true);
+        const loadedCategories = await categoriesService.getCategories({ is_active: true });
+        setCategories(loadedCategories);
+      } catch (error) {
+        console.error('Failed to fetch categories:', error);
+        setCategories([]);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   // Загружаем вопросы при редактировании теста
   useEffect(() => {
@@ -86,6 +111,11 @@ export function TestEditor({ test, onSave, onCancel }: TestEditorProps) {
   // Обновляем formData при изменении test (для редактирования)
   useEffect(() => {
     if (test) {
+      // Обрабатываем category: может быть объектом (из API) или строкой (старый формат)
+      const categoryId = typeof test.category === 'object' 
+        ? test.category?.id 
+        : test.categoryId || test.category;
+      
       setFormData(prev => ({
         ...prev,
         title: test.title || prev.title,
@@ -93,9 +123,14 @@ export function TestEditor({ test, onSave, onCancel }: TestEditorProps) {
         timeLimit: test.timeLimit || test.time_limit || prev.timeLimit,
         passingScore: test.passingScore || test.passing_score || prev.passingScore,
         maxAttempts: test.maxAttempts || test.max_attempts || prev.maxAttempts,
+        language: test.language || prev.language || 'ru',
+        category: test.category,
+        categoryId: categoryId,
+        isStandalone: test.is_standalone || test.isStandalone || false,
+        is_standalone: test.is_standalone || test.isStandalone || false,
       }));
     }
-  }, [test?.id, test?.title, test?.description, test?.timeLimit, test?.time_limit, test?.passingScore, test?.passing_score, test?.maxAttempts, test?.max_attempts]);
+  }, [test?.id, test?.title, test?.description, test?.timeLimit, test?.time_limit, test?.passingScore, test?.passing_score, test?.maxAttempts, test?.max_attempts, test?.category, test?.is_standalone, test?.isStandalone]);
 
   const questionTypes = [
     { value: 'single_choice', label: t('admin.tests.questionTypes.singleChoice') },
@@ -208,13 +243,33 @@ export function TestEditor({ test, onSave, onCancel }: TestEditorProps) {
       return;
     }
 
+    // Валидация: если is_standalone=true, должна быть выбрана категория
+    if (formData.isStandalone || formData.is_standalone) {
+      const categoryId = typeof formData.category === 'object' ? formData.category?.id : formData.categoryId;
+      if (!categoryId) {
+        alert(t('admin.tests.standaloneTestRequiresCategory') || 'Для автономного теста необходимо выбрать категорию');
+        return;
+      }
+    }
+
     // Убеждаемся, что числовые значения не NaN
-    const cleanFormData = {
+    const cleanFormData: any = {
       ...formData,
       timeLimit: formData.timeLimit && !isNaN(formData.timeLimit) ? formData.timeLimit : 30,
       passingScore: formData.passingScore && !isNaN(formData.passingScore) ? formData.passingScore : 80,
       maxAttempts: formData.maxAttempts && !isNaN(formData.maxAttempts) ? formData.maxAttempts : 3,
     };
+
+    // Преобразуем isStandalone в is_standalone для backend
+    if (cleanFormData.isStandalone !== undefined) {
+      cleanFormData.is_standalone = cleanFormData.isStandalone;
+    }
+
+    // Убеждаемся, что categoryId передается правильно
+    const categoryId = typeof cleanFormData.category === 'object' ? cleanFormData.category?.id : cleanFormData.categoryId;
+    if (categoryId) {
+      cleanFormData.categoryId = categoryId;
+    }
 
     onSave({
       ...cleanFormData,
@@ -270,6 +325,51 @@ export function TestEditor({ test, onSave, onCancel }: TestEditorProps) {
                   rows={2}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {t('admin.tests.category') || 'Категория'}
+                  </label>
+                  <select
+                    value={typeof formData.category === 'object' ? formData.category?.id : formData.categoryId || ''}
+                    onChange={(e) => {
+                      const categoryId = e.target.value;
+                      const selectedCategory = categories.find(c => String(c.id) === categoryId);
+                      setFormData({ 
+                        ...formData, 
+                        category: selectedCategory ? selectedCategory : null,
+                        categoryId: categoryId || undefined
+                      });
+                    }}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    disabled={loadingCategories}
+                  >
+                    <option value="">-- {t('admin.tests.selectCategory') || 'Выберите категорию'} --</option>
+                    {loadingCategories ? (
+                      <option disabled>{t('admin.tests.loadingCategories') || 'Загрузка категорий...'}</option>
+                    ) : (
+                      categories.map(cat => (
+                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                      ))
+                    )}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {t('admin.tests.language') || 'Язык теста'} <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={formData.language || 'ru'}
+                    onChange={(e) => setFormData({ ...formData, language: e.target.value as 'ru' | 'kz' | 'en' })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="ru">Русский</option>
+                    <option value="kz">Қазақша</option>
+                    <option value="en">English</option>
+                  </select>
+                </div>
               </div>
 
               <div className="grid grid-cols-3 gap-4">
@@ -345,6 +445,28 @@ export function TestEditor({ test, onSave, onCancel }: TestEditorProps) {
                   />
                   <span className="text-sm text-gray-700">{t('admin.tests.showResults')}</span>
                 </label>
+              </div>
+
+              {/* Standalone Test Checkbox */}
+              <div className="mt-4">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.isStandalone || formData.is_standalone || false}
+                    onChange={(e) => setFormData({ ...formData, isStandalone: e.target.checked, is_standalone: e.target.checked })}
+                    className="rounded"
+                  />
+                  <span className="text-sm text-gray-700">
+                    {t('admin.tests.isStandalone') || 'Можно проходить без курса'}
+                  </span>
+                </label>
+                {(formData.isStandalone || formData.is_standalone) && (
+                  <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <p className="text-sm text-yellow-800">
+                      {t('admin.tests.standaloneTestWarning') || '⚠️ Для автономного теста необходимо указать категорию. Тест будет отображаться на странице Training Programs.'}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
